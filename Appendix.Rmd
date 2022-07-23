@@ -8,9 +8,12 @@ output:
     toc_depth: 3
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 ## TO DO
 - Do all the plots with FRS 1998 and not ATP
-- include effective sample size and Rhat value
 - ROC curves: 
     -> get rid of the second plot on the right
     -> on y-axis make plots of BOTH TPR:FPR and (TPR-FPR)/TPR
@@ -137,8 +140,8 @@ In this article, we researched into 16 models, but made a focus on 8 of them. Th
 
 We also include Directed Acyclical Graph (DAG) plots to help visualise the different models, as shown in figure A.1 and A.2. In order to read the DAGs, note that each square background layer that appears as a stack of layers represents different measured outcomes that were made during the census. The outcome variables measured are represented by a square-shaped text box, and a parameter of the model is represented by a circular-shaped text box. If either a square or circular text box is placed on top of a stacked rectangular layer, it means that multiple values of that variable (as many as there are layers to the stack) are either measured (for outcome variables) or produced (for parameters of the model). Please note that the number of layers in the stack is written in the text box that does not contain a frame which is intentionally displayed on top of the stacked layer that it represents. For example, $i=1,...,N$. Finally, the direction of the arrows implies causality assumed in the model.
 
-![Figure A.1: an illustration of the DAG of the mean blood pressure-based model presented in this article.](./Rmarkdown_Plots/DAG_Mean.png)
-![Figure A.2: an illustration of the DAG of the FRS-based model presented in this article.](./Rmarkdown_Plots/DAG_FRS.png)
+![Figure A.1: an illustration of the DAG of the mean blood pressure-based model presented in this article.](../DAG_Mean.png)
+![Figure A.2: an illustration of the DAG of the FRS-based model presented in this article.](../DAG_FRS.png)
 
 ## Methodology
 
@@ -315,7 +318,7 @@ In this section, we add some additional detail to the results section covered in
 
 Convergence of the simulations required to parameterize the model presented in this work is required for the MCMC simulations performed by Stan, as well as convergence in the centering values that requires repeating the Stan calculations several times. Convergence of the latter is shown in figure A.3. The upper plot in figure A.3 illustrates convergence in the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations. The lower plot in figure A.3 illustrates convergence in the average sum of the linear predictor terms over all MCMC chain iterations.
 
-![Figure A.3: illustration of the convergence of the centering parameters of the model](./Rmarkdown_Plots/Plots/xhat/RMSE-Linpred_Convergence.png)
+![Figure A.3: illustration of the convergence of the centering parameters of the model](../Plots/xhat/RMSE-Linpred_Convergence.png)
 
 With respect to convergence of the MCMC simulations, defining convergence first involves discarding the burn-in period of the simulations. When the time-evolution marker chain has a large number of samples, sequence thinning is used to reduce the amount of data storage - after convergence, take only the kth value of the simulations (after having discarded the burn-in phase values) and discard the rest. One measure of convergence is to bin similar markers and check that for each bin, the variation of the individual marker movement over a few time steps is larger than the variation of the ensemble markers in-between one-another. Other methods of convergence are stationarity and mixing. The former occurs by ensuring that the gradients of movements in the chains in time are in the same direction, the latter ensures that the amplitude of the movements in the chains are similar. To calculate the mixing and stationarity, one can do the following:
 \begin{itemize}
@@ -365,18 +368,19 @@ Where T is the index at which the sum of the autocorrelation estimates $\hat{\rh
 
 We remind the reader of the list of numbers of the different models explored in this research, provided in list \ref{runnums}. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure A.4, the parameter that correlated the highest with both the mortality risk of CVD or heart attack and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of CVD and heart attack than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FSR scores for all mortality-based risk. The middle-left plot shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
 
-![Figure A.4: Violin plots of the normalised $\beta$ parameters of the different models.](./Rmarkdown_Plots/Plots/beta/Beta_parameter_normalised.png)
+![Figure A.4: Violin plots of the normalised $\beta$ parameters of the different models.](../Plots/beta/Beta_parameter_normalised.png)
 With respect to the time-independent Gompertz parameter, described using $B$ in this article, the results between all models that simulate CVD and heart attack mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure A.5. The consistency appears across sex assigned at birth and race.
 
-![Figure A.5: Violin plots of the normalised B parameter (from the Gompertz equation) of the different models.](./Rmarkdown_Plots/Plots/gompertz/B_parameter.png)
+![Figure A.5: Violin plots of the normalised B parameter (from the Gompertz equation) of the different models.](../Plots/gompertz/B_parameter.png)
 Figure A.6 reflects the same level of consistency for the Gompertz parameter that influences the temporal evolution of the mortality risk. It is worth noting that both figures A.5 and A.6 have inverse trends between the values of B and theta for each demographic group. This makes it difficult to imagine, based on these two plots, what the mortality risk is at different ages across demographics, yet it is evident that the form of the change in the mortality risk curve in time is different for each demographic group. Women are observed to have lower initial values of risk, but mortality risk later in life begins to increase much faster than for men. Additionally, hispanic populations are shown to have a larger initial mortality risk than black populations who are shown to have a larger initial mortality risk than white populations in the USA. However, mortality risk increases at a faster rate for white populations than for black populations, for which it increases faster than hispanic populations in the USA.
 
-![Figure A.6: Violin plots of the normalised $\theta$ parameter (from the Gompertz equation) of the different models.](./Rmarkdown_Plots/Plots/gompertz/theta_parameter.png)
+![Figure A.6: Violin plots of the normalised $\theta$ parameter (from the Gompertz equation) of the different models.](../Plots/gompertz/theta_parameter.png)
 To measure the performance of the model to predict the survival outcome of individuals in the population, figure A.7 shows, ordered by individual age, the cumulative hazard $H(t)$ predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
 
-![Figure A.7: Predicted cumulative hazard against cumulative number of deaths in the population, ordered by the age of the individual.](./Rmarkdown_Plots/Plots/Survival/redlinpred_Cumulative_haz-death_age.png)
+![Figure A.7: Predicted cumulative hazard against cumulative number of deaths in the population, ordered by the age of the individual.](../Plots/Survival/redlinpred_Cumulative_haz-death_age.png)
 
-Finally, the AUC values per model resulted as 0.72, 0.7, 0.69, 0.68, 0.73, 0.69, 0.73 and 0.69, for run numbers 1-8, respectively. This illustrates that, with respect to ability to predict mortality risk amongst the population, the models that included the FRS score as a covariate in the proportional hazards model were the best performing models. Furthermore, training the model specifically on CVD and heart attack mortality data also led to an increase in the performance of the models.
+Finally, the AUC values per model resulted as 0.72, 0.7, 0.69, 0.68, 0.73, 0.69, 0.73 and 0.69, for run numbers 1-8, respectively. This illustrates that, with respect to ability to predict mortality risk amongst the population, the models that included the FRS score as a covariate in the proportional hazards model were the best performing models. Furthermore, training the model specifically on CVD and heart attack mortality data also led to an increase in the performance of the models. 
+
 
 
 

@@ -629,6 +629,297 @@ p<-p+facet_wrap( ~ BF$, nrow = 2, scales = "fixed")+scale_y_log10()+ theme(plot.
 ggsave("BF_beta.png", plot=p,path = paste0(directory,'Plots/BF'),width = 12,height = 5.)
 
 
+#%%% Lexis diagrams of the population %%%#
+devtools::install_github("ottlngr/LexisPlotR")
+library(LexisPlotR)
+
+plot_discrete_cbar = function(
+  breaks, # Vector of breaks. If +-Inf are used, triangles will be added to the sides of the color bar
+  palette = "Greys", # RColorBrewer palette to use
+  colors = RColorBrewer::brewer.pal(length(breaks) - 1, palette), # Alternatively, manually set colors
+  direction = 1, # Flip colors? Can be 1 or -1
+  spacing = "natural", # Spacing between labels. Can be "natural" or "constant"
+  border_color = NA, # NA = no border color
+  legend_title = NULL,
+  legend_direction = "horizontal", # Can be "horizontal" or "vertical"
+  font_size = 5,
+  expand_size = 1, # Controls spacing around legend plot
+  spacing_scaling = 1, # Multiplicative factor for label and legend title spacing
+  width = 0.2, # Thickness of color bar
+  triangle_size = 0.000001 # Relative width of +-Inf triangles
+) {
+  require(ggplot2)
+  if (!(spacing %in% c("natural", "constant"))) stop("spacing must be either 'natural' or 'constant'")
+  if (!(direction %in% c(1, -1))) stop("direction must be either 1 or -1")
+  if (!(legend_direction %in% c("horizontal", "vertical"))) stop("legend_direction must be either 'horizontal' or 'vertical'")
+  breaks = as.numeric(breaks)
+  new_breaks = sort(unique(breaks))
+  if (any(new_breaks != breaks)) warning("Wrong order or duplicated breaks")
+  breaks = new_breaks
+  if (class(colors) == "function") colors = colors(length(breaks) - 1)
+  if (length(colors) != length(breaks) - 1) stop("Number of colors (", length(colors), ") must be equal to number of breaks (", length(breaks), ") minus 1")
+  if (!missing(colors)) warning("Ignoring RColorBrewer palette '", palette, "', since colors were passed manually")
+  
+  if (direction == -1) colors = rev(colors)
+  
+  inf_breaks = which(is.infinite(breaks))
+  if (length(inf_breaks) != 0) breaks = breaks[-inf_breaks]
+  plotcolors = colors
+  
+  n_breaks = length(breaks)
+  
+  labels = breaks
+  
+  if (spacing == "constant") {
+    breaks = 1:n_breaks
+  }
+  
+  r_breaks = range(breaks)
+  
+  cbar_df = data.frame(stringsAsFactors = FALSE,
+                       y = breaks,
+                       yend = c(breaks[-1], NA),
+                       color = as.character(1:n_breaks)
+  )[-n_breaks,]
+  
+  xmin = 1 - width/2
+  xmax = 1 + width/2
+  
+  cbar_plot = ggplot(cbar_df, aes(xmin=xmin, xmax = xmax, ymin = y, ymax = yend, fill = factor(color, levels = 1:length(colors)))) +
+    geom_rect(show.legend = FALSE,
+              color=border_color)
+  
+  if (any(inf_breaks == 1)) { # Add < arrow for -Inf
+    firstv = breaks[1]
+    polystart = data.frame(
+      x = c(xmin, xmax, 1),
+      y = c(rep(firstv, 2), firstv - diff(r_breaks) * triangle_size)
+    )
+    plotcolors = plotcolors[-1]
+    cbar_plot = cbar_plot +
+      geom_polygon(data=polystart, aes(x=x, y=y),
+                   show.legend = FALSE,
+                   inherit.aes = FALSE,
+                   fill = colors[1],
+                   color=border_color)
+  }
+  if (any(inf_breaks > 1)) { # Add > arrow for +Inf
+    lastv = breaks[n_breaks]
+    polyend = data.frame(
+      x = c(xmin, xmax, 1),
+      y = c(rep(lastv, 2), lastv + diff(r_breaks) * triangle_size)
+    )
+    plotcolors = plotcolors[-length(plotcolors)]
+    cbar_plot = cbar_plot +
+      geom_polygon(data=polyend, aes(x=x, y=y),
+                   show.legend = FALSE,
+                   inherit.aes = FALSE,
+                   fill = colors[length(colors)],
+                   color=border_color)
+  }
+  
+  if (legend_direction == "horizontal") { #horizontal legend
+    mul = 1
+    x = xmin
+    xend = xmax
+    cbar_plot = cbar_plot + coord_flip()
+    angle = 0
+    legend_position = xmax + 0.1 * spacing_scaling
+  } else { # vertical legend
+    mul = -1
+    x = xmax
+    xend = xmin
+    angle = -90
+    legend_position = xmax + 0.2 * spacing_scaling
+  }
+  
+  cbar_plot = cbar_plot +
+    geom_segment(data=data.frame(y = breaks, yend = breaks),
+                 aes(y=y, yend=yend),
+                 x = x - 0.05 * mul * spacing_scaling, xend = xend,
+                 inherit.aes = FALSE) +
+    annotate(geom = 'text', x = x - 0.1 * mul * spacing_scaling, y = breaks,
+             label = labels,
+             size = font_size) +
+    scale_x_continuous(expand = c(expand_size,expand_size)) +
+    scale_fill_manual(values=plotcolors) +
+    theme_void()
+  
+  if (!is.null(legend_title)) { # Add legend title
+    cbar_plot = cbar_plot +
+      annotate(geom = 'text', x = legend_position, y = mean(r_breaks),
+               label = legend_title,
+               angle = angle,
+               size = font_size)
+  }
+  
+  cbar_plot
+}
+# Function to prepare the data to be in the correct format to plot later
+PrepLexisData<-function(input){
+  output<-data.frame()
+  for(i in 1:nrow(input)){
+    
+    tmp<-input[i,]
+    # Bottom-left
+    output%<>%rbind(cbind(tmp,data.frame(id=i)))
+    # Bottom-right
+    tmp$sheep.yr<-tmp$sheep.yr+1
+    output%<>%rbind(cbind(tmp,data.frame(id=i)))
+    # Top
+    tmp$age<-tmp$age+1
+    output%<>%rbind(cbind(tmp,data.frame(id=i)))
+    
+    # Then the second triangle component
+    # Top-left
+    output%<>%rbind(cbind(tmp,data.frame(id=-i)))
+    # Top-right
+    tmp$sheep.yr<-tmp$sheep.yr+1
+    output%<>%rbind(cbind(tmp,data.frame(id=-i)))
+    # Bottom-left
+    tmp$age<-tmp$age-1
+    tmp$sheep.yr<-tmp$sheep.yr-1
+    output%<>%rbind(cbind(tmp,data.frame(id=-i)))
+    
+  }
+  # Convert from year to an actual date (it doesn't matter if it is 1st Jan or any other day)
+  output$date<-paste0(as.character(output$sheep.yr),"-01-01")
+  
+  # Create a colour scheme for the number of births and deaths
+  n<-20
+  tmp <- hist(log(output$total+1),breaks = n,plot = F) ; tmp<-findInterval(log(output$total+1), tmp$breaks)
+  cols<-RColorBrewer::brewer.pal(n = 11, name = "Spectral") ; cols<-colorRampPalette(cols)(n)
+  output$cols<-cols[tmp]
+  
+  return(output)
+}
+
+mylexis <- lexis_grid(year_start = ceiling(min(list_nhanesA$T)), 
+                      year_end =  ceiling(max(list_nhanesA$T)+2), 
+                      age_start = 44,
+                      age_end = 99)
+
+survTot<-GetSurvival(RL=RL1,roc=T,usexhat=F)
+names(survTot)[1:2]<-c("pred","survived")
+tmp<-RL1; tmp$beta[]<-0
+survDemog<-GetSurvival(RL=tmp,roc=T,usexhat=F)
+names(survDemog)[1:2]<-c("pred","survived")
+tmp<-RL1; tmp$beta[,2:7]<-0
+survFRS<-GetSurvival(RL=tmp,roc=T,usexhat=F)
+names(survFRS)[1:2]<-c("pred","survived")
+tmp<-RL1; tmp$beta[,c(3,4,6,7)]<-0
+survFRSDelta<-GetSurvival(RL=tmp,roc=T,usexhat=F)
+names(survFRSDelta)[1:2]<-c("pred","survived")
+tmp<-RL1; tmp$beta[,c(1,3,4,6,7)]<-0
+survDelta<-GetSurvival(RL=tmp,roc=T,usexhat=F)
+names(survFRSDelta)[1:2]<-c("pred","survived")
+
+p<-plot_roc(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),0.75,costy = F) +
+  theme(plot.title = element_text(hjust = 0.5))+ggtitle(TeX("All $\\beta$ Linear Predictor Terms"))
+ggsave("ROCAll.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 5,height = 4) 
+
+p<-plot_roc(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),0.75,costy = F) +
+  theme(plot.title = element_text(hjust = 0.5))+ggtitle(TeX("Gompertz Demographic Only"))
+ggsave("ROCAll.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 5,height = 4) 
+
+output<-data.frame()
+for(year in ceiling(min(list_nhanesFRS$T)):ceiling(max(list_nhanesFRS$T)+2)){
+  # for(age in ceiling(min(list_nhanesFRS$T+list_nhanesFRS$age)):ceiling(max(list_nhanesFRS$T+list_nhanesFRS$age)+2)){
+  for(age in 44:99){  
+     
+    indies<-list_nhanesFRS$T<=(year+1) & list_nhanesFRS$T>year &
+            (list_nhanesFRS$T+list_nhanesFRS$age)<=(age+1) & (list_nhanesFRS$T+list_nhanesFRS$age)>age
+    
+    output%<>%rbind(data.frame(age=(age+1),
+                                sheep.yr=(year+1),
+                                total=max((calculate_roc(df=survTot[indies,],cost_of_fp =1,cost_of_fn=1,n = 300))$auroc),
+                                Demog=max((calculate_roc(df=survDemog[indies,],cost_of_fp =1,cost_of_fn=1,n = 300))$auroc),
+                                FRSonly=max((calculate_roc(df=survFRS[indies,],cost_of_fp =1,cost_of_fn=1,n = 300))$auroc),
+                                FRSDelta=max((calculate_roc(df=survFRSDelta[indies,],cost_of_fp =1,cost_of_fn=1,n = 300))$auroc),
+                                Delta=max((calculate_roc(df=survDelta[indies,],cost_of_fp =1,cost_of_fn=1,n = 300))$auroc),
+                                count=sum(indies),
+                                deaths=sum(list_nhanesFRS$eventCVDHrt[indies])))
+  }
+}
+
+total<-output[!is.na(output$total),]%>%PrepLexisData
+tmp<-output[,c(1,2,8)]; names(tmp)[3]<-"total"
+countys<-tmp[!is.na(tmp$total),]%>%PrepLexisData
+tmp<-output; names(tmp)[c(3,9)]<-c("tmp","total")
+deaths<-tmp[!is.na(tmp$total),]%>%PrepLexisData
+
+
+tmp<-output; names(tmp)[c(3,4)]<-c("tmp","total")
+demog<-tmp[!is.na(tmp$total),]%>%PrepLexisData
+tmp<-output; names(tmp)[c(3,5)]<-c("tmp","total")
+FRSonly<-tmp[!is.na(tmp$total),]%>%PrepLexisData
+tmp<-output; names(tmp)[c(3,6)]<-c("tmp","total")
+FRSDelta<-tmp[!is.na(tmp$total),]%>%PrepLexisData
+tmp<-output; names(tmp)[c(3,7)]<-c("tmp","total")
+Delta<-tmp[!is.na(tmp$total),]%>%PrepLexisData
+
+p<-lexis_polygon(lg = mylexis, x = total$date, y = total$age, group = total$id,fill = total$cols) +
+  labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "Area Under ROC") +theme(plot.title = element_text(hjust = 0.5));p
+ggsave("LexisAll.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+p<-plot_discrete_cbar(unique((hist(output$total,breaks = 10,plot = F))$breaks), 
+                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+ggsave("LexisAll_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+
+p<-lexis_polygon(lg = mylexis, x = countys$date, y = countys$age, group = countys$id,fill = countys$cols) +
+  labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "Number of Individuals") +theme(plot.title = element_text(hjust = 0.5));p
+ggsave("LexisCounts.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+p<-plot_discrete_cbar(unique((hist(output$countys,breaks = 10,plot = F))$breaks), 
+                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+ggsave("LexisCounts_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+
+p<-lexis_polygon(lg = mylexis, x = deaths$date, y = deaths$age, group = deaths$id,fill = deaths$cols) +
+  labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "Number of Deaths") +theme(plot.title = element_text(hjust = 0.5));p
+ggsave("LexisDeaths.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+p<-plot_discrete_cbar(unique((hist(output$deaths,breaks = 10,plot = F))$breaks), 
+                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+ggsave("LexisDeaths_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+p<-lexis_polygon(lg = mylexis, x = demog$date, y = demog$age, group = demog$id,fill = demog$cols) +
+  labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "") +theme(plot.title = element_text(hjust = 0.5));p
+ggsave("LexisDemog.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+p<-plot_discrete_cbar(unique((hist(output$demog,breaks = 10,plot = F))$breaks), 
+                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+ggsave("LexisDemog_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+
+p<-lexis_polygon(lg = mylexis, x = FRSonly$date, y = FRSonly$age, group = FRSonly$id,fill = FRSonly$cols) +
+  labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "") +theme(plot.title = element_text(hjust = 0.5));p
+ggsave("LexisFRS.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+p<-plot_discrete_cbar(unique((hist(output$FRSonly,breaks = 10,plot = F))$breaks), 
+                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+ggsave("LexisFRS_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+
+p<-lexis_polygon(lg = mylexis, x = FRSDelta$date, y = FRSDelta$age, group = FRSDelta$id,fill = FRSDelta$cols) +
+  labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "") +theme(plot.title = element_text(hjust = 0.5));p
+ggsave("LexisFRSDelta.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+p<-plot_discrete_cbar(unique((hist(output$FRSDelta,breaks = 10,plot = F))$breaks), 
+                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+ggsave("LexisFRSDelta_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+
+p<-lexis_polygon(lg = mylexis, x = Delta$date, y = Delta$age, group = Delta$id,fill = Delta$cols) +
+  labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "") +theme(plot.title = element_text(hjust = 0.5));p
+ggsave("LexisDelta.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+p<-plot_discrete_cbar(unique((hist(output$Delta,breaks = 10,plot = F))$breaks), 
+                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+ggsave("LexisDelta_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
 
 # BEST SURVIVAL PREDICTION
 # survy<-GetSurvival(RL5)
