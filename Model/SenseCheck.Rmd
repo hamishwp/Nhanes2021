@@ -1,0 +1,226 @@
+# Description
+```{r, echo=FALSE, results="hide"}
+file_names <-  list.files(path = "summariesdata", pattern = "savedRun", full.names = TRUE)
+```
+
+For the gompertz parameters, we have the following indexes:
+```
+gompertz[sex,race,par]
+
+sex
+    1:female
+    2:male
+race
+    1:black
+    2:white
+    3:other
+par
+    1:B
+    2:theta
+```
+
+Make three hazard rate functions that are easy to use.
+If we want to add a linear predictor to these, the only thing we need to change is the `B`.
+```{r}
+h_t <- function(t, B, theta){
+ return(B*exp(theta * t))
+}
+
+H_t <- function(t, B, theta){
+ return( (B/theta) * (exp(theta*t) - 1) )
+}
+
+H_inv_t <- function(t, B, theta){
+  return( log(t*(theta/B) + 1)/theta )
+}
+```
+
+
+
+
+```{r}
+
+# Use frspop dias, FRS1998, event_all  for now
+
+a_file <- file_names[1]
+a_file
+```
+
+
+```{r}
+load("summariesdata/r_and_lambda_list.Rdata")
+rlambdas <- reshape2::melt(r_and_lambdas_list)
+normgammapars <- rlambdas[rlambdas$L1=="nhanes_pop_with_FRS_dias",]
+normgammapars <- as.list(reshape2::dcast(normgammapars, .~L2 ))
+
+
+alpha_1  <- normgammapars[["alpha_CLINIC"]]
+alpha_2  <- normgammapars[["alpha_HOME"]]   
+beta_1   <- normgammapars[["beta_CLINIC"]]  
+beta_2   <- normgammapars[["beta_HOME"]]    
+lambda_1 <- normgammapars[["lambda_CLINIC"]]
+lambda_2 <- normgammapars[["lambda_HOME"]]  
+m_1      <- normgammapars[["m_CLINIC"]]     
+m_2      <- normgammapars[["m_HOME"]]       
+
+```
+
+Let's look at some people from the nhanesFRS 
+```{r}
+
+load("../Data_cleaned/nhanes_cleaned_lists.RData")
+cleaned_nhanes_list <- list_nhanesFRS
+sys_or_dias <- "dias"
+
+x <- cleaned_nhanes_list[[sys_or_dias]]
+xhome <- cleaned_nhanes_list[[paste0(sys_or_dias,"_home")]]
+
+T <- cleaned_nhanes_list[["T"]]
+nj <- cleaned_nhanes_list[["nj"]]
+age <- cleaned_nhanes_list[["age"]]
+
+normgammaparams     <- cleaned_nhanes_list[[paste0(sys_or_dias,"_params")]]$estimates
+normgammaparams_home<- cleaned_nhanes_list[[paste0(sys_or_dias,"_home_params")]]$estimates
+
+black <- cleaned_nhanes_list[["black"]]
+white <- cleaned_nhanes_list[["white"]]
+other <- cleaned_nhanes_list[["other"]]
+
+racematrix <- t(t(data.frame(black, white, other) ) * c(1L,2L,3L))
+# 1-black
+# 2-white
+# 3-other
+race <- apply(racematrix, 1, max)
+
+# 1-female
+# 2-male
+male <- cleaned_nhanes_list[["male"]]
+sex <- as.integer(male) + 1L
+
+
+# Make an inits function for stan
+# Use the max rowsd for the tauis starting point
+sds1 <- max(apply(x, 1, sd))
+sds2 <- max(apply(xhome, 1, sd))
+tauis <- cbind(rep(1/sds1^2, nrow(x)) , rep(1/sds2^2, nrow(x)))
+
+M_i <- rowMeans( (as.matrix(x)+as.matrix(xhome))/2 )
+Delta_i <- rowMeans( (as.matrix(x)-as.matrix(xhome))/2 ) 
+mean_abs_delta <- mean( Delta_i )
+
+FRS <- cleaned_nhanes_list[["FRS.1998"]]
+```
+
+Now to make the hazard rate:
+
+```{r}
+load(a_file) #loads the variable `resultslist` from one of the Rdata files
+item <- resultslist
+sumtable <- item$summary
+
+estimates <- sumtable[,"mean"]
+
+beta     <- estimates[1:4]
+gompertz <- aperm(array(estimates[-c(1:4)], c(2,3,2)))
+
+dimnames(gompertz) <- list( c("female", "male"),
+                            c("black", "white", "other"),
+                            c("B", "theta"))
+                            
+gompertz
+```
+
+```{r}
+
+i <- 2 # number of the person in our dataset
+
+df <- data.frame()
+
+# For the first 1000 people
+for(i in 1:1000 ){
+  
+  B     <- gompertz[sex[i],race[i],'B']
+  theta <- gompertz[sex[i],race[i],'theta']
+  
+  Delta <- Delta_i[i]
+  M <- M_i[i]
+  tau_C <- tauis[i,1]
+  tau_H <- tauis[i,2]
+  
+  FRS_i <- FRS[i]
+  
+  
+  B_star <- B * 
+    exp(
+    beta[1] * ( abs(Delta)- mean_abs_delta)+
+    beta[2] * (FRS_i)+
+    beta[3] * (tau_H - (alpha_2/beta_2))+
+    beta[4] * (tau_C - (alpha_1/beta_1))
+    )
+  
+  
+  #Ages:
+  t <- 18:100
+  model_h_t <- h_t(t, B=B_star, theta=theta)
+  model_H_t <- H_t(t, B=B_star, theta=theta)
+
+  
+df <- rbind(df, data.frame(t= t, 
+                           i=i,
+                           h_t= model_h_t ,
+                           H_t= model_H_t ,
+                           sex=sex[i],
+                           race=race[i],
+                           Delta=Delta,
+                           M=M,
+                           tau_C=tau_C,
+                           tau_H=tau_H,
+                           FRS=FRS_i
+                           )
+                          )
+                           
+  
+}
+
+head(df)
+
+```
+
+```{r}
+library(ggplot2)
+
+cat("
+sex
+    1:female
+    2:male
+race
+    1:black
+    2:white
+    3:other
+")
+
+
+p <- ggplot(data=df)
+p <- p + aes(x=t, y=h_t, group=i, colour=as.factor(race))
+p <- p + geom_line()
+p <- p + facet_grid(sex ~ race)
+p
+```
+
+# Conclusion
+Finally, here is the Nelson-Aalen estimate of the hazard rate, overlaid on the $H(t)$ implied by our for the parameter values of the of the first 1000 people in the nhanes FRS population.
+```{r}
+
+library(survival)
+event <- cleaned_nhanes_list$eventall
+HT_nelaalen <- basehaz(coxph(Surv(age+T,event)~1 + strata(race, sex) ))
+
+
+p <- ggplot(data=df)
+p <- p + aes(x=t, y=H_t, group=i)
+p <- p + geom_line()
+p <- p + geom_point(aes(x=HT_nelaalen$time, y=HT_nelaalen$hazard, color=strata), data=HT_nelaalen)
+p
+
+
+```
