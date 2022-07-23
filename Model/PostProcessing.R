@@ -820,7 +820,23 @@ ggsave("ROCAll.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 5,
 
 p<-plot_roc(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),0.75,costy = F) +
   theme(plot.title = element_text(hjust = 0.5))+ggtitle(TeX("Gompertz Demographic Only"))
-ggsave("ROCAll.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 5,height = 4) 
+ggsave("ROCDemog.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 5,height = 4) 
+
+p<-plot_roc(calculate_roc(df=survFRS,cost_of_fp =1,cost_of_fn=1,n = 300),0.75,costy = F) +
+  theme(plot.title = element_text(hjust = 0.5))+ggtitle(TeX("FRS-1998 Term"))
+ggsave("ROCFRS.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 5,height = 4) 
+
+p<-plot_roc(calculate_roc(df=survFRSDelta,cost_of_fp =1,cost_of_fn=1,n = 300),0.75,costy = F) +
+  theme(plot.title = element_text(hjust = 0.5))+ggtitle(TeX("FRS-1998 and $\\Delta$ Terms"))
+ggsave("ROCFRSDelta.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 5,height = 4) 
+
+p<-plot_roc(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n = 300),0.75,costy = F) +
+  theme(plot.title = element_text(hjust = 0.5))+ggtitle(TeX("$\\Delta$ Term"))
+ggsave("ROCDelta.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 5,height = 4) 
+
+
+
+
 
 output<-data.frame()
 for(year in ceiling(min(list_nhanesFRS$T)):ceiling(max(list_nhanesFRS$T)+2)){
