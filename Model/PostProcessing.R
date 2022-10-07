@@ -825,19 +825,19 @@ names(survDelta)[1:2]<-c("pred","survived")
 
 survFrame%<>%rbind(cbind(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL1",300),
-                                    Plot=rep("RL1: All $\\beta$ Linear Predictor Terms",300))))
+                                    Plot=rep("All $\\beta$ Linear Predictor Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL1",300),
-                                    Plot=rep("RL1: Gompertz Demographic Only",300))))
+                                    Plot=rep("Gompertz Demographic Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRS,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL1",300),
-                                    Plot=rep("RL1: Systolic Mean Term Only",300))))
+                                    Plot=rep("Systolic Mean Term Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRSDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL1",300),
-                                    Plot=rep("RL1: Mean and $\\Delta$ Terms",300))))
+                                    Plot=rep("Mean and $\\Delta$ Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL1",300),
-                                    Plot=rep("RL1: $\\Delta$ Terms",300))))
+                                    Plot=rep("$\\Delta$ Terms",300))))
 
 survTot<-GetSurvival(RL=RL2,roc=T,usexhat=F)
 names(survTot)[1:2]<-c("pred","survived")
@@ -856,19 +856,19 @@ names(survDelta)[1:2]<-c("pred","survived")
 
 survFrame%<>%rbind(cbind(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL2",300),
-                                    Plot=rep("RL2: All $\\beta$ Linear Predictor Terms",300))))
+                                    Plot=rep("All $\\beta$ Linear Predictor Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL2",300),
-                                    Plot=rep("RL2: Gompertz Demographic Only",300))))
+                                    Plot=rep("Gompertz Demographic Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRS,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL2",300),
-                                    Plot=rep("RL2: Systolic Mean Term Only",300))))
+                                    Plot=rep("Systolic Mean Term Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRSDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL2",300),
-                                    Plot=rep("RL2: Mean and $\\Delta$ Terms",300))))
+                                    Plot=rep("Mean and $\\Delta$ Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL2",300),
-                                    Plot=rep("RL2: $\\Delta$ Terms",300))))
+                                    Plot=rep("$\\Delta$ Terms",300))))
 
 survTot<-GetSurvival(RL=RL3,roc=T,usexhat=F)
 names(survTot)[1:2]<-c("pred","survived")
@@ -887,19 +887,19 @@ names(survDelta)[1:2]<-c("pred","survived")
 
 survFrame%<>%rbind(cbind(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL3",300),
-                                    Plot=rep("RL3: All $\\beta$ Linear Predictor Terms",300))))
+                                    Plot=rep("All $\\beta$ Linear Predictor Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL3",300),
-                                    Plot=rep("RL3: Gompertz Demographic Only",300))))
+                                    Plot=rep("Gompertz Demographic Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRS,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL3",300),
-                                    Plot=rep("RL3: Systolic Mean Term Only",300))))
+                                    Plot=rep("Systolic Mean Term Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRSDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL3",300),
-                                    Plot=rep("RL3: Mean and $\\Delta$ Terms",300))))
+                                    Plot=rep("Mean and $\\Delta$ Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL3",300),
-                                    Plot=rep("RL3: $\\Delta$ Terms",300))))
+                                    Plot=rep("$\\Delta$ Terms",300))))
 
 survTot<-GetSurvival(RL=RL4,roc=T,usexhat=F)
 names(survTot)[1:2]<-c("pred","survived")
@@ -918,19 +918,19 @@ names(survDelta)[1:2]<-c("pred","survived")
 
 survFrame%<>%rbind(cbind(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL4",300),
-                                    Plot=rep("RL4: All $\\beta$ Linear Predictor Terms",300))))
+                                    Plot=rep("All $\\beta$ Linear Predictor Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL4",300),
-                                    Plot=rep("RL4: Gompertz Demographic Only",300))))
+                                    Plot=rep("Gompertz Demographic Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRS,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL4",300),
-                                    Plot=rep("RL4: Systolic Mean Term Only",300))))
+                                    Plot=rep("Systolic Mean Term Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRSDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL4",300),
-                                    Plot=rep("RL4: Mean and $\\Delta$ Terms",300))))
+                                    Plot=rep("Mean and $\\Delta$ Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL4",300),
-                                    Plot=rep("RL4: $\\Delta$ Terms",300))))
+                                    Plot=rep("$\\Delta$ Terms",300))))
 
 survTot<-GetSurvival(RL=RL5,roc=T,usexhat=F)
 names(survTot)[1:2]<-c("pred","survived")
@@ -949,19 +949,19 @@ names(survDelta)[1:2]<-c("pred","survived")
 
 survFrame%<>%rbind(cbind(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL5",300),
-                                    Plot=rep("RL5: All $\\beta$ Linear Predictor Terms",300))))
+                                    Plot=rep("All $\\beta$ Linear Predictor Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL5",300),
-                                    Plot=rep("RL5: Gompertz Demographic Only",300))))
+                                    Plot=rep("Gompertz Demographic Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRS,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL5",300),
-                                    Plot=rep("RL5: FRS-1998 Term Only",300))))
+                                    Plot=rep("FRS-1998 Term Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRSDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL5",300),
-                                    Plot=rep("RL5: FRS-1998 and $\\Delta$ Terms",300))))
+                                    Plot=rep("FRS-1998 and $\\Delta$ Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL5",300),
-                                    Plot=rep("RL5: $\\Delta$ Terms",300))))
+                                    Plot=rep("$\\Delta$ Terms",300))))
 
 survTot<-GetSurvival(RL=RL6,roc=T,usexhat=F)
 names(survTot)[1:2]<-c("pred","survived")
@@ -980,19 +980,19 @@ names(survDelta)[1:2]<-c("pred","survived")
 
 survFrame%<>%rbind(cbind(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL6",300),
-                                    Plot=rep("RL6: All $\\beta$ Linear Predictor Terms",300))))
+                                    Plot=rep("All $\\beta$ Linear Predictor Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL6",300),
-                                    Plot=rep("RL6: Gompertz Demographic Only",300))))
+                                    Plot=rep("Gompertz Demographic Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRS,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL6",300),
-                                    Plot=rep("RL6: FRS-1998 Term Only",300))))
+                                    Plot=rep("FRS-1998 Term Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRSDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL6",300),
-                                    Plot=rep("RL6: FRS-1998 and $\\Delta$ Terms",300))))
+                                    Plot=rep("FRS-1998 and $\\Delta$ Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL6",300),
-                                    Plot=rep("RL6: $\\Delta$ Terms",300))))
+                                    Plot=rep("$\\Delta$ Terms",300))))
 
 survTot<-GetSurvival(RL=RL7,roc=T,usexhat=F)
 names(survTot)[1:2]<-c("pred","survived")
@@ -1011,19 +1011,19 @@ names(survDelta)[1:2]<-c("pred","survived")
 
 survFrame%<>%rbind(cbind(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL7",300),
-                                    Plot=rep("RL7: All $\\beta$ Linear Predictor Terms",300))))
+                                    Plot=rep("All $\\beta$ Linear Predictor Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL7",300),
-                                    Plot=rep("RL7: Gompertz Demographic Only",300))))
+                                    Plot=rep("Gompertz Demographic Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRS,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL7",300),
-                                    Plot=rep("RL7: FRS-1998 Term Only",300))))
+                                    Plot=rep("FRS-1998 Term Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRSDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL7",300),
-                                    Plot=rep("RL7: FRS-1998 and $\\Delta$ Terms",300))))
+                                    Plot=rep("FRS-1998 and $\\Delta$ Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL7",300),
-                                    Plot=rep("RL7: $\\Delta$ Terms",300))))
+                                    Plot=rep("$\\Delta$ Terms",300))))
 
 survTot<-GetSurvival(RL=RL8,roc=T,usexhat=F)
 names(survTot)[1:2]<-c("pred","survived")
@@ -1042,23 +1042,25 @@ names(survDelta)[1:2]<-c("pred","survived")
 
 survFrame%<>%rbind(cbind(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL8",300),
-                                    Plot=rep("RL8: All $\\beta$ Linear Predictor Terms",300))))
+                                    Plot=rep("All $\\beta$ Linear Predictor Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDemog,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL8",300),
-                                    Plot=rep("RL8: Gompertz Demographic Only",300))))
+                                    Plot=rep("Gompertz Demographic Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRS,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL8",300),
-                                    Plot=rep("RL8: FRS-1998 Term Only",300))))
+                                    Plot=rep("FRS-1998 Term Only",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survFRSDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL8",300),
-                                    Plot=rep("RL8: FRS-1998 and $\\Delta$ Terms",300))))
+                                    Plot=rep("FRS-1998 and $\\Delta$ Terms",300))))
 survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n = 300),
                          data.frame(RL=rep("RL8",300),
-                                    Plot=rep("RL8: $\\Delta$ Terms",300))))
+                                    Plot=rep("$\\Delta$ Terms",300))))
 
 saveRDS(survFrame,"./Plots/Survival/ROC_Data.Rdata")
 
+survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=RL),size=1)+facet_wrap(~Plot,nrow = 2)
 
+survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=Plot),size=1)+facet_wrap(~RL,nrow = 2)
 
 output<-data.frame()
 for(year in ceiling(min(list_nhanesFRS$T)):ceiling(max(list_nhanesFRS$T)+2)){
