@@ -812,7 +812,7 @@ survFRSDelta<-GetSurvival(RL=tmp,roc=T,usexhat=F)
 names(survFRSDelta)[1:2]<-c("pred","survived")
 tmp<-RL1; tmp$beta[,c(1,3,4,6,7)]<-0
 survDelta<-GetSurvival(RL=tmp,roc=T,usexhat=F)
-names(survFRSDelta)[1:2]<-c("pred","survived")
+names(survDelta)[1:2]<-c("pred","survived")
 
 p<-plot_roc(calculate_roc(df=survTot,cost_of_fp =1,cost_of_fn=1,n = 300),0.75,costy = F) +
   theme(plot.title = element_text(hjust = 0.5))+ggtitle(TeX("All $\\beta$ Linear Predictor Terms"))
@@ -884,27 +884,16 @@ ggsave("LexisAll_col.png", plot=p,path = paste0(directory,'Plots/Survival'),widt
 p<-lexis_polygon(lg = mylexis, x = countys$date, y = countys$age, group = countys$id,fill = countys$cols) +
   labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "Number of Individuals") +theme(plot.title = element_text(hjust = 0.5));p
 ggsave("LexisCounts.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
-p<-plot_discrete_cbar(unique((hist(output$countys,breaks = 10,plot = F))$breaks), 
+p<-plot_discrete_cbar(round(unique((histss(output$count,10,plot = F))$breaks),1), 
                       spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
 ggsave("LexisCounts_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
 
 p<-lexis_polygon(lg = mylexis, x = deaths$date, y = deaths$age, group = deaths$id,fill = deaths$cols) +
   labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "Number of Deaths") +theme(plot.title = element_text(hjust = 0.5));p
 ggsave("LexisDeaths.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
-p<-plot_discrete_cbar(unique((hist(output$deaths,breaks = 10,plot = F))$breaks), 
+p<-plot_discrete_cbar(round(unique((histss(output$deaths,10,plot = F))$breaks),1), 
                       spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
 ggsave("LexisDeaths_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
-
-
-
-
-
-
-
-
-
-
-
 
 
 
