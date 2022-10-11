@@ -1062,6 +1062,49 @@ survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=RL),size=1)+facet_wrap(~Plot,n
 
 survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=Plot),size=1)+facet_wrap(~RL,nrow = 2)
 
+survFrame$Plot<-factor(survFrame$Plot)
+levels(survFrame$Plot)<-c("Delta Terms","All","FRS and Delta","FRS Only","Gompertz Only","Mean and Delta","Systolic Mean Only")
+survFrame$Plot<-as.character(survFrame$Plot)
+
+p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=Plot,shape=Event),size=1)+
+  scale_color_discrete(labels=TeX(unique(survFrame$Plot))) + geom_abline(slope = 1,intercept = 0) +
+  xlab("False Positive Ratio") + ylab("True Positive Ratio") +
+  facet_wrap(~RL,labeller = as_labeller(TeX,default = label_parsed),nrow = 2);p
+ggsave("ROCSurvival_RL.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
+
+p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=RL,shape=Event),size=1)+
+  xlab("False Positive Ratio") + ylab("True Positive Ratio") + geom_abline(slope = 1,intercept = 0) +
+  # ggtitle(label = c("Delta Terms","All","FRS and Delta","FRS Only","Gompertz Only","Mean and Delta","Systolic Mean Only")) +
+  facet_wrap(~Plot,nrow = 2);p
+ggsave("ROCSurvival_Plot.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
+
+survFrame$FRS<-F
+survFrame$FRS[survFrame$RL%in%c("RL5","RL6","RL7","RL8")]<-T
+survFrame$Model<-survFrame$Plot
+survFrame$Model[survFrame$Plot%in%c("FRS and Delta","Mean and Delta")]<-"FRS/Mean + Delta"
+survFrame$Model[survFrame$Plot%in%c("FRS Only","Systolic Mean Only")]<-"FRS/Sys-Mean Only"
+
+survFrame$Event[survFrame$Event=="All"]<-"All Deaths"
+survFrame$Event[survFrame$Event=="CVDHrt"]<-"CVD & Hrt Only"
+
+AUROC<-survFrame%>%filter(RL%in%c("RL1","RL2","RL5","RL6"))%>%group_by(RL,Model,Event,FRS)%>%summarise(AUROC=max(auroc),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUROC,2))
+AUROC$x<-0.65
+AUROC$y<-0.2
+AUROC$y[AUROC$FRS]<-0.3
+
+p<-survFrame%>%filter(RL%in%c("RL1","RL2","RL5","RL6"))%>%ggplot()+geom_line(aes(fpr,tpr,colour=FRS,linetype=FRS),size=1)+
+  geom_abline(slope = 1,intercept = 0) + geom_text(data=AUROC,aes(x,y,label=label,colour=FRS))+
+  xlab("False Positive Ratio") + ylab("True Positive Ratio") +
+  facet_wrap(Event~Model,nrow = 2);p
+ggsave("ROCSurvival_Model.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
+
+# He wanted plots with FRS-population for FRS against Mean, then including other terms
+# Should have one plot that compares each of them together: FRS vs Mean, all(FRS) vs all(Mean), Gompertz(FRS) vs Gompertz(FRS), Delta(FRS) vs Delta(Mean)
+# Shape should be whether the model uses FRS or not
+# Could do 2 plots, one for CVDHrt and one for all
+
+
 output<-data.frame()
 for(year in ceiling(min(list_nhanesFRS$T)):ceiling(max(list_nhanesFRS$T)+2)){
   # for(age in ceiling(min(list_nhanesFRS$T+list_nhanesFRS$age)):ceiling(max(list_nhanesFRS$T+list_nhanesFRS$age)+2)){

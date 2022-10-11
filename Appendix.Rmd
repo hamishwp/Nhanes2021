@@ -10,64 +10,99 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(tinytex.verbose = TRUE)
+library(tidyverse)
+library(magrittr)
+library(knitr)
+library(tinytex)
+library(kableExtra)
 ```
 
-## TO DO
-- Do all the plots with FRS 1998 and not ATP
-- ROC curves: 
-    -> get rid of the second plot on the right
-    -> on y-axis make plots of BOTH TPR:FPR and (TPR-FPR)/TPR
-    -> focus on CVDHrt and all, with each having:
-    -> one with just demographic (all betas are zero), one FRS, one deltas, one with both FRS and deltas
-    -> So using run numbers 5 & 6 and 7 & 8
-- Push back on adding the FRS 1998 values as they correlated better with mortality risk for both CVDHrt and all
+# Appendix A - Further Detail on Modelling and Results
 
-# Appendix - Further Detail on Modelling and Results
-
-This appendix aims to add more detail about the numerical modelling than was provided in the article. This is to ensure that the research methods are transparent and entirely reproducible. The numerical modelling required to build and parameterize the blood-pressure related mortality risk work presented in this paper was performed using R, additionally using Rstan. More detail will be provided here about the model, about the specific methodology used to parameterize the model, and more results are provided that were not included in the main bulk of the article.
+This appendix aims to add more detail about the numerical modelling than was provided in the article. This is to ensure that the research methods are transparent and entirely reproducible. The numerical modelling presented in this paper was performed using R combined with Rstan. More detail will be provided here about the model, about the specific methodology used to parameterize the model, and more results are provided that were not included in the main bulk of the article.
 
 ## Model
 
-The model used in this research is built from the theory of joint modelling of longitudinal and time-to-event data. This will be described in detail later on in this section, however, in brief, this allows the simultaneous modelling of both longitudinal observation data (in this article, this is blood pressure measurements) and also the time-to-event outcome (in this article, this is death or death from specifically Cardio-Vascular Disease (CVD) or heart attack).
+The model used in this research is built from the theory of joint modelling of longitudinal and time-to-event data. This will be described in detail later on in this section, however, in brief, this allows the simultaneous modelling of both longitudinal observation data (in this article, this is blood pressure measurements) and also the time-to-event outcome (in this article, this is death or death from specifically Cardio-Vascular Disease - CVD - or heart attack).
 
 ### Survival Analysis (Time-to-Event)
 
-The mathematical model applied in this research is underpinned by combining the Gomptertz equation with Cox' proportional hazards model. The Gompertz equation 
+The mathematical model applied in this research is underpinned by combining the Gompertz equation with Cox' proportional hazards model. The Gompertz equation 
 \begin{equation}\label{gompertz}
-h_0(t)=\boldsymbol{B}\exp{\left(\boldsymbol{\theta}(x+T)\right)},
+h_0(t)=B\exp{\left(\theta(x+T)\right)},
 \end{equation}
-describes the baseline hazard of the population to a particular risk, which, for this article, investigates mortality from Cardio-Vascular Disease (CVD) and heart attack specifically, as well as studying mortality risk in general. $\boldsymbol{B}\in\mathbb{R}^{6}$ can be thought of as the initial hazard risk, where an individual at a very young age has a non-negligible level of mortality risk which corresponds closer to this value than at older ages. $\theta\in\mathbb{R}^{6}$ is used to modify the magnitude of the change in baseline risk with time, such that risk increases exponentially at older ages (written as $x\in\mathbb{N}$ above, with $N$ the number of individuals) and for a large amount of time since the blood pressure measurements were made (written as $T\in\mathbb{R}^+$ above). Note that both $B$ and $\theta$ have 6 different values, depending on the sex assigned at birth (female, male), or the race (black, white or hispanic). Cox's proportional hazards model links the covariates of the model (mean systolic blood pressure, variance in the diastolic blood pressure, etc) to the survival outcome of the individual via the equation
+describes the baseline hazard of the population to a particular risk, which, for this article, investigates mortality from Cardio-Vascular Disease (CVD) and heart attack specifically, as well as studying mortality risk in general. $x\in\mathbb{N^N}$ is the age of the individual at the initial interview time, for $N$ the number of individuals, and $T\in\mathbb{R}^{+,N}$ the time since the individual entered the survey. $\boldsymbol{B}\in\mathbb{R}^{6}$ can be thought of as the initial hazard risk, where an individual at a very young age has a non-negligible level of mortality risk. However, in reality, there are fewer deaths at younger ages than older ones, so the model parameterization is more representative for older ages and therefore this initial hazard risk should not literally be taken as the mortality risk at young ages. $\theta\in\mathbb{R}^{6}$ is used to modify the magnitude of the change in baseline risk with time, such that risk increases exponentially at older ages and for a large amount of time since the blood pressure measurements were made. Note that both $B$ and $\theta$ have 6 different values, depending on the sex assigned at birth - female or male - or the race - black, white or 'other'. Note that 'other' in the race category is a combination of all non-black or non-white races, such as hispanic populations. Cox's proportional hazards model links the covariates of the model (mean systolic blood pressure, variance in the diastolic blood pressure, etc) to the survival outcome of the individual via the equation
 \begin{equation}\label{prophaz}
 h(t)=h_0(t)\exp{\left(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{\boldsymbol{X}})\right)},
 \end{equation}
-where $\boldsymbol{X}\in\mathbb{R}^{+,N\times d}$ is a vector of all the measurements (or summary statistics of the measurements) of individual covariates in our model, $\hat{\boldsymbol{X}}\in\mathbb{R}^{+,d}$ is the centering of the covariates such that the equation $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0$ is satisfied, and $\boldsymbol{\beta}\in\mathbb{R}^d$ implies the strength of the influence of the covariate on the mortality risk. The particularly useful feature of using the Cox' proportional hazards model is that censoring can be accounted for, where $\delta\in{0,1}$ indicates whether the individual died within the total census period $T_c$, whereby $T\leq T_C$ if $\delta=1$. In this study, we explored the following covariates:
+where $\boldsymbol{X}\in\mathbb{R}^{+,N\times d}$ is a vector of summary statistics of the blood pressure measurements of individual covariates in our model, $\hat{\boldsymbol{X}}\in\mathbb{R}^{+,d}$ is the centering of the covariates such that the equation $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{\boldsymbol{X}}))}=0$ is approximately satisfied (more on this later), and $\boldsymbol{\beta}\in\mathbb{R}^d$ implies the strength of the influence of the covariate on the mortality risk. The particularly useful feature of using the Cox' proportional hazards model is that censoring can be accounted for, where $\delta\in{0,1}$ indicates whether the individual died within the total census period $T_c$, whereby $T\leq T_C$ if $\delta=1$. In this study, we explored the following covariates:
 
-* $FRS.1998\in\mathbb{R}^{+,N}$ - FRS score based on the 1998 version,
-* $FRS-ATP\in\mathbb{R}^{+,N}$ - FRS score based on the ATP version,
-* $M_S\in\mathbb{R}^{+,N}$ - Mean systolic blood pressure,
-* $M_D\in\mathbb{R}^{+,N}$ - Mean diastolic blood pressure,
-* $\Delta_S\in\mathbb{R}^{+,N}$ - Absolute value of the difference in the Home-Clinic systolic blood pressure,
-* $\Delta_D\in\mathbb{R}^{+,N}$ - Absolute value of the difference in the Home-Clinic diastolic blood pressure,
-* $\sigma_{S,H}\in\mathbb{R}^{+,N}$ - Standard deviation of the systolic blood pressure taken at home,
-* $\sigma_{D,H}\in\mathbb{R}^{+,N}$ - Standard deviation of the diastolic blood pressure taken at home,
-* $\sigma_{S,C}\in\mathbb{R}^{+,N}$ - Standard deviation of the systolic blood pressure taken at the clinic,
-* $\sigma_{D,C}\in\mathbb{R}^{+,N}$ - Standard deviation of the diastolic blood pressure taken at the clinic,
-* $\tau_{S,H}\in\mathbb{R}^{+,N}$ - Precision of the systolic blood pressure taken at home,
-* $\tau_{D,H}\in\mathbb{R}^{+,N}$ - Precision of the diastolic blood pressure taken at home,
-* $\tau_{S,C}\in\mathbb{R}^{+,N}$ - Precision of the systolic blood pressure taken at the clinic,
-* $\tau_{D,C}\in\mathbb{R}^{+,N}$ - Precision of the diastolic blood pressure taken at the clinic.
+```{r, include=FALSE}
+DF<-data.frame(varnames=c("$FRS-1998$",
+                          "$FRS-ATP$",
+                          "$M_S$",
+                          "$M_D$",
+                          "$\\Delta_S$",
+                          "$\\Delta_D$",
+                          "$\\sigma_{\\{S,H\\}}$",
+                          "$\\sigma_{\\{D,H\\}}$",
+                          "$\\sigma_{\\{S,C\\}}$",
+                          "$\\sigma_{\\{D,C\\}}$",
+                          "$\\tau_{\\{S,H\\}}$",
+                          "$\\tau_{\\{D,H\\}}$",
+                          "$\\tau_{\\{S,C\\}}$",
+                          "$\\tau_{\\{D,C\\}}$"),
+               support=c("$R^N$",
+                         "$R^N$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$",
+                         "$R^{+,N}$"),
+               desc=c("1998 version of the FRS score",
+                      "ATP version of the FRS score",
+                      "Mean systolic blood pressure",
+                      "Mean diastolic blood pressure",
+                      "Absolute value of the difference in the Home-Clinic systolic blood pressure",
+                      "Absolute value of the difference in the Home-Clinic diastolic blood pressure",
+                      "Standard deviation of the systolic blood pressure taken at home",
+                      "Standard deviation of the diastolic blood pressure taken at home",
+                      "Standard deviation of the systolic blood pressure taken at the clinic",
+                      "Standard deviation of the diastolic blood pressure taken at the clinic",
+                      "Precision of the systolic blood pressure taken at home",
+                      "Precision of the diastolic blood pressure taken at home",
+                      "Precision of the systolic blood pressure taken at the clinic",
+                      "Precision of the diastolic blood pressure taken at the clinic"))
+
+```
+
+```{r, echo=F, label= "runnumers"}
+kable(DF,col.names = c("Variable Name", "Support", "Description"),
+format="latex", escape = F,booktabs = T)
+
+```
 
 Please note that the last four elements of this list, the precision values, were only carried out to ensure model consistency with the use of standard deviation instead. For the parameterisation of this model, we assume that the gompertz parameters and the parameters in the linear predictor term are distributed as follows:
 \begin{equation}\label{priorsS}
 \begin{aligned}
-  \boldsymbol{B}_i\sim\mathbb{C}(\mu_B,\sigma_B),\\
-  \boldsymbol{\theta}_i\sim\mathbb{N}(\mu_\theta,\sigma_\theta),\\
-  \boldsymbol{\beta}_i\sim \mathbb{N}(\mu_\beta,\sigma_\beta),
+  \boldsymbol{B}\sim\mathbb{C}(\mu_B,\sigma_B),\\
+  \boldsymbol{\theta}\sim\mathbb{N}(\mu_\theta,\sigma_\theta),\\
+  \boldsymbol{\beta}\sim \mathbb{N}(\mu_\beta,\sigma_\beta),
 \end{aligned}
 \end{equation}
-noting that $\mathbb{C}(\mu,\sigma)$ is the Cauchy distribution. The likelihood for the entire model, over all individuals in the census, is as follows:
+noting that $\mathbb{C}(\mu,\sigma)$ is the Cauchy distribution. \\
+
+The likelihood for this Gompertz-Cox' proportional hazards model, over all individuals in the census, is as follows:
 \begin{equation}\label{likesurv}
-\L_S(v,\delta)=\prod_i^N f(v_i,\delta_i|B_i,\theta_i,\beta_i)=\left[ \prod_1^N h(v_i|B_i,\theta_i,\beta_i)^\delta \exp{\left( -\sum_i^N H(v_i|B_i,\theta_i,\beta_i) \right)} \right],
+L_S(\boldsymbol{v},\boldsymbol{\delta})=\prod_i^N f(v_i,\delta_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}})=\prod_i^N h(v_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}})^{\delta_i} \exp{\left( -\sum_i^N H(v_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}}) \right)},
 \end{equation}
 with $H(v)=\int_0^v h(w)dw$ the cumulative hazard.
 
@@ -85,15 +120,15 @@ Alongside the time-to-event prediction, we simulataneously estimate the blood pr
 where superscripts $D$ and $S$ refer to diastolic and systolic blood pressure, respectively. We assume the blood pressure parameters are distributed according to
 \begin{equation}\label{priorsL}
 \begin{aligned}
-  M_i^{D,S}\sim \mathbb{N}(\mu_M^{D,S},\sigma_M^{D,S}),\\
-  \Delta_i^{D,S}\sim \mathbb{N}(\mu_D^{D,S},\sigma_D^{D,S}),\\
-  \sigma_{i,C}^{D,S}\sim \Gamma(r_C^{D,S},\lambda_C^{D,S}),\\
-  \sigma_{i,H}^{D,S}\sim \Gamma(r_H^{D,S},\lambda_H^{D,S}),
+  M_i^{\{D,S\}}\sim \mathbb{N}(\mu_M^{\{D,S\}},\sigma_M^{\{D,S\}}),\\
+  \Delta_i^{\{D,S\}}\sim \mathbb{N}(\mu_D^{\{D,S\}},\sigma_D^{\{D,S\}}),\\
+  \sigma_{i,C}^{\{D,S\}}\sim \Gamma(r_C^{\{D,S\}},\lambda_C^{\{D,S\}}),\\
+  \sigma_{i,H}^{\{D,S\}}\sim \Gamma(r_H^{\{D,S\}},\lambda_H^{\{D,S\}}),
 \end{aligned}
 \end{equation}
 Noting that this assumes that the distribution of the individual blood pressure parameters are sampled from a population-level distribution of parameters. The longitudinal outcome modelling therefore aims to infer the distributions of the individual blood pressure parameters
 \begin{equation}
-  \Theta=\left\{\mu_M^{D,S},\mu_D^{D,S},\sigma_M^{D,S},\sigma_D^{D,S},r_C^{D,S},\lambda_C^{D,S},r_H^{D,S},\lambda_H^{D,S}\right\}
+  \Theta=\left\{\mu_M^{\{D,S\}},\mu_D^{\{D,S\}},\sigma_M^{\{D,S\}},\sigma_D^{\{D,S\}},r_C^{\{D,S\}},\lambda_C^{\{D,S\}},r_H^{\{D,S\}},\lambda_H^{\{D,S\}}\right\}
 \end{equation}
 Note that this kind of formulation of the problem is known as a hierarchical model. The likelihood for the longitudinal measurements is therefore (combining the systolic and diastolic into a single parameter for simplicity):
 \begin{equation}\label{likelong}
@@ -104,23 +139,23 @@ Note that this kind of formulation of the problem is known as a hierarchical mod
 
 Combining the longitudinal outcome and time-to-event partial likelihoods, and for a given parameter space value of $\Omega=\{\beta,B,\theta\}\cup \Theta$, the joint-modelling likelihood (combining systolic and diastolic into one term for simplicity) is
 \begin{equation}
-  L(\vec{\Omega}|\vec{Y})=\prod_{i=1}^N\left(\prod_{j=1}^{k}f(y_{ij}|M_i,\Delta_i,\sigma_i)\right)f(v_i,\delta_i|M_i,\Delta_i,\tau_C,\tau_H)f(M_i|\mu_M,\sigma_M)f(\Delta_i|\mu_D,\sigma_D)f(\tau_{i,C}|r_C,\lambda_C)f(\tau_{i,H}|r_H,\lambda_H).
+  L(\vec{\Omega}|\vec{Y})=\prod_{i=1}^N\left(\prod_{j=1}^{k}f(y_{ij}|M_i,\Delta_i,\sigma_i)\right)f(v_i,\delta_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}})f(M_i|\mu_M,\sigma_M)f(\Delta_i|\mu_D,\sigma_D)f(\tau_{i,C}|r_C,\lambda_C)f(\tau_{i,H}|r_H,\lambda_H).
 \end{equation}
 By assuming that each of the parameters in our model, $\Omega$, are parameterised by chosen distributions, as defined in equations \ref{priorsS} and \ref{priorsL} with the given set of hyperparameters 
 \begin{equation}
-  \Omega_H=\{\mu_B,\sigma_B,\mu_\theta,\sigma_\theta,\mu_\beta,\sigma_\beta,\mu_M^{D,S},\sigma_M^{D,S},\mu_D^{D,S},\sigma_D^{D,S},r_C^{D,S},\lambda_C^{D,S},r_H^{D,S},\lambda_H^{D,S}\}
+  \Omega_H=\{\mu_B,\sigma_B,\mu_\theta,\sigma_\theta,\mu_\beta,\sigma_\beta,\mu_M^{\{D,S\}},\sigma_M^{\{D,S\}},\mu_D^{\{D,S\}},\sigma_D^{\{D,S\}},r_C^{\{D,S\}},\lambda_C^{\{D,S\}},r_H^{\{D,S\}},\lambda_H^{\{D,S\}}\}
 \end{equation}
 then we can utilise Bayes' theorem to inform the parameterization of our model. Bayes' theorem can be written as 
 \begin{equation}
-\theta(Y|\Omega_p)=\frac{\theta(\Omega_p|Y)\theta(\Omega_p)}{\theta(Y)}, 
+\pi(Y|\Omega_p)=\frac{\pi(\Omega_p|Y)\pi(\Omega_p)}{\pi(Y)}, 
 \end{equation}
-for observational data $Y$, parameter set $\Omega_p$, $\theta(Y|\Omega_p)$ the posterior distribution, $\theta(\Omega_p|Y)$ the likelihood, $\theta(\Omega_p)$ the prior distribution and $\theta(Y)$ the marginal likelihood. This allows us to include informative knowledge on the model parameter distributions which then acts to inform the parameterization of the model using the applied methodology. The hyperparameters for the longitudinal model are calculated from the data directly, a method known as empirical Bayes'. This is described in detail later, in the Methodology section. For the time-to-event parameters, we choose $\mu_B=\mu_\theta=\mu_\beta=0$ and $\sigma_B=\sigma_\theta=2$ and $\sigma_\beta=100$.
+for observational data $Y$, parameter set $\Omega_p$, $\pi(Y|\Omega_p)$ the posterior distribution, $\pi(\Omega_p|Y)$ the likelihood, $\pi(\Omega_p)$ the prior distribution and $\pi(Y)$ the marginal likelihood. This allows us to include informative knowledge on the model parameter distributions which then acts to inform the parameterization of the model using the applied methodology. The hyperparameters for the longitudinal model are calculated from the data directly, a method known as empirical Bayes'. This is described in detail later, in the Methodology section. For the time-to-event parameters, we choose $\mu_B=\mu_\theta=\mu_\beta=0$ and $\sigma_B=\sigma_\theta=2$ and $\sigma_\beta=100$.
 
 ### Proposed Models
 
 In this article, we researched into 16 models, but made a focus on 8 of them. The 8 main models use the standard deviation, $\sigma$, as the measure of the influence of blood-pressure variability on mortality. We also produced the same 8 models but using precision, $\tau$, as the measure of the influence of blood-pressure variability on mortality. However, this was only to ensure that there were no differences between the use of one over the other. Throughout the remainder of this appendix, we refer to the 8 main models using the following run numbers:
 
-\begin{enumerate}\label{runnums}
+\begin{enumerate}
 \item All participants (15,295), using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from CVD or heart attack.
 \item All participants (15,295), using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as all-causes of death.
 \item Only participants that had FRS values (9,418), but using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from CVD or heart attack.
@@ -129,14 +164,14 @@ In this article, we researched into 16 models, but made a focus on 8 of them. Th
 \item Only participants that had FRS values (9,418), and using the FRS ATP-III value in the linear predictor term, with the outcome data as all-causes of death.
 \item Only participants that had FRS values (9,418), and using the FRS 1998-version value in the linear predictor term, with the outcome data as death specifically from CVD or heart attack.
 \item Only participants that had FRS values (9,418), and using the FRS 1998-version value in the linear predictor term, with the outcome data as all-causes of death.
+\label{tab:runnums}
 \end{enumerate}
 
-We also include Directed Acyclical Graph (DAG) plots to help visualise the different models, as shown in figure A.1 and A.2. In order to read the DAGs, note that each square background layer that appears as a stack of layers represents different measured outcomes that were made during the census. The outcome variables measured are represented by a square-shaped text box, and a parameter of the model is represented by a circular-shaped text box. If either a square or circular text box is placed on top of a stacked rectangular layer, it means that multiple values of that variable (as many as there are layers to the stack) are either measured (for outcome variables) or produced (for parameters of the model). Please note that the number of layers in the stack is written in the text box that does not contain a frame which is intentionally displayed on top of the stacked layer that it represents. For example, $i=1,...,N$. Finally, the direction of the arrows implies causality assumed in the model.
+We also include Directed Acyclical Graph (DAG) plots to help visualise the different models, as shown in figures \ref{fig:DAGmean} and \ref{fig:DAGFRS}. In order to read the DAGs, note that each square background layer that appears as a stack of layers represents different measured outcomes that were made during the census. The outcome variables measured are represented by a square-shaped text box, and a parameter of the model is represented by a circular-shaped text box. If either a square or circular text box is placed on top of a stacked rectangular layer, it means that multiple values of that variable (as many as there are layers to the stack) are either measured (for outcome variables) or produced (for parameters of the model). Please note that the number of layers in the stack is written in the text box that does not contain a frame which is intentionally displayed on top of the stacked layer that it represents. For example, $i=1,...,N$. Finally, the direction of the arrows implies causality assumed in the model.
 
-![An illustration of the DAG of the mean blood pressure-based model presented in this article. ](../DAG_Mean.png)
+![An illustration of the DAG of the mean blood pressure-based model presented in this article. ](./DAG_Mean.png){#fig:DAGmean}
 
-![An illustration of the DAG of the FRS-based model presented in this article. ](../DAG_FRS.png)
-
+![An illustration of the DAG of the FRS-based model presented in this article. ](./DAG_FRS.png){#fig:DAGFRS}
 
 ## Methodology
 
@@ -269,7 +304,7 @@ in Hamiltonian Monte Carlo'* by M. Hoffman and A. Gelman, Journal of Machine Lea
 
 ### Centering the Linear Predictor
 
-During the MCMC simulations, the centering values play a non-negligible role in shaping the model parameterization. If the centering parameters are held constant throughout all of the MCMC simulations, then the equation $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0$ is no longer guaranteed. However, automatically defining the centering values based on the model parameters sampled at the current MCMC iteration is not advisable as it can lead to poor parameter convergence as it modifies the likelihood function at every MCMC iteration. Therefore, we iterate the MCMC algorithm multiple times. At every iteration, we recalculate the centering parameters to satisfy the requirement that the average of the linear predictor term going to zero, based on the posterior distributions of the previous MCMC simulation. This iteration is carried out until the centering parameters converge. Convergence is defined by optimising on two factors. The first is that the sum of the linear predictor term across all MCMC samples needs to tend to negligible values (we define this as the average difference being less than $10^{-7}$), see figure A.3 (below). The second convergence criteria is that the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations needs to also decrease towards zero, see figure A.3 (top). For the second criteria, we stopped the simulations when either the difference in the RMSE stopped decreasing (below a threshold of $1\%$), or the RMSE value was less than 20. Illustration of the convergence is shown in figure A.3.
+During the MCMC simulations, the centering values play a non-negligible role in shaping the model parameterization. If the centering parameters are held constant throughout all of the MCMC simulations, then the equation $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0$ is no longer guaranteed. However, automatically defining the centering values based on the model parameters sampled at the current MCMC iteration is not advisable as it can lead to poor parameter convergence. This is because it modifies the likelihood function at every MCMC iteration. Therefore, we iterate the MCMC algorithm multiple times. At every iteration, we recalculate the centering parameters to satisfy the requirement that the average of the linear predictor term going to zero, based on the posterior distributions of the previous MCMC simulation. This iteration is carried out until the centering parameters converge. Convergence is defined by optimising on two factors. The first is that the sum of the linear predictor term across all MCMC samples needs to tend to negligible values (we define this as the average difference being less than $10^{-7}$), see figure \ref{fig:linpred_conv}. The second convergence criteria is that the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations needs to also decrease towards zero, see figure \ref{fig:linpred_conv} (top). For the second criteria, we stopped the simulations when either the difference in the RMSE stopped decreasing (below a threshold of $1\%$), or the RMSE value was less than 20, see figure \ref{fig:linpred_conv} (bottom). Illustration of the convergence is shown in figure \ref{fig:linpred_conv}.
 
 ## Code Description
 
@@ -290,6 +325,7 @@ This is found in the file `Dataclean2021.R`. Provided the raw NHANES dataset (in
 The main file is `MCMC_DiasSyst_v3.R`. It reads in the cleaned NHANES data, the specific choice of simulation parameters (for example, whether to use the FRS number or mean systolic & diastolic blood pressure), and runs the correct RStan scripts for that specific selection of simulation parameters. This script is intended for use on computing clusters.
 
 ### Stan
+
 There are eight Stan files: 
 
 1. `mystanmodel_DS_sigma_v2_autopred.stan` 
@@ -305,7 +341,7 @@ These correspond to the following alternative simulation parameters:
 
 * For the blood-pressure variability, choosing to use the standard-deviation $\sigma$ or the precision $\tau=1/\sigma$]}
 * Using the FRS score or the mean diastolic and systolic blood pressure as a covariate in the analysis
-* Whether the centering parameters, $\hat{X}$, in the linear predictor term are automatically calculated for every MCMC chain parameter space sample to satisfy $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0$ for every MCMC iteration, or whether the centering is held constant across each individual stan iteration.
+* Whether the centering parameters, $\hat{X}$, in the linear predictor term are automatically calculated to satisfy $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0$ for every MCMC iteration, or whether the centering is held constant across all iterations
 
 ### Centering
 The centering of the linear predictors, which is required as input to every MCMC simulation iteration, is recalculated in the files `AutoPred_Recalc.R` and `ManPred_Recalc.R`. This is then provided to the Main script, `MCMC_DiasSyst_v3.R`, which provides these centering values to the Stan code for the MCMC simulations.
@@ -313,7 +349,7 @@ The centering of the linear predictors, which is required as input to every MCMC
 ### Empirical Bayes Estimation
 The file `gamma_fits.Rmd` contains all the necessary routines in order to replicate the calculation of the empirical Bayes' priors for the hyperparameters of the model.
 
-### Post-processing
+###Post-processing
 The post-processing script is called `PostProcessing.R`, which heavily relies on the `Functions.R` script which contains all the necessary functions to analyse the data. The post-processing script generates many useful plots of the MCMC posterior distribution for the user, including Bayes' factors, violin plots of the normalised beta and gompertz posteriors, and more.
 
 ## Results
@@ -322,9 +358,9 @@ In this section, we add some additional detail to the results section covered in
 
 ### Convergence of Simulations
 
-Convergence of the simulations required to parameterize the model presented in this work is required for the MCMC simulations performed by Stan, as well as convergence in the centering values that requires repeating the Stan calculations several times. Convergence of the latter is shown in figure A.3. The upper plot in figure A.3 illustrates convergence in the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations. The lower plot in figure A.3 illustrates convergence in the average sum of the linear predictor terms over all MCMC chain iterations.
+Convergence of the simulations required to parameterize the model presented in this work is required for the MCMC simulations performed by Stan, as well as convergence in the centering values that requires repeating the Stan calculations several times. Convergence of the latter is shown in figure \ref{fig:linpred_conv}. The upper plot in figure \ref{fig:linpred_conv} illustrates convergence in the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations. The lower plot in figure \ref{fig:linpred_conv} illustrates convergence in the average sum of the linear predictor terms over all MCMC chain iterations.
 
-![Illustration of the convergence of the centering parameters of the model. ](../Plots/xhat/RMSE-Linpred_Convergence.png)
+![Illustration of the convergence of the centering parameters of the model. ](./Plots/xhat/RMSE-Linpred_Convergence.png){#fig:linpred_conv}
 
 With respect to convergence of the MCMC simulations, defining convergence first involves discarding the burn-in period of the simulations. When the time-evolution marker chain has a large number of samples, sequence thinning is used to reduce the amount of data storage - after convergence, take only the kth value of the simulations (after having discarded the burn-in phase values) and discard the rest. One measure of convergence is to bin similar markers and check that for each bin, the variation of the individual marker movement over a few time steps is larger than the variation of the ensemble markers in-between one-another. Other methods of convergence are stationarity and mixing. The former occurs by ensuring that the gradients of movements in the chains in time are in the same direction, the latter ensures that the amplitude of the movements in the chains are similar. To calculate the mixing and stationarity, one can do the following:
 \begin{itemize}
@@ -372,35 +408,39 @@ Where T is the index at which the sum of the autocorrelation estimates $\hat{\rh
 
 ### Results - Model Parameterization
 
-We remind the reader of the list of numbers of the different models explored in this research, provided in list \ref{runnums}. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure A.4, the parameter that correlated the highest with both the mortality risk of CVD or heart attack and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of CVD and heart attack than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FSR scores for all mortality-based risk. The middle-left plot shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
+We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section 'Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of CVD or heart attack and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of CVD and heart attack than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FSR scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
 
-![Violin plots of the normalised $\beta$ parameters of the different models. ](../Plots/beta/Beta_parameter_normalised.png)
+![Violin plots of the normalised $\beta$ parameters of the different models. ](./Plots/beta/Beta_parameter_normalised.png){#fig:betas}
 
-With respect to the time-independent Gompertz parameter, described using $B$ in this article, the results between all models that simulate CVD and heart attack mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure A.5. The consistency appears across sex assigned at birth and race.
+With respect to the time-independent Gompertz parameter, described using $B$ in this article, the results between all models that simulate CVD and heart attack mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure \ref{fig:gompB}. The consistency appears across sex assigned at birth and race.
 
-![Violin plots of the normalised B parameter (from the Gompertz equation) of the different models. ](../Plots/gompertz/B_parameter.png)
+![Violin plots of the normalised B parameter (from the Gompertz equation) of the different models.](./Plots/gompertz/B_parameter.png){#fig:gompB}
 
-Figure A.6 reflects the same level of consistency for the Gompertz parameter that influences the temporal evolution of the mortality risk. It is worth noting that both figures A.5 and A.6 have inverse trends between the values of B and theta for each demographic group. This makes it difficult to imagine, based on these two plots, what the mortality risk is at different ages across demographics, yet it is evident that the form of the change in the mortality risk curve in time is different for each demographic group. Women are observed to have lower initial values of risk, but mortality risk later in life begins to increase much faster than for men. Additionally, hispanic populations are shown to have a larger initial mortality risk than black populations who are shown to have a larger initial mortality risk than white populations in the USA. However, mortality risk increases at a faster rate for white populations than for black populations, for which it increases faster than hispanic populations in the USA.
+Figure \ref{fig:gompt} reflects the same level of consistency for the Gompertz parameter that influences the temporal evolution of the mortality risk. It is worth noting that both figures \ref{fig:gompB} and \ref{fig:gompt} have inverse trends between the values of B and theta for each demographic group. This makes it difficult to imagine, based on these two plots, what the mortality risk is at different ages across demographics, yet it is evident that the form of the change in the mortality risk curve in time is different for each demographic group. Women are observed to have lower initial values of risk, but mortality risk later in life begins to increase much faster than for men. Additionally, hispanic populations are shown to have a larger initial mortality risk than black populations who are shown to have a larger initial mortality risk than white populations in the USA. However, mortality risk increases at a faster rate for white populations than for black populations, for which it increases faster than hispanic populations in the USA.
 
-![Violin plots of the normalised $\theta$ parameter (from the Gompertz equation) of the different models. ](../Plots/gompertz/theta_parameter.png)
+![Violin plots of the normalised $\theta$ parameter (from the Gompertz equation) of the different models. ](./Plots/gompertz/theta_parameter.png){#fig:gompt}
 
-To measure the performance of the model to predict the survival outcome of individuals in the population, figure A.7 shows, ordered by individual age, the cumulative hazard $H(t)$ predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
+To measure the performance of the model to predict the survival outcome of individuals in the population, figure \ref{fig:cumpred} shows, ordered by individual age, the cumulative hazard $H(t)$ predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
 
-![Predicted cumulative hazard against cumulative number of deaths in the population, ordered by the age of the individual. ](../Plots/Survival/redlinpred_Cumulative_haz-death_age.png)
+![Predicted cumulative hazard against cumulative number of deaths in the population, ordered by the age of the individual. ](./Plots/Survival/redlinpred_Cumulative_haz-death_age.png){#fig:cumpred}
 
-Finally, the AUC values per model resulted as 0.72, 0.7, 0.69, 0.68, 0.73, 0.69, 0.73 and 0.69, for run numbers 1-8, respectively. This illustrates that, with respect to ability to predict mortality risk amongst the population, the models that included the FRS score as a covariate in the proportional hazards model were the best performing models. Furthermore, training the model specifically on CVD and heart attack mortality data also led to an increase in the performance of the models. 
+A common metric that is used to evaluate the performance of models such as presented in this article is called the Receiver Operating Characteristic (ROC) curve. With continuous predictor values such as cumulative hazard $H(T_i)$, a threshold can be defined whereby any individual who has a cumulative risk larger than the threshold $H(T_i)>\epsilon$ is predicted to die. The ratio of the number individuals that were predicted to die compared to the total number who die corresponds is referred to as the True Positive Ratio (TPR)
+\begin{equation}
+  TPR=\frac{\sum_i\big(\mathbb{I}(H(T_i)>\epsilon \ \ \& \ \ \delta_i=1)\big)}{\sum_i\big(\mathbb{I}(\delta_i=1)\big)}.
+\end{equation}
+Note that TPR is also referred to as the recall or sensitivity. Conversely, the ratio of the number of individuals predicted to die but survive compared to the total number of individuals that survived is referred to as the False Positive Ratio (FPR)
+\begin{equation}
+  FPR=\frac{\sum_i\big(\mathbb{I}(H(T_i)>\epsilon \ \ \& \ \ \delta_i=0)\big)}{\sum_i\big(\mathbb{I}(\delta_i=0)\big)}.
+\end{equation}
+Note that the FPR is also referred to as $1-specificity$. The ROC curve is produced by varying the threshold value that is then used to calculate both the TPR and FPR, and plotting them against one another. The area under this curve is a metric that indicates performance of the model to predict survival outcomes. AUROC=1 implies perfect predictions and AUROC=0.5 implies the contrary.
 
+The AUC values per model resulted as 0.72, 0.7, 0.69, 0.68, 0.73, 0.69, 0.73 and 0.69, for run numbers 1-8, respectively. This illustrates that, with respect to ability to predict mortality risk amongst the population, the models that included the FRS score as a covariate in the proportional hazards model were the best performing models. Furthermore, training the model specifically on CVD and heart attack mortality data also led to an increase in the performance of the models. Within the linear predictor term, we can also infer the strength of correlation between each of the different covariates by switching off ($\beta_i=0$) some of the variables and comparing the predictions to the observed events (including right-censorship). Figure \ref{fig:ROC} shows that, across all different models trained in this research, the predictive performance is fairly similar between using a) all covariates, b) using the FRS or systolic mean blood pressure or c) using both the FRS or mean blood pressures and the long-term variation (delta) covariates. Figure \ref{fig:ROC} also indicates that use of no covariates (and thus relying only on demographic terms through the Gompertz component) or by including only the long-term variation (delta) terms are not strong predictors of event outcomes in the population.
 
+![Area Under ROC (AUROC) curves for each different model, including different linear predictor term models in the predictions. ](./Plots/Survival/ROCSurvival_RL.png){#fig:ROC}
 
+It is important to evaluate whether the model predictions have a bias in terms of predicting outcomes more reliably with respect to the time since the start of the survey. Figure \ref{fig:Lexis} shows Lexis diagrams of the individuals in the full population by time since the start of the survey and the age of the individual. \ref{fig:Lexis} (left) plot shows the AUC-based performance of the mean blood pressure model that was trained on CVD and heart attack events in the full-population (run number 1). Figure \ref{fig:Lexis} (right) shows the observed number of deaths in the full population. Looking at \ref{fig:Lexis}, there is no apparent bias between the performance of the model with either the age of the individual or the amount of time since the start of the survey.
 
-
-
-
-
-
-
-
-
+![Lexis diagram plots of the full NHANES population. Left) the Area Under ROC (AUROC) values using the mean blood pressure model trained on CVD and heart attack events (run number 1). Right) deaths in the population. ](./Plots/Survival/bpplots/LexisDeath_AUC.png){#fig:Lexis}
 
 
 
