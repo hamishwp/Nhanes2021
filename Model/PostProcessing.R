@@ -5,6 +5,8 @@ library(dplyr)
 library(pracma)
 library(magrittr)
 library(ggpubr)
+# devtools::install_github("ottlngr/LexisPlotR")
+library(LexisPlotR)
 source("./Model/Functions.R")
 
 directory<-'~/Documents/BEAST/Coding/Oxford/Nhanes2021/'
@@ -630,9 +632,6 @@ ggsave("BF_beta.png", plot=p,path = paste0(directory,'Plots/BF'),width = 12,heig
 
 
 #%%% Lexis diagrams of the population %%%#
-devtools::install_github("ottlngr/LexisPlotR")
-library(LexisPlotR)
-
 plot_discrete_cbar = function(
   breaks, # Vector of breaks. If +-Inf are used, triangles will be added to the sides of the color bar
   palette = "Greys", # RColorBrewer palette to use
@@ -735,7 +734,7 @@ plot_discrete_cbar = function(
   
   cbar_plot = cbar_plot +
     geom_segment(data=data.frame(y = breaks, yend = breaks),
-                 aes(y=y, yend=yend),
+                 aes(y=y+y_space, yend=yend),
                  x = x - 0.05 * mul * spacing_scaling, xend = xend,
                  inherit.aes = FALSE) +
     annotate(geom = 'text', x = x - 0.1 * mul * spacing_scaling, y = breaks,
@@ -756,7 +755,7 @@ plot_discrete_cbar = function(
   cbar_plot
 }
 # Function to prepare the data to be in the correct format to plot later
-PrepLexisData<-function(input){
+PrepLexisData<-function(input,funcy=NULL){
   output<-data.frame()
   for(i in 1:nrow(input)){
     
@@ -787,7 +786,8 @@ PrepLexisData<-function(input){
   
   # Create a colour scheme for the number of births and deaths
   n<-20
-  tmp <- hist(log(output$total+1),breaks = n,plot = F) ; tmp<-findInterval(log(output$total+1), tmp$breaks)
+  if(!is.null(funcy)) toty<-funcy(output$total) else toty<-output$total
+  tmp <- hist(toty,breaks = n,plot = F) ; tmp<-findInterval(toty, tmp$breaks)
   cols<-RColorBrewer::brewer.pal(n = 11, name = "Spectral") ; cols<-colorRampPalette(cols)(n)
   output$cols<-cols[tmp]
   
@@ -796,7 +796,7 @@ PrepLexisData<-function(input){
 
 mylexis <- lexis_grid(year_start = ceiling(min(list_nhanesA$T)), 
                       year_end =  ceiling(max(list_nhanesA$T)+2), 
-                      age_start = 44,
+                      age_start = 50,
                       age_end = 99)
 
 survTot<-GetSurvival(RL=RL1,roc=T,usexhat=F)
@@ -1108,7 +1108,7 @@ ggsave("ROCSurvival_Model.png", plot=p,path = paste0(directory,'Plots/Survival')
 output<-data.frame()
 for(year in ceiling(min(list_nhanesFRS$T)):ceiling(max(list_nhanesFRS$T)+2)){
   # for(age in ceiling(min(list_nhanesFRS$T+list_nhanesFRS$age)):ceiling(max(list_nhanesFRS$T+list_nhanesFRS$age)+2)){
-  for(age in 44:99){  
+  for(age in 50:99){  
      
     indies<-list_nhanesFRS$T<=(year+1) & list_nhanesFRS$T>year &
             (list_nhanesFRS$T+list_nhanesFRS$age)<=(age+1) & (list_nhanesFRS$T+list_nhanesFRS$age)>age
@@ -1132,6 +1132,11 @@ tmp<-output; names(tmp)[c(3,9)]<-c("tmp","total")
 deaths<-tmp[!is.na(tmp$total),]%>%PrepLexisData
 
 
+countys<-tmp[!is.na(tmp$total),]%>%PrepLexisData(funcy=function(i) log(i+1))
+tmp<-output; names(tmp)[c(3,9)]<-c("tmp","total")
+deaths<-tmp[!is.na(tmp$total),]%>%PrepLexisData(funcy=function(i) log(i+1))
+
+
 tmp<-output; names(tmp)[c(3,4)]<-c("tmp","total")
 demog<-tmp[!is.na(tmp$total),]%>%PrepLexisData
 tmp<-output; names(tmp)[c(3,5)]<-c("tmp","total")
@@ -1144,22 +1149,29 @@ Delta<-tmp[!is.na(tmp$total),]%>%PrepLexisData
 p<-lexis_polygon(lg = mylexis, x = total$date, y = total$age, group = total$id,fill = total$cols) +
   labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "Area Under ROC") +theme(plot.title = element_text(hjust = 0.5));p
 ggsave("LexisAll.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
-p<-plot_discrete_cbar(unique((hist(output$total,breaks = 10,plot = F))$breaks), 
-                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+cols<-RColorBrewer::brewer.pal(n = 11, name = "Spectral") ; cols<-colorRampPalette(cols)(19)
+q<-plot_discrete_cbar(round(unique((histss(na.omit(output$total),n = 20,plotting = F))$breaks),2), 
+                      spacing_scaling =3, spacing = "constant", colors = cols,legend_direction = "vertical",direction = 1)
 ggsave("LexisAll_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
 
 p<-lexis_polygon(lg = mylexis, x = countys$date, y = countys$age, group = countys$id,fill = countys$cols) +
   labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "Number of Individuals") +theme(plot.title = element_text(hjust = 0.5));p
 ggsave("LexisCounts.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
-p<-plot_discrete_cbar(round(unique((histss(output$count,10,plot = F))$breaks),1), 
-                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+# p<-plot_discrete_cbar(round(unique((histss(output$count,10,plot = F))$breaks),1), 
+#                       spacing_scaling = 3,spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = 1)
+cols<-RColorBrewer::brewer.pal(n = 11, name = "Spectral") ; cols<-colorRampPalette(cols)(19)
+p<-plot_discrete_cbar(round(unique((histss(na.omit(output$count),n = 20,plotting = F))$breaks),2), 
+                      spacing_scaling =3, spacing = "constant", colors = cols,legend_direction = "vertical",direction = 1)
 ggsave("LexisCounts_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
 
 p<-lexis_polygon(lg = mylexis, x = deaths$date, y = deaths$age, group = deaths$id,fill = deaths$cols) +
   labs(x="T - Time Since Census Start",y="Age at Time of Outcome Measured",title = "Number of Deaths") +theme(plot.title = element_text(hjust = 0.5));p
 ggsave("LexisDeaths.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
-p<-plot_discrete_cbar(round(unique((histss(output$deaths,10,plot = F))$breaks),1), 
-                      spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
+# p<-plot_discrete_cbar(round(unique((histss(output$deaths,10,plot = F))$breaks),1), 
+#                       spacing_scaling = 3,spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = 1)
+cols<-RColorBrewer::brewer.pal(n = 11, name = "Spectral") ; cols<-colorRampPalette(cols)(19)
+p<-plot_discrete_cbar(round(unique((histss(na.omit(output$deaths),n = 20,plotting = F))$breaks),2), 
+                      spacing_scaling =3, spacing = "constant", colors = cols,legend_direction = "vertical",direction = 1)
 ggsave("LexisDeaths_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
 
 
