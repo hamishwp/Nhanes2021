@@ -1,0 +1,443 @@
+---
+title: "Testing the Normal--Gamma fits"
+output: html_document
+---
+
+## Distribution of BP measurements
+```{r setup, include=FALSE}
+require(knitr)
+knitr::opts_knit$set(root.dir = '..')
+require(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
+```
+
+# Use samples in samples file in arcus
+We suppose that each $(M_i,\tau_i)$ is a sample from the Normal--Gamma
+model, with parameters $(\mu,\lambda,\alpha,\beta)$. $N$ individuals are observed, and for each one $\tilde{y}_{ij}\sim \mathcal{N}(M_i,\tau_i^{-1})$ are
+independent samples. What we actually observe are interval-censored
+versions
+$$
+  \ell_{ij} = \ell \quad\text{s.t. } a_\ell\le y_{ij}<a_{\ell+1},
+$$
+where $a_0<a_1<\cdots<a_n$ are fixed. If we had the exact observations
+we could then compute the empirical means $\bar{y}_i$ and SDs $S_i$,
+and the posterior distribution for $(M_i,\tau_i)$ will be Normal--Gamma
+with parameters
+$$
+ \left( \frac{\lambda \mu + k \bar{y}_i}{\lambda + k}, \lambda + k, \alpha+\frac{k}{2}, \beta+ \frac{1}{2}\left(k S_i^2 + \frac{\lambda k (\bar{y}_i - \mu )^2}{\lambda +k} \right) \right).
+$$
+The log-likelihood for the observations would be calculated by integrating
+$\prod_{j=1}^k f(\ell_{i,j} \,|\, M_i,\tau_i)$, where
+$$
+ f(\ell \, |\, M,\tau):= \Phi\left(\left(a_{\ell+1}-M\right)\tau^{1/2}\right)
+   - \Phi\left(\left(a_{\ell}-M\right)\tau^{1/2}\right).
+$$
+```{r}
+load('Data_cleaned/nhanesA.RData')
+source('NHANESDiagnostics/parameters.R')
+N=dim(nhanesA)[1]
+k=3
+whichsys=match(c('systolicA','systolicB','systolicC'),names(nhanesA))
+whichdias=match(c('diastolicA','diastolicB','diastolicC'),names(nhanesA))  
+
+whichsyshome=match(c('systolicAhome','systolicBhome','systolicChome'),names(nhanesA))
+whichdiashome=match(c('diastolicAhome','diastolicBhome','diastolicChome'),names(nhanesA))
+whichBP=c(whichsys,whichdias)
+whichBPhome=c(whichsyshome,whichdiashome)
+# allsys=c(whichsys,whichsyshome)
+# alldias=c(whichdias,whichdiashome)
+
+sys=nhanesA[,whichsys]
+dias=nhanesA[,whichdias]
+sysH=nhanesA[,whichsyshome]
+diasH=nhanesA[,whichdiashome]
+L=length(unlist(sys))
+
+# Combine the measures into a list, so they can be processed uniformly by Stan
+allBP <- list(sys,sysH,dias,diasH)
+
+
+### Extract intervals for the digits
+tsys=table(unlist(sys)%%10)/L
+tsysH=table(unlist(sysH)%%10)/L
+tdias=table(unlist(dias)%%10)/L
+tdiasH=table(unlist(diasH)%%10)/L
+digits=rbind(tsys,tsysH,tdias,tdiasH)
+digitbreaks <- 
+
+mu=mean(unlist(sys))
+lambda0=.05
+alpha=5
+beta=25
+taus <- rgamma(N, alpha, beta)
+mus <- rnorm(N, mu, sd = 1/sqrt( taus * lambda0) )
+
+yy=t(sapply(1:N,function(i) rnorm(k,mus[i],taus[i]^(-.5))))
+yround=2*round(yy/2)
+a=seq(min(yround),max(yround),2)
+
+rnearest <- function(x, nearest){
+    m <- round(x/nearest)
+    return(nearest*m)
+}
+
+```
+## Using Stan for Gamma--Normal priors
+
+```{r global_opts, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=TRUE)
+```
+Here we will measure goodness of fit to a Gamma--Normal model.
+First we test the ability of Stan to estimate the parameters of the $mu$ and $tau$ pairs.
+If we observe $y_{ij}$, where
+\begin{align*}
+y_{ij} &\sim \text{Normal}(mean_i, prec_i^{-1}) \\
+&\text{and} \\
+(mean_i, prec_i^{-1}) &\sim \text{NormalGamma}(m, \lambda_0, \alpha, \beta)  \\
+&\text{ which is equivalent to} \\
+mean_i \; | \;prec_i &\sim \text{Normal}(m, (prec_i  \lambda_0)^{-1}) \\
+prec_i &\sim \text{Gamma}(\alpha, \beta)
+\end{align*}
+
+Where $mean_i$ are the individual means, and $prec_i$ are the individual precisions, or $\frac{1}{\sigma^2}$.
+
+
+# No rounding
+
+```{r}
+library(MASS)
+library(stats)
+
+
+rnearest <- function(x, nearest){
+    m <- round(x/nearest)
+    return(nearest*m)
+}
+
+
+```
+
+
+Set the real parameters:
+```{r}
+set.seed(1)
+
+N <- 2000 # number of people
+k = 3  # number of obs per person
+
+
+alpha <- 2
+beta <- 15
+mu <- 75
+lambda0  <- 0.1  # precision parameter
+```
+
+
+Simulate data
+```{r}
+
+taus <- rgamma(N, alpha, beta)
+mus <- rnorm(N, mu, sd = 1/sqrt( taus * lambda0) )
+yy=t(sapply(1:N,function(i) rnorm(k,mus[i],taus[i]^(-.5))))
+yround=2*round(yy/2)
+```
+
+## Fit the stan model
+```{r, cache=TRUE}
+stanlist <- list(y=yy,
+                 n=N,
+                 k=k,
+                 rounded_to_nearest=c(rbind(tsys,0)*10)
+                 )
+
+stanlist2 <- list(y=yround,
+                 n=N,
+                 k=k,
+                 rounded_to_nearest=c(rbind(tsys,0)*10)
+                 )
+library(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
+# initfunction <- function(chainnum){
+#   return(list(
+#               alpha = alpha, 
+#               beta = beta, 
+#               mu = mu, 
+#               lambda0 = lambda0, 
+#               M = rep(mu, N),
+#               tau = rep(alpha/beta, N)/100
+#               )) 
+# }
+
+
+print(list.files())
+gamstan = stan('GammaTests/Stan_WithRoundDS_LN.stan', data=stanlist2, chains = 4, iter=1000)
+
+
+#gamstan <- stan('/Users/david/Dropbox/research/demography/demography papers/NHANES BP/NhanesStanDW/DataPreparationScripts/gammaest.stan', data=stanlist, chains = 4, iter=1000)
+
+
+print(gamstan, pars=c( "alpha", "beta", "mu", "lambda0"))
+
+#gamstan2=stan('/Users/david/Dropbox/research/demography/demography papers/NHANES BP/NhanesStanDW/DataPreparationScripts/gammaest.stan', data=stanlist2, chains = 4, iter=1000)
+
+#print(gamstan2, pars=c( "alpha", "beta", "mu", "lambda0"))
+
+```
+
+# Fitting the real data
+```{r, cache=TRUE}
+source('DataPreparationScripts/dataclean.R')
+if(chooseBP=='S'&whichHC=='C'){y=nhanesA[,whichsys]}
+if(chooseBP=='S'&whichHC=='H'){y=nhanesA[,whichsyshome]}
+if(chooseBP=='D'&whichHC=='C'){y=nhanesA[,whichdias]}
+if(chooseBP=='D'&whichHC=='H'){y=nhanesA[,whichdiashome]}
+y=unname(data.matrix(y))
+
+stanlist3 <- list(y=y,
+                 n=dim(y)[1],
+                 k=3
+                 )
+
+taus=1/(1/3+apply(y,1,var))
+beta0=mean(apply(y,1,var))
+Ms=apply(y,1,mean)
+
+initfunction <- function(chainnum){
+  return(list(
+              alpha = 1, 
+              beta = beta0, 
+              mu = mean(y), 
+              lambda0 = 1/var(Ms), 
+              M = Ms,
+              tau = taus
+              )) 
+}
+
+
+#gamstan3=stan('DataPreparationScripts/gammaest.stan', data=stanlist3, chains = 2, iter=1000)
+#print(gamstan3, pars=c( "alpha", "beta", "mu", "lambda0"))
+N=dim(y)[1]
+stanlist4 <- list(y=y,
+                 n=N,
+                 k=3,
+                 rounded_to_nearest=2
+                 )
+gamstan4=stan('GammaTests/Stan_WithRoundDS.stan', data=stanlist4, chains = 4, iter=500,init=initfunction)
+print(gamstan4, pars=c( "alpha", "beta", "mu", "lambda0"))
+
+```
+
+# Simulate data with rounding present
+
+
+```{r}
+sumgan=summary(gamstan4,par=c('alpha','beta','mu','lambda0'))$summary
+alpha=sumgan[1,1]
+beta=sumgan[2,1]
+mu=sumgan[3,1]
+lambda0=sumgan[4,1]
+N=dim(y)[1]
+k=3
+
+ldlist=lapply(1:10,function(x)0)
+for(i in 1:10){
+taus = rgamma(N, alpha, beta)
+mus = rnorm(N, mu, sd = 1/sqrt( lambda0) )
+yy=t(sapply(1:N,function(i) rnorm(k,mus[i],taus[i]^(-.5))))
+yround=2*round(yy/2)
+stanlist0 <- list(y=yround,
+                 n=N,
+                 k=3,
+                 rounded_to_nearest=2
+                 )
+  
+  ### Need to redefine initialisation around current yround
+  taus=1/(1/3+apply(yround,1,var))
+  beta0=mean(apply(yround,1,var))
+  Ms=apply(yround,1,mean)
+  
+  initfunction <- function(chainnum){
+    return(list(
+      alpha = 1, 
+      beta = beta0, 
+      mu = mean(yround), 
+      lambda0 = 1/var(Ms), 
+      M = Ms,
+      tau = taus
+    )) 
+  }
+  
+gamstan0=stan('GammaTests/Stan_WithRoundDS.stan', data=stanlist0, chains = 4, iter=500,init=initfunction)
+ ldlist[[i]]=extract(gamstan0,pars='lp__')[[1]]
+
+save(ldlist,file='GammaTests/gammatest_results/LDresults')
+}
+
+```
+
+
+## Repeat the same, but with log-normal distribution
+
+```{r}
+
+N=dim(y)[1]
+stanlist4 <- list(y=y,
+                 n=N,
+                 k=3,
+                 rounded_to_nearest=2
+                 )
+yrlog=log(y)
+  taus=1/(1/3+apply(yrlog,1,var))
+  beta0=mean(apply(yrlog,1,var))
+  Ms=apply(yrlog,1,mean)
+  
+  initfunction <- function(chainnum){
+    return(list(
+      alpha = 1, 
+      beta = beta0, 
+      mu = mean(yrlog), 
+      lambda0 = 1/var(Ms), 
+      M = Ms,
+      tau = taus
+    )) 
+  }
+gamstan4_LN=stan('GammaTests/Stan_WithRoundDS_LN.stan', data=stanlist4, chains = 4, iter=500,init=initfunction)
+print(gamstan4_LN, pars=c( "alpha", "beta", "mu", "lambda0"))
+sumgan=summary(gamstan4_LN,par=c('alpha','beta','mu','lambda0'))$summary
+alpha=sumgan[1,1]
+beta=sumgan[2,1]
+mu=sumgan[3,1]
+lambda0=sumgan[4,1]
+N=dim(y)[1]
+k=3
+
+ldlist=lapply(1:10,function(x)0)
+for(i in 1:10){
+taus = rgamma(N, alpha, beta)
+mus = rlnorm(N, mu, sd = 1/sqrt( lambda0) )
+yy=t(sapply(1:N,function(i) rnorm(k,mus[i],taus[i]^(-.5))))
+yround=2*round(yy/2)
+stanlist0 <- list(y=yround,
+                 n=N,
+                 k=3,
+                 rounded_to_nearest=2
+                 )
+  
+  ### Need to redefine initialisation around current yround
+yrlog=log(yround)
+  taus=1/(1/3+apply(yrlog,1,var))
+  beta0=mean(apply(yrlog,1,var))
+  Ms=apply(yrlog,1,mean)
+  
+  initfunction <- function(chainnum){
+    return(list(
+      alpha = 1, 
+      beta = beta0, 
+      mu = mean(yrlog), 
+      lambda0 = 1/var(Ms), 
+      M = Ms,
+      tau = taus
+    )) 
+  }
+  
+gamstan0_LN=stan('GammaTests/Stan_WithRoundDS_LN.stan', data=stanlist0, chains = 4, iter=500,init=initfunction)
+ ldlist[[i]]=extract(gamstan0_LN,pars='lp__')[[1]]
+
+save(ldlist,file='GammaTests/gammatest_results/LDresults_lognormal')
+}
+
+```
+
+
+### Fit the stan model.
+You need to think very carefully about the initialisation of the "hidden" parameters M and tau.
+Basically, all of the observations must have a finite likelihood.
+```{r}
+
+stanlist <- list(y=y,
+                 n=N,
+                 k=k,
+                 rounded_to_nearest=round_to_nearest
+                 )
+library(rstan)
+
+
+
+# Use my code, which is David's code with a few changes
+# It seems to work fine
+dwstan <- stan('Stan_WithRound.stan', data=stanlist, init=initfunction, chains = 1, iter=1000)
+print(dwstan, pars=c( "alpha", "beta", "mu", "lambda0"))
+```
+
+### Estimate log likelihoods for simulated data
+
+We have to use the `dinterval` distribution, which requires us to make a vector of cutpoints, or a set of two cutpoits for each observation. 
+Details can be found in the JAGS manual.
+
+```{r}
+cutpoints <- as.numeric(seq(from=min(y) - round_to_nearest/2, to=max(y)+ round_to_nearest/2 , by=round_to_nearest))
+
+observed_intervals <- t(apply(y,1, function(x) cut(x, breaks=cutpoints, labels=FALSE)))
+observed_intervals <- unname(observed_intervals)
+
+# Now construct a dataframe of NA values to pass to jags
+BP_NA_dummy <- matrix(as.numeric(NA), nrow=nrow(y), ncol=ncol(y))
+
+jagslist <- list(cutpoints=cutpoints,
+                 observed_intervals=observed_intervals,
+                 BP=BP_NA_dummy,
+                 n_obs=k,
+                 N=N
+                )
+
+watchvec <- c( "m0", "lambda0", "alpha0", "beta0" )
+
+inits <- list(BP=as.matrix(y))
+
+library(rjags)
+
+dwjags <- jags.model('JAGS_WithRound.jags',jagslist, inits=inits , n.chains = 1,n.adapt = 100)
+update(dwjags, 4000) # burnin
+hereitis <- coda.samples(dwjags, watchvec, n.iter = 10000)
+
+hereitis <- mcmc(hereitis[[1]])
+
+summary(hereitis)
+effectiveSize(hereitis)
+```
+
+### Stan vs JAGS vs True
+Look at the plots of both, along with the true values:
+```{r}
+stansamples <- list()
+jagssamples <- list()
+
+stansamples$alpha <- extract(dwstan, pars="alpha")[[1]]
+stansamples$beta <- extract(dwstan, pars="beta")[[1]]
+stansamples$mu <- extract(dwstan, pars="mu")[[1]]
+stansamples$lambda0 <- extract(dwstan, pars="lambda0")[[1]]
+
+jagssamples$alpha <-hereitis[,"alpha0"]
+jagssamples$beta <-hereitis[,"beta0"]
+jagssamples$mu <-hereitis[,"m0"]
+jagssamples$lambda0 <-hereitis[,"lambda0"]
+
+plotpar <- function(parameter){
+  plot(density(stansamples[[parameter]]), col="blue", main=parameter)
+  lines(density(jagssamples[[parameter]]), col="green")
+  abline(v=eval(parse(text=parameter)), col="red")
+  legend("topright", legend=c("Stan", "JAGS", "True"), col=c("blue", "green", "red"), lty=1)
+  invisible(0)
+}
+
+plotpar("alpha")
+plotpar("beta")
+plotpar("mu")
+plotpar("lambda0")
+```
+
+These look better.
