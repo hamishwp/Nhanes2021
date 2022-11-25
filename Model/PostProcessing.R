@@ -6,7 +6,9 @@ library(pracma)
 library(magrittr)
 library(ggpubr)
 # devtools::install_github("ottlngr/LexisPlotR")
+# devtools::install_github("bhklab/survcomp")
 library(LexisPlotR)
+library(survcomp)
 source("./Model/Functions.R")
 
 directory<-'~/Documents/BEAST/Coding/Oxford/Nhanes2021/'

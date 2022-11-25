@@ -13,7 +13,7 @@ fxhat<-function(x,beta) {
 # The term 'NF' refers to not-FRS whereby the mean diastolic and systolic blood pressure 
 # are used instead of the FRS score of the individuals. 'F' is when the FRS score is used.
 Survival_NLL_NF<-function(M_i_S,M_i_D,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_D,
-                          age,delta,Time,beta,B,theta,xhat=NULL,roc=F){
+                          age,delta,Time,beta,B,theta,xhat=NULL,roc=F,cumH=T){
   
   dimmy<-dim(D_i_S)
   
@@ -32,7 +32,8 @@ Survival_NLL_NF<-function(M_i_S,M_i_D,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_
     linpred<- A1 + A2 + A3 + A4 + A5 + A6 + A7 + A8
     
     if(roc){
-      H_j<-colMeans((B/theta)*exp(age*theta + linpred)*(exp(theta*Time) - 1))
+      if(cumH) {H_j<-colMeans((B/theta)*exp(age*theta + linpred)*(exp(theta*Time) - 1))
+      } else H_j<-colMeans(B*exp(theta*(age + Time) + linpred))
       d_j<-delta
       return(list(survy=data.frame(H_j=H_j,d_j=d_j, linpred=colMeans(linpred))))
     }
@@ -51,8 +52,12 @@ Survival_NLL_NF<-function(M_i_S,M_i_D,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_
       ind<-age<=breaks[i]
       
       # cumulative hazard of all people that lived through age a_j
-      H_j[,i-1]<-rowSums((B[,ind]/theta[,ind])*exp(age[ind]*theta[,ind] + 
-                                                     linpred[,ind])*(exp(theta[,ind]*Time[ind]) - 1),na.rm = T)
+      if(cumH) {
+        H_j[,i-1]<-rowSums((B[,ind]/theta[,ind])*exp(age[ind]*theta[,ind] + 
+                                                       linpred[,ind])*(exp(theta[,ind]*Time[ind]) - 1),na.rm = T)
+      } else {
+        H_j[,i-1]<-rowSums((B[,ind])*exp(theta[,ind]*(age[ind] + Time[ind]) + linpred[,ind]),na.rm = T)
+      }
       # cumulative deaths of all people that lived up to age a_j
       d_j[i-1]<-sum(delta[ind])
     }
@@ -93,7 +98,8 @@ Survival_NLL_NF<-function(M_i_S,M_i_D,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_
   linpred<- A1 + A2 + A3 + A4 + A5 + A6 + A7 + A8
   
   if(roc){
-    H_j<-colMeans((B/theta)*exp(age*theta + linpred)*(exp(theta*Time) - 1))
+    if(cumH) {H_j<-colMeans((B/theta)*exp(age*theta + linpred)*(exp(theta*Time) - 1))
+    } else H_j<-colMeans(B*exp(theta*(age + Time) + linpred))
     d_j<-delta
     return(list(survy=data.frame(H_j=H_j,d_j=d_j, linpred=colMeans(linpred))))
   }
@@ -111,8 +117,12 @@ Survival_NLL_NF<-function(M_i_S,M_i_D,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_
     # indices of people that lived through age a_j
     ind<-age<=breaks[i]
     # cumulative hazard of all people that lived through age a_j
-    H_j[,i-1]<-rowSums((B[,ind]/theta[,ind])*exp(age[ind]*theta[,ind] + 
-                                                   linpred[,ind])*(exp(theta[,ind]*Time[ind]) - 1),na.rm = T)
+    if(cumH) {
+      H_j[,i-1]<-rowSums((B[,ind]/theta[,ind])*exp(age[ind]*theta[,ind] + 
+                                                     linpred[,ind])*(exp(theta[,ind]*Time[ind]) - 1),na.rm = T)
+    } else {
+      H_j[,i-1]<-rowSums((B[,ind])*exp(theta[,ind]*(age[ind] + Time[ind]) + linpred[,ind]),na.rm = T)
+    }
     # cumulative deaths of all people that lived up to age a_j
     d_j[i-1]<-sum(delta[ind])
     
@@ -130,7 +140,7 @@ Survival_NLL_NF<-function(M_i_S,M_i_D,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_
 
 # Using the FRS score instead of the mean systolic & diastolic blood pressure
 Survival_NLL_F<-function(FRS,FRSc,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_D,
-                         age,delta,Time,beta,B,theta,xhat=NULL,roc=F){
+                         age,delta,Time,beta,B,theta,xhat=NULL,roc=F,cumH=T){
   
   dimmy<-dim(D_i_S)
   
@@ -148,7 +158,8 @@ Survival_NLL_F<-function(FRS,FRSc,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_D,
     linpred<- A1 + A2 + A3 + A4 + A5 + A6 + A7
     
     if(roc){
-      H_j<-colMeans((B/theta)*exp(age*theta + linpred)*(exp(theta*Time) - 1))
+      if(cumH) {H_j<-colMeans((B/theta)*exp(age*theta + linpred)*(exp(theta*Time) - 1))
+      } else H_j<-colMeans(B*exp(theta*(age + Time) + linpred))
       d_j<-delta
       return(list(survy=data.frame(H_j=H_j,d_j=d_j, linpred=colMeans(linpred))))
     }
@@ -167,8 +178,12 @@ Survival_NLL_F<-function(FRS,FRSc,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_D,
       ind<-age<=breaks[i]
       
       # cumulative hazard of all people that lived through age a_j
-      H_j[,i-1]<-rowSums((B[,ind]/theta[,ind])*exp(age[ind]*theta[,ind] + 
-                                                     linpred[,ind])*(exp(theta[,ind]*Time[ind]) - 1),na.rm = T)
+      if(cumH) {
+        H_j[,i-1]<-rowSums((B[,ind]/theta[,ind])*exp(age[ind]*theta[,ind] + 
+                                                       linpred[,ind])*(exp(theta[,ind]*Time[ind]) - 1),na.rm = T)
+      } else {
+        H_j[,i-1]<-rowSums((B[,ind])*exp(theta[,ind]*(age[ind] + Time[ind]) + linpred[,ind]),na.rm = T)
+      }
       # cumulative deaths of all people that lived up to age a_j
       d_j[i-1]<-sum(delta[ind])
     }
@@ -207,7 +222,8 @@ Survival_NLL_F<-function(FRS,FRSc,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_D,
   linpred<-A1 + A2 + A3 + A4 + A5 + A6 + A7
   
   if(roc){
-    H_j<-colMeans((B/theta)*exp(age*theta + linpred)*(exp(theta*Time) - 1))
+    if(cumH) {H_j<-colMeans((B/theta)*exp(age*theta + linpred)*(exp(theta*Time) - 1))
+    } else H_j<-colMeans(B*exp(theta*(age + Time) + linpred))
     d_j<-delta
     return(list(survy=data.frame(H_j=H_j,d_j=d_j, linpred=colMeans(linpred))))
   }
@@ -226,8 +242,12 @@ Survival_NLL_F<-function(FRS,FRSc,D_i_S,D_i_D,tau_C_S,tau_C_D,tau_H_S,tau_H_D,
     ind<-age<=breaks[i]
     
     # cumulative hazard of all people that lived through age a_j
-    H_j[,i-1]<-rowSums((B[,ind]/theta[,ind])*exp(age[ind]*theta[,ind] + 
-                                                   linpred[,ind])*(exp(theta[,ind]*Time[ind]) - 1),na.rm = T)
+    if(cumH) {
+      H_j[,i-1]<-rowSums((B[,ind]/theta[,ind])*exp(age[ind]*theta[,ind] + 
+                                                     linpred[,ind])*(exp(theta[,ind]*Time[ind]) - 1),na.rm = T)
+    } else {
+      H_j[,i-1]<-rowSums((B[,ind])*exp(theta[,ind]*(age[ind] + Time[ind]) + linpred[,ind]),na.rm = T)
+    }
     # cumulative deaths of all people that lived up to age a_j
     d_j[i-1]<-sum(delta[ind])
   }
@@ -253,10 +273,10 @@ DF_Nhanes<-function(list_nhanes){
   return(DF)
 }
 
-FilterRL<-function(RL,ind,sigma=F){
+FilterRL<-function(RL,ind,sigma=T){
   
-  if(sigma){ columns<-c("M_i_S","M_i_D","D_i_S","D_i_D","sigma_H_S","sigma_C_S","sigma_H_D","sigma_C_D")
-  } else {columns<-c("M_i_S","M_i_D","D_i_S","D_i_D","tau_H_S","tau_C_S","tau_H_D","tau_C_D")}
+  if(any(grepl(names(RL),pattern = "tau_"))){ columns<-c("M_i_S","M_i_D","D_i_S","D_i_D","tau_H_S","tau_C_S","tau_H_D","tau_C_D")
+  } else {columns<-c("M_i_S","M_i_D","D_i_S","D_i_D","sigma_H_S","sigma_C_S","sigma_H_D","sigma_C_D")}
   
   for(c in columns){
     RL[[c]]<-RL[[c]][,ind]
@@ -268,24 +288,22 @@ FilterRL<-function(RL,ind,sigma=F){
 
 # Make the predictions on the survival outcomes of the individuals, 
 # based on posterior samples from the HMC algorithm (from Stan)
-GetSurvival<-function(RL=NULL,roc=F,Ethnicity=NULL,Gender=NULL,usexhat=TRUE){
+GetSurvival<-function(RL,roc=F,Ethnicity=NULL,Gender=NULL,usexhat=TRUE, cumH=T){
   
   if(usexhat) xhat<-t(cbind(RL$xhat1,RL$xhat2,RL$xhat3,RL$xhat4))
   
   if(RL$FRS) nhanes<-DF_Nhanes(list_nhanesFRS) else nhanes<-DF_Nhanes(list_nhanesA)
   
+  ind<-rep(T,length(nhanes$eventall))
   if(!is.null(Ethnicity)) {
-    ind<-as.logical(nhanes[[Ethnicity]])
-    # nhanes<-nhanes[ind,]
-    nhanes<-nhanes[nhanes[[Ethnicity]]==1,]
-    RL%<>%FilterRL(ind)
+    ind<-ind & as.logical(nhanes[[Ethnicity]])
   }
   if(!is.null(Gender)) {
-    ind<-as.logical(nhanes[[Gender]])
-    # nhanes<-nhanes[ind,]
-    nhanes<-nhanes[nhanes[[Gender]]==1,]
-    RL%<>%FilterRL(ind)
+    ind<-ind & as.logical(nhanes[[Gender]])
   }
+  
+  nhanes<-nhanes[ind,]
+  RL%<>%FilterRL(ind)
   
   LLL<-length(nhanes$T)
   N<-dim(RL$beta)[1]
@@ -313,11 +331,11 @@ GetSurvival<-function(RL=NULL,roc=F,Ethnicity=NULL,Gender=NULL,usexhat=TRUE){
     
     if(usexhat)  {survy<-(Survival_NLL_F(FRS,FRSc,RL$D_i_S,RL$D_i_D,RL[[paste0(variancer,"_C_S")]],RL[[paste0(variancer,"_C_D")]],
                                          RL[[paste0(variancer,"_C_D")]],RL[[paste0(variancer,"_H_D")]],nhanes$age,delta,
-                                         nhanes$T,RL$beta,B,theta,xhat,roc=roc))$survy
+                                         nhanes$T,RL$beta,B,theta,xhat,roc=roc,cumH=cumH))$survy
     } else {
       survy<-(Survival_NLL_F(FRS,FRSc,RL$D_i_S,RL$D_i_D,RL[[paste0(variancer,"_C_S")]],RL[[paste0(variancer,"_C_D")]],
                              RL[[paste0(variancer,"_C_D")]],RL[[paste0(variancer,"_H_D")]],nhanes$age,delta,
-                             nhanes$T,RL$beta,B,theta,roc=roc))$survy
+                             nhanes$T,RL$beta,B,theta,roc=roc,cumH=cumH))$survy
     }
     rm(FRS)
     
@@ -325,11 +343,11 @@ GetSurvival<-function(RL=NULL,roc=F,Ethnicity=NULL,Gender=NULL,usexhat=TRUE){
     
     if(usexhat)  {survy<-(Survival_NLL_NF(RL$M_i_S,RL$M_i_D,RL$D_i_S,RL$D_i_D,RL[[paste0(variancer,"_C_S")]],RL[[paste0(variancer,"_C_D")]],
                                           RL[[paste0(variancer,"_C_D")]],RL[[paste0(variancer,"_H_D")]],nhanes$age,delta,
-                                          nhanes$T,RL$beta,B,theta,xhat,roc=roc))$survy
+                                          nhanes$T,RL$beta,B,theta,xhat,roc=roc,cumH=cumH))$survy
     } else {
       survy<-(Survival_NLL_NF(RL$M_i_S,RL$M_i_D,RL$D_i_S,RL$D_i_D,RL[[paste0(variancer,"_C_S")]],RL[[paste0(variancer,"_C_D")]],
                               RL[[paste0(variancer,"_C_D")]],RL[[paste0(variancer,"_H_D")]],nhanes$age,delta,
-                              nhanes$T,RL$beta,B,theta,roc=roc))$survy
+                              nhanes$T,RL$beta,B,theta,roc=roc,cumH=cumH))$survy
     }
     
   }
