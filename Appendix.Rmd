@@ -1069,7 +1069,9 @@ names(CDemog)[2:ncol(CDemog)]<-names(Concy)[2:ncol(Concy)]<-paste0("Run Number "
 xlsx::write.xlsx(CDemog,"./Concordance_Indices.xlsx",sheetName = "Demography Subsets")
 xlsx::write.xlsx(Concy,"./Concordance_Indices.xlsx",sheetName = "Model Variants",append = T)
 
-p<-timeCon%>%ggplot()+geom_point(aes(age, y=concordance,colour=RL))+facet_wrap(~RL)
+p<-timeCon%>%ggplot()+geom_point(aes(age, y=concordance,colour=RL))+
+  geom_errorbar(aes(x=age,ymin=clower,ymax=cupper,colour=RL))+
+  facet_wrap(~RL)
 ggsave("./Plots/Survival/TimeDep_Concordance.png",p,width=13,height = 8)
 
 ```
@@ -1088,7 +1090,7 @@ kable(CDemog,escape = F,booktabs = T)
 
 ```
 
-The concordance index can also be calculated using specific age-groups of the population in order to evaluate the performance of the model for each group. This can be shown to be equivalent to calculating the Area Under the ROC Curve (AUC or AUROC) for each specific group. The results, per run number, are illustrated in figure \ref{fig:timConc}. The plot reflects that the concordance index is highest towards the bulk of the population - between roughly 50 to 80 years old, with the performance generally decreasing before and after this range. The exceptions are for run number 1 and 3, whereby the 0-45 and 45-50 categories have high concordance. This reflects the benefits of using the mean systolic and diastolic blood pressure instead of the FRS score (for either ATP or the 1998 version) as an indicator for CVD and heart-attack mortality in the under 50 population.
+The concordance index can also be calculated using specific age-groups of the population in order to evaluate the performance of the model for each group. This can be shown to be equivalent to calculating the Area Under the ROC Curve (AUC or AUROC) for each specific group. The results, per run number, are illustrated in figure \ref{fig:timConc}. The plot reflects that the expected value of the concordance index is highest towards the bulk of the population - between roughly 50 to 80 years old, with the performance either decreasing or with increasing confidence intervals before and after this range.
 
 ![Time-dependent concordance index (AUC), per run number. ](./Plots/Survival/TimeDep_Concordance.png){#fig:timConc}
 
