@@ -1,6 +1,5 @@
-
-Data_cleaned/
-
-Data_raw/
-
-David_NHANES2021_sigma/
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+Appendix_cache/**
