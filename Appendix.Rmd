@@ -926,175 +926,173 @@ To measure the performance of the model to predict the survival outcome of indiv
 ![Predicted cumulative hazard against cumulative number of deaths in the population, ordered by the age of the individual. ](./Plots/Survival/redlinpred_Cumulative_haz-death_age.png){#fig:cumpred}
 
 ```{r, include=FALSE}
-# For all run numbers:
-# - full model
-# - using the FRS or systolic mean blood pressure 
-# - using both the FRS or mean blood pressures and the long-term variation (delta) covariates
-# - Gompertz-only
-# - Age & Time only
-# - no Gompertz, full BP
-CCstring<-function(CCi){
-  # paste0(round(CCi$c.index,digits = 3)," (",
-  #                   round(CCi$lower,digits = 3)," - ",
-  #                   round(CCi$upper,digits = 3),")")
-  CCi$c.index
-}
-# Age bins for the time-dependent AUC curves
-survAge<-c(0,45,50,55,60,65,70,75,80,85,130)
-# Initialisations
-Concy<-CDemog<-timeCon<-tConcy<-tCDemog<-data.frame()
-for(i in 1:8){
-    tConcy<-tCDemog<-data.frame()
-    RL<-RLcopy<-get(paste0("RL",i))
-    if(RL$FRS) nhanes<-DF_Nhanes(list_nhanesFRS) else nhanes<-DF_Nhanes(list_nhanesA)
-    # Full model - all parameters
-    cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F)    
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-                  surv.event = cH$d_j)
-    tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="Full model",Concordance=CCstring(CCi)))
-    # Age-at-outcome dependent AUC curve:
-    ccc<-data.frame(age=paste0(survAge[1:(length(survAge-1))],"-",survAge[2:length(survAge)])[1:(length(survAge)-1)],
-                    concordance=NA,cupper=NA,clower=NA,RL=paste0("Run Number ",i))
-    for(Bage in 2:length(survAge)){
-      ind<-nhanes$age+nhanes$T>survAge[Bage-1] & nhanes$age+nhanes$T<=survAge[Bage]
-      www<-rep(0,length(ind))
-      www[ind]<-1
-      ctt<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-                  surv.event = cH$d_j,weights = www)
-      ccc$concordance[Bage-1]<-ctt$c.index
-      ccc$cupper[Bage-1]<-ctt$upper
-      ccc$clower[Bage-1]<-ctt$lower
-    }
-    timeCon%<>%rbind(ccc)
-    # FRS or mean systolic blood pressure only:
-    RLcopy$beta[,-c(1)]<-0
-    cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-                  surv.event = cH$d_j)
-    tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="FRS or mean systolic BP",Concordance=CCstring(CCi)))
-    # mean systolic & diastolic blood pressure only:
-    if(RL$FRS) {
-      tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="FRS or mean systolic & diastolic BP",Concordance=CCstring(CCi)))
-    } else {
-      RLcopy<-RL
-      RLcopy$beta[,-c(1,5)]<-0
-      cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
-      CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-                             surv.event = cH$d_j)
-      tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="FRS or mean systolic & diastolic BP",Concordance=CCstring(CCi)))
-    }
-    # No short-term variation (sigma terms):
-    RLcopy<-RL
-    if(RL$FRS) {
-      RLcopy$beta[,c(3,4,6,7)]<-0
-    } else {
-      RLcopy$beta[,c(3,4,7,8)]<-0
-    }
-    cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-                  surv.event = cH$d_j)
-    tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="No short-term variation (sigmas)",Concordance=CCstring(CCi)))
-    # Gompertz only:
-    RLcopy<-RL
-    RLcopy$beta[]<-0
-    cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-                  surv.event = cH$d_j)
-    tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="Gompertz only",Concordance=CCstring(CCi)))
-    # No theta, age or time, full BP
-    RLcopy<-RL
-    RLcopy$gompertz[,,,2]<-0
-    cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-                           surv.event = cH$d_j)
-    tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="No time or age dependency",Concordance=CCstring(CCi)))
-    
-    rm(RLcopy)
-    # DEMOGRAPHY
-    # Black & Female
-    cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-                    Ethnicity = "black",Gender = "female")    
-    nhanesCopy<-nhanes[nhanes$black==1 & nhanes$female==1,]
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-                  surv.event = cH$d_j)
-    tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Black & female",Concordance=CCstring(CCi)))
-    # Black & Male
-    cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-                    Ethnicity = "black",Gender = "male")    
-    nhanesCopy<-nhanes[nhanes$black==1 & nhanes$female==0,]
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-                  surv.event = cH$d_j)
-    tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Black & male",Concordance=CCstring(CCi)))
-    # Other & Female
-    cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-                    Ethnicity = "other",Gender = "female")    
-    nhanesCopy<-nhanes[nhanes$other==1 & nhanes$female==1,]
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-                  surv.event = cH$d_j)
-    tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Other & female",Concordance=CCstring(CCi)))
-    # Other & Male
-    cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-                    Ethnicity = "other",Gender = "male")    
-    nhanesCopy<-nhanes[nhanes$other==1 & nhanes$female==0,]
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-                  surv.event = cH$d_j)
-    tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Other & male",Concordance=CCstring(CCi)))
-    # White & Female
-    cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-                    Ethnicity = "white",Gender = "female")    
-    nhanesCopy<-nhanes[nhanes$white==1 & nhanes$female==1,]
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-                  surv.event = cH$d_j)
-    tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="White & female",Concordance=CCstring(CCi)))
-    # White & Male
-    cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-                    Ethnicity = "white",Gender = "male")    
-    nhanesCopy<-nhanes[nhanes$white==1 & nhanes$female==0,]
-    CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-                  surv.event = cH$d_j)
-    tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="White & male",Concordance=CCstring(CCi)))
-    
-    if(i==1) {
-      CDemog<-tCDemog[,c(2,3)]
-      Concy<-tConcy[,c(2,3)]
-    } else{
-      CDemog%<>%cbind(tCDemog[,3])
-      Concy%<>%cbind(tConcy[,3])
-    }
-    
-}
+# # For all run numbers:
+# # - full model
+# # - using the FRS or systolic mean blood pressure 
+# # - using both the FRS or mean blood pressures and the long-term variation (delta) covariates
+# # - Gompertz-only
+# # - Age & Time only
+# # - no Gompertz, full BP
+# CCstring<-function(CCi){
+#   # paste0(round(CCi$c.index,digits = 3)," (",
+#   #                   round(CCi$lower,digits = 3)," - ",
+#   #                   round(CCi$upper,digits = 3),")")
+#   CCi$c.index
+# }
+# # Age bins for the time-dependent AUC curves
+# survAge<-c(0,45,50,55,60,65,70,75,80,85,130)
+# # Initialisations
+# Concy<-CDemog<-timeCon<-tConcy<-tCDemog<-data.frame()
+# for(i in 1:8){
+#     tConcy<-tCDemog<-data.frame()
+#     RL<-RLcopy<-get(paste0("RL",i))
+#     if(RL$FRS) nhanes<-DF_Nhanes(list_nhanesFRS) else nhanes<-DF_Nhanes(list_nhanesA)
+#     # Full model - all parameters
+#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F)    
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
+#                   surv.event = cH$d_j)
+#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="Full model",Concordance=CCstring(CCi)))
+#     # Age-at-outcome dependent AUC curve:
+#     ccc<-data.frame(age=paste0(survAge[1:(length(survAge-1))],"-",survAge[2:length(survAge)])[1:(length(survAge)-1)],
+#                     concordance=NA,cupper=NA,clower=NA,RL=paste0("Run Number ",i))
+#     for(Bage in 2:length(survAge)){
+#       ind<-nhanes$age+nhanes$T>survAge[Bage-1] & nhanes$age+nhanes$T<=survAge[Bage]
+#       www<-rep(0,length(ind))
+#       www[ind]<-1
+#       ctt<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
+#                   surv.event = cH$d_j,weights = www)
+#       ccc$concordance[Bage-1]<-ctt$c.index
+#       ccc$cupper[Bage-1]<-ctt$upper
+#       ccc$clower[Bage-1]<-ctt$lower
+#     }
+#     timeCon%<>%rbind(ccc)
+#     # FRS or mean systolic blood pressure only:
+#     RLcopy$beta[,-c(1)]<-0
+#     cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
+#                   surv.event = cH$d_j)
+#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="FRS or mean systolic BP",Concordance=CCstring(CCi)))
+#     # mean systolic & diastolic blood pressure only:
+#     if(RL$FRS) {
+#       tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="FRS or mean systolic & diastolic BP",Concordance=CCstring(CCi)))
+#     } else {
+#       RLcopy<-RL
+#       RLcopy$beta[,-c(1,5)]<-0
+#       cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
+#       CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
+#                              surv.event = cH$d_j)
+#       tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="FRS or mean systolic & diastolic BP",Concordance=CCstring(CCi)))
+#     }
+#     # No short-term variation (sigma terms):
+#     RLcopy<-RL
+#     if(RL$FRS) {
+#       RLcopy$beta[,c(3,4,6,7)]<-0
+#     } else {
+#       RLcopy$beta[,c(3,4,7,8)]<-0
+#     }
+#     cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
+#                   surv.event = cH$d_j)
+#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="No short-term variation (sigmas)",Concordance=CCstring(CCi)))
+#     # Gompertz only:
+#     RLcopy<-RL
+#     RLcopy$beta[]<-0
+#     cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
+#                   surv.event = cH$d_j)
+#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="Gompertz only",Concordance=CCstring(CCi)))
+#     # No theta, age or time, full BP
+#     RLcopy<-RL
+#     RLcopy$gompertz[,,,2]<-0
+#     cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)    
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
+#                            surv.event = cH$d_j)
+#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="No time or age dependency",Concordance=CCstring(CCi)))
+#     
+#     rm(RLcopy)
+#     # DEMOGRAPHY
+#     # Black & Female
+#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
+#                     Ethnicity = "black",Gender = "female")    
+#     nhanesCopy<-nhanes[nhanes$black==1 & nhanes$female==1,]
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
+#                   surv.event = cH$d_j)
+#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Black & female",Concordance=CCstring(CCi)))
+#     # Black & Male
+#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
+#                     Ethnicity = "black",Gender = "male")    
+#     nhanesCopy<-nhanes[nhanes$black==1 & nhanes$female==0,]
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
+#                   surv.event = cH$d_j)
+#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Black & male",Concordance=CCstring(CCi)))
+#     # Other & Female
+#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
+#                     Ethnicity = "other",Gender = "female")    
+#     nhanesCopy<-nhanes[nhanes$other==1 & nhanes$female==1,]
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
+#                   surv.event = cH$d_j)
+#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Other & female",Concordance=CCstring(CCi)))
+#     # Other & Male
+#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
+#                     Ethnicity = "other",Gender = "male")    
+#     nhanesCopy<-nhanes[nhanes$other==1 & nhanes$female==0,]
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
+#                   surv.event = cH$d_j)
+#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Other & male",Concordance=CCstring(CCi)))
+#     # White & Female
+#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
+#                     Ethnicity = "white",Gender = "female")    
+#     nhanesCopy<-nhanes[nhanes$white==1 & nhanes$female==1,]
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
+#                   surv.event = cH$d_j)
+#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="White & female",Concordance=CCstring(CCi)))
+#     # White & Male
+#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
+#                     Ethnicity = "white",Gender = "male")    
+#     nhanesCopy<-nhanes[nhanes$white==1 & nhanes$female==0,]
+#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
+#                   surv.event = cH$d_j)
+#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="White & male",Concordance=CCstring(CCi)))
+#     
+#     if(i==1) {
+#       CDemog<-tCDemog[,c(2,3)]
+#       Concy<-tConcy[,c(2,3)]
+#     } else{
+#       CDemog%<>%cbind(tCDemog[,3])
+#       Concy%<>%cbind(tConcy[,3])
+#     }
+#     
+# }
 
-names(CDemog)[2:ncol(CDemog)]<-names(Concy)[2:ncol(Concy)]<-paste0("Run Number ",1:8)
+# names(CDemog)[2:ncol(CDemog)]<-names(Concy)[2:ncol(Concy)]<-paste0("Run Number ",1:8)
 
-xlsx::write.xlsx(CDemog,"./Concordance_Indices.xlsx",sheetName = "Demography Subsets")
-xlsx::write.xlsx(Concy,"./Concordance_Indices.xlsx",sheetName = "Model Variants",append = T)
+CDemog <- xlsx::read.xlsx("Concordance_Indices.xlsx",sheetIndex=1)
+Concy <- xlsx::read.xlsx("Concordance_Indices.xlsx",sheetIndex=2)
 
-p<-timeCon%>%ggplot()+geom_point(aes(age, y=concordance,colour=RL))+
-  geom_errorbar(aes(x=age,ymin=clower,ymax=cupper,colour=RL))+
-  facet_wrap(~RL)
-ggsave("./Plots/Survival/TimeDep_Concordance.png",p,width=13,height = 8)
+# p<-timeCon%>%ggplot()+geom_point(aes(age, y=concordance,colour=RL))+
+#   geom_errorbar(aes(x=age,ymin=clower,ymax=cupper,colour=RL))+
+#   facet_wrap(~RL)
+# ggsave("./Plots/Survival/TimeDep_Concordance.png",p,width=13,height = 8)
 
 ```
 
 The concordance index is a method that can be used to evaluate the accuracy of risk scores to predict survival outcomes between many individuals in a given population. The best advantage of the concordance index is for survey or census data that includes censoring. To see the exact method for the concordance index presented below, including the confidence intervals, please see M. J. Pencina and R.B D'Agostino (2004). The concordance index compares all individuals that had a death outcome with all other individuals that either died or was censored at a later age than the first individual. For each couple, the risk scores (in this work, this is the relative risk, $h$) are compared, and the accuracy of the model is thereby reflected by having individuals with lower risk scores outliving the other individual. For two individuals, $a$ and $b$, whereby individual $a$ had a death at time $T_a$ and individual $b$ had either a death or was censored at time $T_b$, they are both said to be concordant if $h_a>h_b$ and $T_a<T_b$, and discordant if $h_a<h_b$ and $T_a<T_b$. By evaluating this over the entire population, this provides an estimation of the accuracy of using the risk score to predict survival outcomes in the population. Table \@ref(tab:concord_var) provides the concordance indices and their $\alpha=0.05$ confidence intervals for each of the different runs (that correspond to table \@ref(tab:runnumers)), for a variety of different models.
 
 ```{r concord_var, echo=F, label= "concord_var"}
-kable(Concy,escape = F,booktabs = T)
+kable(Concy,escape = F,booktabs = T,format = "latex")
 
 ```
 
 The results show that models that do not include time-at-outcome information (by setting the Gompertz parameter, $\theta$, to zero), but still include blood pressure covariates are stronger predictors of mortality risk, as compared to the full model. We find, as expected, that models trained specifically on CVD and heart-attack related mortality to be more accurate than trained on all mortality events. Additionally, there does not appear to be a statistically significant advantage of using either of the FRS covariates instead of the mean systolic and diastolic blood pressure to predict survival outcomes. By calculating the concordance index for specific demographic groups, we can also evaluate the performance of the full models per group, as shown in table \@ref(tab:concord_demo). The results indicate that the performance of the predictions do vary between demographic groups. For CVD and heart-attack mortality, the average concordance index for the black female population was 0.58, black male population 0.52, other female population 0.53, other male population 0.47, white female population 0.55 and white male population 0.57. Therefore, the accuracy of this model is visibly less accurate for the non-black or white ethnic populations in the survey. On average across CVD and heart attack mortality, the models were more accurate for the female population (0.56) than the male population (0.53).
 
 ```{r concord_demo, echo=F, label= "concord_demo"}
-kable(CDemog,escape = F,booktabs = T)
+kable(CDemog,escape = F,booktabs = T,format = "latex")
 
 ```
 
 The concordance index can also be calculated using specific age-groups of the population in order to evaluate the performance of the model for each group. This can be shown to be equivalent to calculating the Area Under the ROC Curve (AUC or AUROC) for each specific group. The results, per run number, are illustrated in figure \ref{fig:timConc}. The plot reflects that the expected value of the concordance index is highest towards the bulk of the population - between roughly 50 to 80 years old, with the performance either decreasing or with increasing confidence intervals before and after this range.
 
 ![Time-dependent concordance index (AUC), per run number. ](./Plots/Survival/TimeDep_Concordance.png){#fig:timConc}
-
-
 
 
 <!-- A common metric that is used to evaluate the performance of models such as presented in this article is called the Receiver Operating Characteristic (ROC) curve. With continuous predictor values such as cumulative hazard $H(T_i)$, a threshold can be defined whereby any individual who has a cumulative risk larger than the threshold $H(T_i)>\epsilon$ is predicted to die. The ratio of the number individuals that were predicted to die compared to the total number who die corresponds is referred to as the True Positive Ratio (TPR) -->
