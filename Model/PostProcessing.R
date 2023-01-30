@@ -11,7 +11,7 @@ library(LexisPlotR)
 library(survcomp)
 source("./Model/Functions.R")
 
-directory<-'~/Documents/BEAST/Coding/Oxford/Nhanes2021/'
+directory<-'~/Document/Coding/Oxford/Nhanes2021/'
 
 saveresultslist<-function(resultslist,RL,link){
   
