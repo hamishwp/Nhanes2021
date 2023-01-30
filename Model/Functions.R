@@ -541,9 +541,9 @@ calc_Year_roc<-function(RL,Year=20L,Ethnicity=NULL,Gender=NULL,ageBnds=NULL, Red
   roc <- data.frame(threshold = seq(0,1,length.out=n), tpr=NA, fpr=NA)
   PredPerf <- sapply(roc$threshold, function(th) apply(df,1,function(df) ConfVals(df,Year,th)))
   
-  roc$fpr<-vapply(1:n,function(i) sum(PredPerf[,i]=="FP" & df$delta==0,na.rm = T)/sum(df$delta==0 & (PredPerf[,i]=="FP" | PredPerf[,i]=="TN"),na.rm = T),
+  roc$tpr<-vapply(1:n,function(i) sum(PredPerf[,i]=="TP",na.rm = T)/sum((PredPerf[,i]=="FN" | PredPerf[,i]=="TP"),na.rm = T),
                   FUN.VALUE = numeric(1))
-  roc$tpr<-vapply(1:n,function(i) sum(PredPerf[,i]=="TP" & df$delta==1,na.rm = T)/sum(df$delta==1 & (PredPerf[,i]=="FN" | PredPerf[,i]=="TP"),na.rm = T),
+  roc$fpr<-vapply(1:n,function(i) sum(PredPerf[,i]=="FP",na.rm = T)/sum((PredPerf[,i]=="FP" | PredPerf[,i]=="TN"),na.rm = T),
                   FUN.VALUE = numeric(1))
   
   dx <- diff(roc$fpr)

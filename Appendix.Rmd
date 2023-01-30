@@ -221,8 +221,8 @@ $$
 
 ```{r load_data, include=FALSE}
 w<-getwd()
-L1 <- 'Data_cleaned/nhanesA.RData'
-S1 <- "Model/BP_parameters.RData"
+L1 <- './Data_cleaned/nhanesA.RData'
+S1 <- "./Model/BP_parameters.RData"
 load(L1)
 load(S1)
 ```
@@ -921,207 +921,88 @@ Figure \ref{fig:gompt} reflects the same level of consistency for the Gompertz p
 
 ![Violin plots of the normalised $\theta$ parameter (from the Gompertz equation) of the different models.](./Plots/gompertz/theta_parameter.png){#fig:gompt}
 
+We also present here tables of the mean and standard deviation values of the time dependent and independent Gompertz parameters. Table \ref{tab:RL12} shows
+
+```{r RL12, echo=FALSE}
+kable(openxlsx::read.xlsx("./Results/AppendixTables.xlsx",sheet = "RL1-2",rows = 3:9),
+format="latex", escape = F,booktabs = T, caption = "Parameters for survival model for Cardiovascular and all-cause mortality, NHANES III, Full population, using the systolic and diastolic mean model.")
+```
+
+
 To measure the performance of the model to predict the survival outcome of individuals in the population, figure \ref{fig:cumpred} shows, ordered by individual age, the cumulative hazard $H(t)$ predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
 
 ![Predicted cumulative hazard against cumulative number of deaths in the population, ordered by the age of the individual. ](./Plots/Survival/redlinpred_Cumulative_haz-death_age.png){#fig:cumpred}
 
-```{r, include=FALSE}
-# # For all run numbers:
-# # - full model
-# # - using the FRS or systolic mean blood pressure
-# # - using both the FRS or mean blood pressures and the long-term variation (delta) covariates
-# # - Gompertz-only
-# # - Age & Time only
-# # - no Gompertz, full BP
-# CCstring<-function(CCi){
-#   # paste0(round(CCi$c.index,digits = 3)," (",
-#   #                   round(CCi$lower,digits = 3)," - ",
-#   #                   round(CCi$upper,digits = 3),")")
-#   CCi$c.index
-# }
-# # Age bins for the time-dependent AUC curves
-# survAge<-c(0,45,50,55,60,65,70,75,80,85,130)
-# # Initialisations
-# Concy<-CDemog<-timeCon<-tConcy<-tCDemog<-data.frame()
-# for(i in 1:8){
-#     tConcy<-tCDemog<-data.frame()
-#     RL<-RLcopy<-get(paste0("RL",i))
-#     if(RL$FRS) nhanes<-DF_Nhanes(list_nhanesFRS) else nhanes<-DF_Nhanes(list_nhanesA)
-#     # Full model - all parameters
-#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F)
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-#                   surv.event = cH$d_j)
-#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="Full model",Concordance=CCstring(CCi)))
-#     # Age-at-outcome dependent AUC curve:
-#     ccc<-data.frame(age=paste0(survAge[1:(length(survAge-1))],"-",survAge[2:length(survAge)])[1:(length(survAge)-1)],
-#                     concordance=NA,cupper=NA,clower=NA,RL=paste0("Run Number ",i))
-#     for(Bage in 2:length(survAge)){
-#       ind<-nhanes$age+nhanes$T>survAge[Bage-1] & nhanes$age+nhanes$T<=survAge[Bage]
-#       www<-rep(0,length(ind))
-#       www[ind]<-1
-#       ctt<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-#                   surv.event = cH$d_j,weights = www)
-#       ccc$concordance[Bage-1]<-ctt$c.index
-#       ccc$cupper[Bage-1]<-ctt$upper
-#       ccc$clower[Bage-1]<-ctt$lower
-#     }
-#     timeCon%<>%rbind(ccc)
-#     # FRS or mean systolic blood pressure only:
-#     RLcopy$beta[,-c(1)]<-0
-#     cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-#                   surv.event = cH$d_j)
-#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="FRS or mean systolic BP",Concordance=CCstring(CCi)))
-#     # mean systolic & diastolic blood pressure only:
-#     if(RL$FRS) {
-#       tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="FRS or mean systolic & diastolic BP",Concordance=CCstring(CCi)))
-#     } else {
-#       RLcopy<-RL
-#       RLcopy$beta[,-c(1,5)]<-0
-#       cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)
-#       CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-#                              surv.event = cH$d_j)
-#       tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="FRS or mean systolic & diastolic BP",Concordance=CCstring(CCi)))
-#     }
-#     # No short-term variation (sigma terms):
-#     RLcopy<-RL
-#     if(RL$FRS) {
-#       RLcopy$beta[,c(3,4,6,7)]<-0
-#     } else {
-#       RLcopy$beta[,c(3,4,7,8)]<-0
-#     }
-#     cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-#                   surv.event = cH$d_j)
-#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="No short-term variation (sigmas)",Concordance=CCstring(CCi)))
-#     # Gompertz only:
-#     RLcopy<-RL
-#     RLcopy$beta[]<-0
-#     cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-#                   surv.event = cH$d_j)
-#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="Gompertz only",Concordance=CCstring(CCi)))
-#     # No theta, age or time, full BP
-#     RLcopy<-RL
-#     RLcopy$gompertz[,,,2]<-0
-#     cH<-GetSurvival(RLcopy,roc=T,usexhat=T,cumH = F)
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanes$age+nhanes$T,
-#                            surv.event = cH$d_j)
-#     tConcy%<>%rbind(data.frame(RL=paste0("RL",i),Model="No time or age dependency",Concordance=CCstring(CCi)))
-#
-#     rm(RLcopy)
-#     # DEMOGRAPHY
-#     # Black & Female
-#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-#                     Ethnicity = "black",Gender = "female")
-#     nhanesCopy<-nhanes[nhanes$black==1 & nhanes$female==1,]
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-#                   surv.event = cH$d_j)
-#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Black & female",Concordance=CCstring(CCi)))
-#     # Black & Male
-#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-#                     Ethnicity = "black",Gender = "male")
-#     nhanesCopy<-nhanes[nhanes$black==1 & nhanes$female==0,]
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-#                   surv.event = cH$d_j)
-#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Black & male",Concordance=CCstring(CCi)))
-#     # Other & Female
-#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-#                     Ethnicity = "other",Gender = "female")
-#     nhanesCopy<-nhanes[nhanes$other==1 & nhanes$female==1,]
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-#                   surv.event = cH$d_j)
-#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Other & female",Concordance=CCstring(CCi)))
-#     # Other & Male
-#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-#                     Ethnicity = "other",Gender = "male")
-#     nhanesCopy<-nhanes[nhanes$other==1 & nhanes$female==0,]
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-#                   surv.event = cH$d_j)
-#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="Other & male",Concordance=CCstring(CCi)))
-#     # White & Female
-#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-#                     Ethnicity = "white",Gender = "female")
-#     nhanesCopy<-nhanes[nhanes$white==1 & nhanes$female==1,]
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-#                   surv.event = cH$d_j)
-#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="White & female",Concordance=CCstring(CCi)))
-#     # White & Male
-#     cH<-GetSurvival(RL,roc=T,usexhat=T,cumH = F,
-#                     Ethnicity = "white",Gender = "male")
-#     nhanesCopy<-nhanes[nhanes$white==1 & nhanes$female==0,]
-#     CCi<-concordance.index(x = cH$H_j,surv.time = nhanesCopy$age+nhanesCopy$T,
-#                   surv.event = cH$d_j)
-#     tCDemog%<>%rbind(data.frame(RL=paste0("RL",i),Model="White & male",Concordance=CCstring(CCi)))
-#
-#     if(i==1) {
-#       CDemog<-tCDemog[,c(2,3)]
-#       Concy<-tConcy[,c(2,3)]
-#     } else{
-#       CDemog%<>%cbind(tCDemog[,3])
-#       Concy%<>%cbind(tConcy[,3])
-#     }
-#
-# }
+A common metric that is used to evaluate the performance of models such as presented in this article is called the Receiver Operating Characteristic (ROC) curve. With continuous predictor values such as cumulative hazard $H(T_i)$, a threshold can be defined whereby any individual who has a cumulative risk larger than the threshold $H(T_i)>\epsilon$ is predicted to die. The ratio of the number individuals that were predicted to die compared to the total number who die corresponds is referred to as the True Positive Ratio (TPR)
+\begin{equation}
+  TPR(\epsilon)=\frac{\sum_i\big(\mathbb{I}(H(T_i)>\epsilon \ \ \& \ \ \delta_i=1)\big)}{\sum_i\big(\mathbb{I}(\delta_i=1)\big)}.
+\end{equation}
+Note that TPR is also referred to as the recall or sensitivity. Conversely, the ratio of the number of individuals predicted to die but survive compared to the total number of individuals that survived is referred to as the False Positive Ratio (FPR)
+\begin{equation}
+  FPR(\epsilon)=\frac{\sum_i\big(\mathbb{I}(H(T_i)>\epsilon \ \ \& \ \ \delta_i=0)\big)}{\sum_i\big(\mathbb{I}(\delta_i=0)\big)}.
+\end{equation}
+Note that the FPR is also referred to as $1-\mathrm{specificity}$. The ROC curve is produced by varying the threshold value that is then used to calculate both the TPR and FPR, and plotting them against one another. The area under this curve is a metric that indicates performance of the model to predict survival outcomes. AUROC=1 implies perfect predictions and AUROC=0.5 implies the contrary. However, our model is formulated such that the variables age and time since starting the survey both form part of Cox's proportional hazard. Furthermore, the Gompertz model is stratified by demographic group. Therefore, in this work, we present a modified ROC curve, which calculates the individuals cumulative hazard at a given time since the start of the survey, $T_{surv} \in {5, 10, 20}$ years, and calculates whether the model correctly predicted an event to occur before or after this time. Note that to do this, we split the ROC population by ages: 45-64 and 65-84. The modified TPR is then calculated via:
+\begin{equation}
+  TPR(\epsilon)=\frac{\sum_i\big(\mathbb{I}(\delta_i=1 \ \ \& \ \ \ H(T_i)\geq \epsilon \ \ \& \ \ T_i<T_{surv})\big)}{\sum_i\big(\mathbb{I}(\delta_i=1 \ \ \& \ \ \ T_i<T_{surv})\big)},
+\end{equation}
+and the modified FPR:
+\begin{equation}
+  FPR(\epsilon)=\frac{\sum_i\big(\mathbb{I}(H(T_i)\geq \epsilon \ \ \& \ \ T_i\geq T_{surv})\big)}{\sum_i\big(\mathbb{I}(T_i\geq T_{surv})\big)}.
+\end{equation}
+Before presenting any ROC or AUC values, we first present the density distributions of the median posterior systolic $\Delta$ values for all individuals, split by demographic. 
 
-# names(CDemog)[2:ncol(CDemog)]<-names(Concy)[2:ncol(Concy)]<-paste0("Run Number ",1:8)
+![Density of the (median posterior) systolic $\Delta$ values, per demographic. ](./Rmarkdown_Plots/SysDelta_Densities_Demography.png){#fig:DeltaDens}
 
-CDemog <- xlsx::read.xlsx("Concordance_Indices.xlsx",sheetIndex=1)[,-1]
-Concy <- xlsx::read.xlsx("Concordance_Indices.xlsx",sheetIndex=2)[,-1]
-colnames(CDemog)<-colnames(Concy)<-c("Model",paste0("Run Number ",1:8))
-  
-# p<-timeCon%>%ggplot()+geom_point(aes(age, y=concordance,colour=RL))+
-#   geom_errorbar(aes(x=age,ymin=clower,ymax=cupper,colour=RL))+
-#   facet_wrap(~RL)
-# ggsave("./Plots/Survival/TimeDep_Concordance.png",p,width=13,height = 8)
+Using Welch's ANOVA test, we calculated that $p<1\times 10^{-9}$ for all demographics, but also when split between male and female. In figure \ref{fig:ROC_MeanBP} and \ref{fig:ROC_FRS} present 
 
-```
+![ROC curves for the model that used mean systolic and diastolic blood pressure as covariates in the linear predictor, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. ](./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png){#fig:ROC_MeanBP}
 
-The concordance index is an instrument for quantifying the accuracy of risk scores to predict survival outcomes between many individuals in a given population. The best advantage of the concordance index is for survey or census data that includes censoring. 
-To see the exact method for the concordance index presented below, including the confidence intervals, please see M. J. Pencina and R.B D'Agostino (2004). 
-The concordance index compares all individuals who had a death outcome with all other individuals who either died or were censored at a later age than the first individual. 
-For each pair the risk scores (in this work, this is the relative risk, $h$) are compared, and the accuracy of the model is thereby reflected by having individuals with lower risk scores outliving the other individual. For two individuals, $a$ and $b$, whereby individual $a$ had a death at time $T_a$ and individual $b$ had either a death or was censored at time $T_b$, they are both said to be concordant if $h_a>h_b$ and $T_a<T_b$, and discordant if $h_a<h_b$ and $T_a<T_b$. By evaluating this over the entire population, this provides an estimation of the accuracy of using the risk score to predict survival outcomes in the population. Table \@ref(tab:concord_var) provides the concordance indices and their $\alpha=0.05$ confidence intervals for each of the different runs (that correspond to table \@ref(tab:runnumers)), for a variety of different models.
+![ROC curves for the model that used the FRS value as covariates in the linear predictor, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. ](./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png){#fig:ROC_FRS}
 
-```{r concord_var, echo=F, label= "concord_var"}
-kable(Concy[,c(1:4)],format = "latex",escape = T,booktabs = T)
-kable(Concy[,c(1,5:7)],format = "latex",escape = T,booktabs = T)
-kable(Concy[,c(1,8:ncol(Concy))],format = "latex",escape = T,booktabs = T)
-```
+![ROC curves stratified by the different demographic groups used in this research. The point and line colours represent the different event types that were used to predict on. ](./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png){#fig:ROC_Demog}
 
-The results show that models that do not include time-at-outcome information (by setting the Gompertz parameter, $\theta$, to zero), but still include blood pressure covariates are stronger predictors of mortality risk, as compared to the full model. We find, as expected, that models trained specifically on CVD and heart-attack related mortality to be more accurate than trained on all mortality events. Additionally, there does not appear to be a statistically significant advantage of using either of the FRS covariates instead of the mean systolic and diastolic blood pressure to predict survival outcomes. By calculating the concordance index for specific demographic groups, we can also evaluate the performance of the full models per group, as shown in table \@ref(tab:concord_demo). 
-The results indicate that the performance of the predictions do vary between demographic groups. For CVD and heart-attack mortality, the average concordance index for the black female population was 0.58, black male population 0.52, other female population 0.53, other male population 0.47, white female population 0.55 and white male population 0.57. Therefore, the accuracy of this model is visibly less accurate for the non-black or white ethnic populations in the survey. On average across CVD and heart attack mortality, the models were more accurate for the female population (0.56) than the male population (0.53).
+![ROC curves for the mean systolic and diastolic model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png){#fig:ROC_RL1}
 
-```{r concord_demo, echo=F, label= "concord_demo"}
-kable(CDemog[,c(1:5)],format = "latex",escape = T,booktabs = T)
-kable(CDemog[,c(1,6:ncol(CDemog))],format = "latex",escape = T,booktabs = T)
+![ROC curves for the mean systolic and diastolic model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png){#fig:ROC_RL2}
 
-```
+![ROC curves for the mean systolic and diastolic model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png){#fig:ROC_RL2oth}
 
-An alternative to the concordance index is the dynamic AUC for the binary classification into Died or Survived for death at a particular age (or age range), among the population still alive at the beginning of the age range.
-As discussed in [Heagerty, P. J., & Zheng, Y. (2005). Survival model predictive accuracy and ROC curves. *Biometrics*, 61(1), 92-105], the concordance may be understood as a weighted average over all times of the dynamic AUC.
-The results, per run number, are illustrated in figure \ref{fig:timConc}. We expect the model to lose discriminatory power the further the time of BP ascertainment recedes into the past, and this is reflected in the AUC declining toward 0.5 at more advanced ages.
+![ROC curves for for the FRS-based model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png){#fig:ROC_RL7}
+![ROC curves for for the FRS-based model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8}
 
-![Time-dependent concordance index (AUC), per run number. ](./Plots/Survival/TimeDep_Concordance.png){#fig:timConc}
+![ROC curves for for the FRS-based model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8oth}
 
 
-<!-- A common metric that is used to evaluate the performance of models such as presented in this article is called the Receiver Operating Characteristic (ROC) curve. With continuous predictor values such as cumulative hazard $H(T_i)$, a threshold can be defined whereby any individual who has a cumulative risk larger than the threshold $H(T_i)>\epsilon$ is predicted to die. The ratio of the number individuals that were predicted to die compared to the total number who die corresponds is referred to as the True Positive Ratio (TPR) -->
-<!-- \begin{equation} -->
-<!--   TPR=\frac{\sum_i\big(\mathbb{I}(H(T_i)>\epsilon \ \ \& \ \ \delta_i=1)\big)}{\sum_i\big(\mathbb{I}(\delta_i=1)\big)}. -->
-<!-- \end{equation} -->
-<!-- Note that TPR is also referred to as the recall or sensitivity. Conversely, the ratio of the number of individuals predicted to die but survive compared to the total number of individuals that survived is referred to as the False Positive Ratio (FPR) -->
-<!-- \begin{equation} -->
-<!--   FPR=\frac{\sum_i\big(\mathbb{I}(H(T_i)>\epsilon \ \ \& \ \ \delta_i=0)\big)}{\sum_i\big(\mathbb{I}(\delta_i=0)\big)}. -->
-<!-- \end{equation} -->
-<!-- Note that the FPR is also referred to as $1-\mathrm{specificity}$. The ROC curve is produced by varying the threshold value that is then used to calculate both the TPR and FPR, and plotting them against one another. The area under this curve is a metric that indicates performance of the model to predict survival outcomes. AUROC=1 implies perfect predictions and AUROC=0.5 implies the contrary. -->
 
-<!-- The AUC values per model resulted as 0.72, 0.7, 0.69, 0.68, 0.73, 0.69, 0.73 and 0.69, for run numbers 1-8, respectively.  -->
-<!-- This illustrates that, with respect to ability to predict mortality risk amongst the population, the models that included the FRS score as a covariate in the proportional hazards model were the best performing models. Furthermore, training the model specifically on CVD mortality data also led to an increase in the performance of the models. Within the linear predictor term, we can also infer the strength of correlation between each of the different covariates by switching off ($\beta_i=0$) some of the variables and comparing the predictions to the observed events (including right-censorship). Figure \ref{fig:ROC} shows that, across all different models trained in this research, the predictive performance is fairly similar between using a) all covariates, b) using the FRS or systolic mean blood pressure or c) using both the FRS or mean blood pressures and the long-term variation (delta) covariates. Figure \ref{fig:ROC} also indicates that use of no covariates (and thus relying only on demographic terms through the Gompertz component) or by including only the long-term variation (delta) terms are not strong predictors of event outcomes in the population. -->
 
-<!-- ![Area Under ROC (AUROC) curves for each different model, including different linear predictor term models in the predictions. ](./Plots/Survival/ROCSurvival_RL.png){#fig:ROC} -->
 
-<!-- It is important to evaluate whether the model predictions have a bias in terms of predicting outcomes more reliably with respect to the time since the start of the survey. Figure \ref{fig:Lexis} shows Lexis diagrams of the individuals in the full population by time since the start of the survey and the age of the individual. \ref{fig:Lexis} (left) plot shows the AUC-based performance of the mean blood pressure model that was trained on CVD events in the full-population (run number 1). Figure \ref{fig:Lexis} (right) shows the observed number of deaths in the full population. Looking at \ref{fig:Lexis}, there is no apparent bias between the performance of the model with either the age of the individual or the amount of time since the start of the survey. -->
 
-<!-- ![Lexis diagram plots of the full NHANES population. Left) the Area Under ROC (AUROC) values using the mean blood pressure model trained on CVD and heart attack events (run number 1). Right) deaths in the population. ](./Plots/Survival/bpplots/LexisDeath_AUC.png){#fig:Lexis} -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

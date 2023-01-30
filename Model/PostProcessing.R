@@ -550,6 +550,8 @@ p<-ggplot(Delties)+geom_density(aes(Delta,fill=Demography))+
   theme(plot.title = element_text(hjust = 0.5));p
 ggsave("SysDelta_Densities_Demography.png",p,path = "./Plots/Survival/ROCs")  
 
+oneway.test(Delta ~ Demography, data = Delties, var.equal = bartlett.test(Delta ~ Demography,data = Delties)$p.value<0.01)
+
 tmp<-Delties%>%filter(Gender=="Male")
 oneway.test(Delta ~ Demography, data = tmp, var.equal = bartlett.test(Delta ~ Demography,data = tmp)$p.value<0.01)
 
