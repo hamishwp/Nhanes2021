@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 Appendix_cache/**
+Samples/**
+Plots/**
+Plots_Save/**
