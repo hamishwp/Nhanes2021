@@ -286,9 +286,30 @@ FilterRL<-function(RL,ind,sigma=T){
   
 }
 
+ReduceDemog<-function(RL,Ethnicity=NULL,Gender=NULL,ageBnds=NULL,othDeaths=F){
+  
+  if(RL$FRS) nhanes<-DF_Nhanes(list_nhanesFRS) else nhanes<-DF_Nhanes(list_nhanesA)
+  
+  if(!othDeaths) ind<-rep(T,nrow(nhanes)) else ind<-nhanes$eventall+nhanes$eventCVDHrt<2
+  
+  if(!is.null(Ethnicity) | !is.null(Gender) | !is.null(ageBnds)){
+    # First, ethnicity
+    if(!is.null(Ethnicity)) ind<-ind & as.logical(nhanes[[Ethnicity]])
+    if(!is.null(Gender)) ind<-ind & as.logical(nhanes[[Gender]])
+    if(!is.null(ageBnds)) {
+      # First check the bounds are correctly specified
+      if(ageBnds[2]<ageBnds[1]) stop("misspecified age bounds to use in GetSurvival")
+      ind<-ind & nhanes$age>=ageBnds[1] & nhanes$age<ageBnds[2]
+    }
+    nhanes<-nhanes[ind,]
+    RL%<>%FilterRL(ind, sigma=T)
+  }
+  return(list(nhanes=nhanes,RL=RL))
+}
+
 # Make the predictions on the survival outcomes of the individuals, 
 # based on posterior samples from the HMC algorithm (from Stan)
-GetSurvival<-function(RL,roc=F,Ethnicity=NULL,Gender=NULL,usexhat=TRUE, cumH=T, sigma=T){
+GetSurvival<-function(RL,roc=F,Ethnicity=NULL,Gender=NULL,ageBnds=NULL,Year=20,usexhat=TRUE, cumH=T, sigma=T,othDeaths=F){
   
   if(usexhat) xhat<-t(cbind(RL$xhat1,RL$xhat2,RL$xhat3,RL$xhat4))
   
@@ -296,22 +317,9 @@ GetSurvival<-function(RL,roc=F,Ethnicity=NULL,Gender=NULL,usexhat=TRUE, cumH=T, 
   
   if(RL$FRS) nhanes<-DF_Nhanes(list_nhanesFRS) else nhanes<-DF_Nhanes(list_nhanesA)
   
-  if(!is.null(Ethnicity) & !is.null(Gender)){
-    ind<-as.logical(nhanes[[Ethnicity]]) & as.logical(nhanes[[Gender]])
-    # nhanes<-nhanes[ind,]
-    nhanes<-nhanes[nhanes[[Ethnicity]]==1 & nhanes[[Gender]]==1,]
-    RL%<>%FilterRL(ind, sigma=T)
-  } else if(!is.null(Ethnicity)) {
-    ind<-as.logical(nhanes[[Ethnicity]])
-    # nhanes<-nhanes[ind,]
-    nhanes<-nhanes[nhanes[[Ethnicity]]==1,]
-    RL%<>%FilterRL(ind, sigma=T)
-  } else if(!is.null(Gender)) {
-    ind<-as.logical(nhanes[[Gender]])
-    # nhanes<-nhanes[ind,]
-    nhanes<-nhanes[nhanes[[Gender]]==1,]
-    RL%<>%FilterRL(ind, sigma=T)
-  }
+  tmp<-ReduceDemog(RL,Ethnicity,Gender,ageBnds,othDeaths = othDeaths); nhanes<-tmp$nhanes; RL<-tmp$RL; rm(tmp)
+  # Set the year since start of study to calculate
+  nhanes$T<-Year
   
   LLL<-length(nhanes$T)
   N<-dim(RL$beta)[1]
@@ -421,7 +429,7 @@ ConvertGompertz<-function(gompertz){
 }
 
 ### CALCULATE ROC FUNCTION ###
-calculate_roc <- function(df, cost_of_fp, cost_of_fn, n=100) {
+calculate_roc <- function(df, cost_of_fp=1, cost_of_fn=1, n=100) {
   tpr <- function(df, threshold) {
     sum(df$pred >= threshold & df$survived == 1) / sum(df$survived == 1)
   }
@@ -492,3 +500,77 @@ plot_roc <- function(roc, threshold, cost_of_fp, cost_of_fn, costy=TRUE,trad=T) 
   #sub_title <- sprintf("threshold at %.2f - cost of FP = %d, cost of FN = %d", threshold, cost_of_fp, cost_of_fn)
   #, sub=textGrob(sub_title, gp=gpar(cex=1), just="bottom"))
 }
+
+
+# replace Time in survival_NLL functions
+# Then spit out the FP & TPs, dependent upon the threshold value:
+ConfVals<-function(df,Year,threshold){    
+  if((df[["Time"]])<Year){
+    if(df[["delta"]]==1) {
+      # TP if model predicts alive and the censoring occurred after Year, else we cannot tell
+      outcome<-ifelse((df[["pred"]]>=threshold),"TP","FN")
+      # If there is no death then we cannot know whether the model correctly predicted or not
+    } else outcome<-NA 
+  } else if(df[["Time"]]>=Year){
+    # FP if the model predicts death, TN otherwise
+    outcome<-ifelse((df[["pred"]]>=threshold),"FP","TN")
+  } else outcome<-NA 
+  
+  return(outcome)
+}
+
+calc_Year_roc<-function(RL,Year=20L,Ethnicity=NULL,Gender=NULL,ageBnds=NULL, RedCovars=NULL, othDeaths=F){
+  # Calculate the cumulative hazard values per individual at the given time since cohort start
+  
+  if(is.null(RedCovars)) {
+    if(is.na(RL$FRSt)) RL$beta[,c(3,4,7,8)]<-0 else RL$beta[,c(3,4,6,7)]<-0
+  } else if (RedCovars=="sysmean") {
+    if(is.na(RL$FRSt)) RL$beta[,2:8]<-0 else RL$beta[,2:7]<-0
+  } else if (RedCovars=="deltas") {
+    if(is.na(RL$FRSt)) RL$beta[,c(1,3,4,5,7,8)]<-0 else RL$beta[,c(1,3,4,6,7)]<-0
+  }
+  
+  survy<-GetSurvival(RL,roc=T,Ethnicity = Ethnicity,Gender = Gender,Year = Year,ageBnds = ageBnds, othDeaths=othDeaths)
+  # Modify the nhanes and RL objects to reduce to the same demography
+  tmp<-ReduceDemog(RL = RL,Ethnicity = Ethnicity,Gender = Gender,ageBnds = ageBnds,othDeaths = othDeaths); nhanes<-tmp$nhanes; RL<-tmp$RL; rm(tmp)
+  eventer<-ifelse(RL$eventall,"eventall","eventCVDHrt")
+  df<-data.frame(Time=nhanes$T,delta=nhanes[[eventer]],pred=survy$H_j)
+  # How many values do you want to use to calculate the ROC & AUC values?
+  n<-100
+  
+  roc <- data.frame(threshold = seq(0,1,length.out=n), tpr=NA, fpr=NA)
+  PredPerf <- sapply(roc$threshold, function(th) apply(df,1,function(df) ConfVals(df,Year,th)))
+  
+  roc$fpr<-vapply(1:n,function(i) sum(PredPerf[,i]=="FP" & df$delta==0,na.rm = T)/sum(df$delta==0 & (PredPerf[,i]=="FP" | PredPerf[,i]=="TN"),na.rm = T),
+                  FUN.VALUE = numeric(1))
+  roc$tpr<-vapply(1:n,function(i) sum(PredPerf[,i]=="TP" & df$delta==1,na.rm = T)/sum(df$delta==1 & (PredPerf[,i]=="FN" | PredPerf[,i]=="TP"),na.rm = T),
+                  FUN.VALUE = numeric(1))
+  
+  dx <- diff(roc$fpr)
+  my <- (roc$tpr[1:(n - 1)] + roc$tpr[2:n]) / 2
+  roc$auroc<-sum(abs(dx*my))
+  
+  return(roc)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -11,7 +11,7 @@ library(LexisPlotR)
 library(survcomp)
 source("./Model/Functions.R")
 
-directory<-'~/Document/Coding/Oxford/Nhanes2021/'
+directory<-'~/Documents/BEAST/Coding/Oxford/Nhanes2021/'
 
 saveresultslist<-function(resultslist,RL,link){
   
@@ -524,6 +524,231 @@ ggsave('xhat_conv.png', plot=p,path = paste0(directory,'Plots/xhat'),width = 10,
 rm(xhatS,xhatD,DF)
 
 ############################### ROC #################################'
+
+# For RL1, RL2, RL7, RL8, eventother-RL2 and eventother-RL8 do:
+# Vary the years - 5,10,20 and the ages - 45-65 & 65-85
+# Vary demography by all groups separately in one plot, for the most successful year
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%% DEMOGRAPHY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+# First check the stratification between deltas, per demography
+nhanes<-DF_Nhanes(list_nhanesA)
+Delties<-data.frame(Delta=apply(RL1$D_i_S,2,median))
+Delties$Ethnicity<-nhanes$black+2*nhanes$white+3*nhanes$other
+Delties$Gender<-nhanes$female+10*nhanes$male
+Delties$Demography<-Delties$Ethnicity*Delties$Gender
+Delties$Demography<-factor(Delties$Demography,levels = c(1,2,3,10,20,30),
+                           labels =c("Black Female","White Female","Other Female","Black Male","White Male","Other Male"))
+Delties$Ethnicity<-factor(Delties$Ethnicity,levels = c(1,2,3),labels = c("Black","White","Other"))
+Delties$Gender<-factor(Delties$Gender,levels = c(1,10),labels = c("Female","Male"))
+
+p<-ggplot(Delties)+geom_density(aes(Delta,fill=Demography))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender))+
+  ggtitle("Systolic Delta Values - Median of Posterior")+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave("SysDelta_Densities_Demography.png",p,path = "./Plots/Survival/ROCs")  
+
+tmp<-Delties%>%filter(Gender=="Male")
+oneway.test(Delta ~ Demography, data = tmp, var.equal = bartlett.test(Delta ~ Demography,data = tmp)$p.value<0.01)
+
+tmp<-Delties%>%filter(Gender=="Female")
+oneway.test(Delta ~ Demography, data = tmp, var.equal = bartlett.test(Delta ~ Demography,data = tmp)$p.value<0.01)
+
+ROC<-data.frame()
+for (runnum in c("RL1","RL2","RL7","RL8","RL2oth","RL8oth")){
+  # Just in case we specifically want to look at the population that didn't die from CVD-Hrt 
+  if(grepl(pattern = "oth",runnum)) {
+    othDeaths<-T 
+    Runner<-unlist(str_split(runnum,"oth"))[1]
+  }else {
+    othDeaths<-F
+    Runner<-runnum
+  }
+  # Get the simulation object
+  RL<-get(Runner)
+  # Reason for death
+  if(RL$eventall){
+    if(othDeaths) eventer<-"Non-CVD/Heart" else  eventer<-"All Deaths"
+  } else eventer<-"CVD/Heart"
+  # Let's do this!
+  for(Yr in c(5,10,20)){
+    for(ageL in c(45,65)){
+     for(Gen in c("female","male")) {
+       for(Eth in c("black","white","other")){
+         Troc<-calc_Year_roc(RL,Year=Yr,ageBnds=c(ageL,ageL+20),Ethnicity = Eth,Gender = Gen, othDeaths=othDeaths)
+         ROC%<>%rbind(data.frame(RunNumber=runnum,Year=paste0(Yr,"-Year Survival"),
+                                 AgeRange=paste0("Age: ",ageL,"-",ageL+19),EventType=eventer,
+                                 Ethnicity=stringr::str_to_title(Eth),
+                                 Gender=stringr::str_to_title(Gen),
+                                 TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+       }
+     }
+    }
+  }
+}
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(RunNumber %in% c("RL1","RL2","RL2oth") & Year=="10-Year Survival" & AgeRange=="Age: 45-64")%>%
+  group_by(Gender,Ethnicity,EventType)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+AUROC$y[AUROC$EventType=="CVD/Heart"]<-0.35
+AUROC$y[AUROC$EventType=="Non-CVD/Heart"]<-0.3
+
+p<-ROC%>%filter(RunNumber %in% c("RL1","RL2","RL2oth") & Year=="10-Year Survival" & AgeRange=="Age: 45-64")%>%
+  ggplot(aes(group=EventType))+
+  geom_point(aes(FPR,TPR-FPR,colour=EventType)) +
+  geom_line(aes(FPR,TPR-FPR,colour=EventType)) +
+  geom_text(data=AUROC,aes(x,y,label=label,colour=EventType)) +
+  geom_abline(slope = 0,intercept = 0) + ylim(0,0.4) +
+  xlab("False Positive Ratio") + ylab("True Positive Ratio - False Positive Ratio") +
+  facet_grid(rows = vars(Ethnicity),cols = vars(Gender))+
+  ggtitle("Performance by Demographic")+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_CAx-EventType_Demog_10Yr_45-64.png"),p,path = "./Plots/Survival/ROCs")
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%% MODEL COVARIATES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+ROC<-data.frame()
+for (runnum in c("RL1","RL2","RL7","RL8","RL2oth","RL8oth")){
+  # Just in case we specifically want to look at the population that didn't die from CVD-Hrt 
+  if(grepl(pattern = "oth",runnum)) {
+    othDeaths<-T 
+    Runner<-unlist(str_split(runnum,"oth"))[1]
+  }else {
+    othDeaths<-F
+    Runner<-runnum
+  }
+  # Get the simulation object
+  RL<-get(Runner)
+  # Reason for death
+  if(RL$eventall){
+    if(othDeaths) eventer<-"Non-CVD/Heart" else  eventer<-"All Deaths"
+  } else eventer<-"CVD/Heart"
+  # Let's do this!
+  for(Yr in c(5,10,20)){
+    for(ageL in c(45,65)){
+      Troc<-calc_Year_roc(RL,Year=Yr,ageBnds=c(ageL,ageL+20), othDeaths=othDeaths)
+      ROC%<>%rbind(data.frame(RunNumber=runnum,Year=paste0(Yr,"-Year Survival"),
+                              AgeRange=paste0("Age: ",ageL,"-",ageL+19),EventType=eventer,
+                              Covariates="Means/FRS & Deltas",
+                              TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+      for(covvies in c("sysmean","deltas")) {
+          if(covvies=="sysmean") namer<-"Systolic Mean" else namer<-"Delta Terms"
+          Troc<-calc_Year_roc(RL,Year=Yr,ageBnds=c(ageL,ageL+20),RedCovars=covvies, othDeaths=othDeaths)
+          ROC%<>%rbind(data.frame(RunNumber=runnum,Year=paste0(Yr,"-Year Survival"),
+                                  AgeRange=paste0("Age: ",ageL,"-",ageL+19),EventType=eventer,
+                                  Covariates=namer,
+                                  TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+      }
+    }
+  }
+}
+ROC$Year<-factor(ROC$Year,levels = c("5-Year Survival","10-Year Survival","20-Year Survival"))
+
+for (runnum in c("RL1","RL2","RL7","RL8","RL2oth","RL8oth")){
+  # Add the AUC values to the plot as well
+  AUROC<-ROC%>%filter(RunNumber==runnum)%>%
+    group_by(Year,AgeRange,Covariates)%>%summarise(AUC=max(AUC),.groups = "keep")
+  AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+  AUROC$x<-0.75
+  AUROC$y<-0.4
+  AUROC$y[AUROC$Covariates=="Systolic Mean"]<-0.35
+  AUROC$y[AUROC$Covariates=="Delta Terms"]<-0.3
+  
+  p<-ROC%>%filter(RunNumber==runnum)%>%
+    ggplot(aes(group=Covariates))+
+    geom_point(aes(FPR,TPR-FPR,colour=Covariates)) +
+    geom_line(aes(FPR,TPR-FPR,colour=Covariates)) +
+    geom_abline(slope = 0,intercept = 0) + ylim(0,0.4) +
+    geom_text(data=AUROC,aes(x,y,label=label,colour=Covariates)) +
+    xlab("False Positive Ratio") + ylab("True Positive Ratio - False Positive Ratio") +
+    facet_grid(rows = vars(Year),cols = vars(AgeRange))+
+    ggtitle(paste0("Model Number - ",runnum))+
+    theme(plot.title = element_text(hjust = 0.5));p
+  ggsave(paste0("ROC_CAx-Covariates_EventType_",runnum,".png"),p,path = "./Plots/Survival/ROCs")
+}
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%% EVENT TYPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+ROC<-data.frame()
+for (runnum in c("RL1","RL2","RL7","RL8","RL2oth","RL8oth")){
+  # Just in case we specifically want to look at the population that didn't die from CVD-Hrt 
+  if(grepl(pattern = "oth",runnum)) {
+    othDeaths<-T 
+    Runner<-unlist(str_split(runnum,"oth"))[1]
+  }else {
+    othDeaths<-F
+    Runner<-runnum
+  }
+  # Get the simulation object
+  RL<-get(Runner)
+  # Reason for death
+  if(RL$eventall){
+    if(othDeaths) eventer<-"Non-CVD/Heart" else  eventer<-"All Deaths"
+  } else eventer<-"CVD/Heart"
+  # Let's do this!
+  for(Yr in c(5,10,20)){
+    for(ageL in c(45,65)){
+          Troc<-calc_Year_roc(RL,Year=Yr,ageBnds=c(ageL,ageL+20), othDeaths=othDeaths)
+          ROC%<>%rbind(data.frame(RunNumber=runnum,Year=paste0(Yr,"-Year Survival"),
+                                  AgeRange=paste0("Age: ",ageL,"-",ageL+19),EventType=eventer,
+                                  TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+    }
+  }
+}
+ROC$Year<-factor(ROC$Year,levels = c("5-Year Survival","10-Year Survival","20-Year Survival"))
+
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(RunNumber %in% c("RL1","RL2","RL2oth"))%>%
+  group_by(Year,AgeRange,EventType)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+AUROC$y[AUROC$EventType=="CVD/Heart"]<-0.35
+AUROC$y[AUROC$EventType=="Non-CVD/Heart"]<-0.3
+
+p<-ROC%>%filter(RunNumber %in% c("RL1","RL2","RL2oth"))%>%ggplot(aes(group=EventType))+
+    geom_point(aes(FPR,TPR-FPR,colour=EventType)) +
+    geom_line(aes(FPR,TPR-FPR,colour=EventType)) +
+    geom_abline(slope = 0,intercept = 0) + ylim(0,0.4) +
+    geom_text(data=AUROC,aes(x,y,label=label,colour=EventType)) +
+    xlab("False Positive Ratio") + ylab("True Positive Ratio - False Positive Ratio") +
+    facet_grid(rows = vars(Year),cols = vars(AgeRange))+
+    ggtitle("Mean Blood Pressure Model")+
+    theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_MeanBPModel_CAx-EventType.png"),p,path = "./Plots/Survival/ROCs")
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(RunNumber %in% c("RL7","RL8","RL8oth"))%>%
+  group_by(Year,AgeRange,EventType)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+AUROC$y[AUROC$EventType=="CVD/Heart"]<-0.35
+AUROC$y[AUROC$EventType=="Non-CVD/Heart"]<-0.3
+
+p<-ROC%>%filter(RunNumber %in% c("RL7","RL8","RL8oth"))%>%ggplot(aes(group=EventType))+
+    geom_point(aes(FPR,TPR-FPR,colour=EventType)) +
+    geom_line(aes(FPR,TPR-FPR,colour=EventType)) +
+    geom_abline(slope = 0,intercept = 0) + ylim(0,0.4) +
+    geom_text(data=AUROC,aes(x,y,label=label,colour=EventType)) +
+    xlab("False Positive Ratio") + ylab("True Positive Ratio - False Positive Ratio") +
+    facet_grid(rows = vars(Year),cols = vars(AgeRange))+
+    ggtitle("Framingham Risk Score Model")+
+    theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_FRSModel_CAx-EventType.png"),p,path = "./Plots/Survival/ROCs")
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
 survy<-GetSurvival(RL = RL,roc = F,Gender="female",usexhat=TRUE)
  
@@ -1206,6 +1431,22 @@ ggsave("LexisDelta.png", plot=p,path = paste0(directory,'Plots/Survival'),width 
 p<-plot_discrete_cbar(unique((hist(output$Delta,breaks = 10,plot = F))$breaks), 
                       spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
 ggsave("LexisDelta_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # BEST SURVIVAL PREDICTION
 # survy<-GetSurvival(RL5)
