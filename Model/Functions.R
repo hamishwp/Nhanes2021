@@ -268,23 +268,29 @@ FilterRL<-function(RL,ind,sigma=F){
 
 # Make the predictions on the survival outcomes of the individuals, 
 # based on posterior samples from the HMC algorithm (from Stan)
-GetSurvival<-function(RL=NULL,roc=F,Ethnicity=NULL,Gender=NULL,usexhat=TRUE){
+GetSurvival<-function(RL=NULL,roc=F,Ethnicity=NULL,Gender=NULL,usexhat=TRUE, sigma=T){
   
   if(usexhat) xhat<-t(cbind(RL$xhat1,RL$xhat2,RL$xhat3,RL$xhat4))
   
+  if(sigma) variancer <- "sigma" else variancer <- "tau"
+  
   if(RL$FRS) nhanes<-DF_Nhanes(list_nhanesFRS) else nhanes<-DF_Nhanes(list_nhanesA)
   
-  if(!is.null(Ethnicity)) {
+  if(!is.null(Ethnicity) & !is.null(Gender)){
+    ind<-as.logical(nhanes[[Ethnicity]]) & as.logical(nhanes[[Gender]])
+    # nhanes<-nhanes[ind,]
+    nhanes<-nhanes[nhanes[[Ethnicity]]==1 & nhanes[[Gender]]==1,]
+    RL%<>%FilterRL(ind, sigma=T)
+  } else if(!is.null(Ethnicity)) {
     ind<-as.logical(nhanes[[Ethnicity]])
     # nhanes<-nhanes[ind,]
     nhanes<-nhanes[nhanes[[Ethnicity]]==1,]
-    RL%<>%FilterRL(ind)
-  }
-  if(!is.null(Gender)) {
+    RL%<>%FilterRL(ind, sigma=T)
+  } else if(!is.null(Gender)) {
     ind<-as.logical(nhanes[[Gender]])
     # nhanes<-nhanes[ind,]
     nhanes<-nhanes[nhanes[[Gender]]==1,]
-    RL%<>%FilterRL(ind)
+    RL%<>%FilterRL(ind, sigma=T)
   }
   
   LLL<-length(nhanes$T)

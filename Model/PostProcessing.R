@@ -9,7 +9,7 @@ library(ggpubr)
 library(LexisPlotR)
 source("./Model/Functions.R")
 
-directory<-'~/Documents/BEAST/Coding/Oxford/Nhanes2021/'
+directory<-'~/Document/Coding/Oxford/Nhanes2021/'
 
 saveresultslist<-function(resultslist,RL,link){
   
