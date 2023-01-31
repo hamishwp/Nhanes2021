@@ -1,0 +1,17 @@
+Population,BP,Variable,Mean,SD
+Full,Systolic,Overall Mean,125.36,19.48
+Full,Systolic,Delta,5.24,4.86
+Full,Systolic,Home SD,2.74,2.05
+Full,Systolic,Clinic SD,3.78,2.61
+Full,Diastolic,Overall Mean,74.34,10.29
+Full,Diastolic,Delta,3.9,3.14
+Full,Diastolic,Home SD,2.34,1.75
+Full,Diastolic,Clinic SD,3.08,2.08
+FRS,Systolic,Overall Mean,125.89,18.33
+FRS,Systolic,Delta,5.23,4.71
+FRS,Systolic,Home SD,2.78,2.06
+FRS,Systolic,Clinic SD,3.78,2.52
+FRS,Diastolic,Overall Mean,76.41,10
+FRS,Diastolic,Delta,3.84,3.1
+FRS,Diastolic,Home SD,2.28,1.71
+FRS,Diastolic,Clinic SD,2.92,1.97

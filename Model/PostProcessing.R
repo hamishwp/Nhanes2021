@@ -533,8 +533,102 @@ rm(xhatS,xhatD,DF)
 #%%%%%%%%%%%%%%%%%%%%%%%%% DEMOGRAPHY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-# First check the stratification between deltas, per demography
 nhanes<-DF_Nhanes(list_nhanesA)
+# Create the demog groups
+nhanes$Ethnicity<-factor(nhanes$black+2*nhanes$white+3*nhanes$other,
+                         levels = c(1,2,3),labels=c("Black","White","Other"))
+nhanes$Gender<-factor(nhanes$female,levels=c(0,1),labels=c("Female","Male"))
+
+deaths<-data.frame()
+for (Yr in c(5,10,20)){
+  for (ageB in c(45,65)){
+    for(Gen in c("Female","Male")) {
+      for(Eth in c("Black","White","Other")){
+        deaths%<>%rbind(data.frame(
+          Year=paste0(Yr,"-Year Survival"),
+          AgeRange=paste0("Age: ",ageB,"-",ageB+19),EventType="CVD and Heart",
+          Ethnicity=Eth,Gender=Gen,
+          Deaths=sum(nhanes$eventCVDHrt[nhanes$age<ageB+19 & nhanes$age>=ageB & 
+                                          nhanes$T<Yr & nhanes$Ethnicity==Eth &
+                                          nhanes$Gender==Gen])))
+        deaths%<>%rbind(data.frame(
+          Year=paste0(Yr,"-Year Survival"),
+          AgeRange=paste0("Age: ",ageB,"-",ageB+19),EventType="All Deaths",
+          Ethnicity=Eth,Gender=Gen,
+          Deaths=sum(nhanes$eventall[nhanes$age<ageB+19 & nhanes$age>=ageB & 
+                                       nhanes$T<Yr & nhanes$Ethnicity==Eth &
+                                       nhanes$Gender==Gen])))
+      }
+    }
+  }
+}
+
+write_csv(deaths,"./Results/Deaths_FreqTable.csv")
+
+Blood<-data.frame(Mean=c(mean(rowMeans(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC,
+                              list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome))),
+                  0.5*mean(abs(rowMeans(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC))-
+                                  rowMeans(cbind(list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome)))),
+                  mean(apply(cbind(list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome),1,sd)),
+                  mean(apply(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC),1,sd))),
+                  SD=c(sd(rowMeans(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC,
+                                            list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome))),
+                  0.5*sd(abs(rowMeans(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC))-
+                                           rowMeans(cbind(list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome)))),
+                  sd(apply(cbind(list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome),1,sd)),
+                  sd(apply(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC),1,sd))),
+                  Variable=c("Overall Mean","Delta", "Home SD", "Clinic SD"),
+                  BP="Systolic",Population="Full")
+
+Blood%<>%rbind(data.frame(Mean=c(mean(rowMeans(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC,
+                                                     list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome))),
+                                 0.5*mean(abs(rowMeans(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC))-
+                                                rowMeans(cbind(list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome)))),
+                                 mean(apply(cbind(list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome),1,sd)),
+                                 mean(apply(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC),1,sd))),
+                          SD=c(sd(rowMeans(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC,
+                                                 list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome))),
+                               0.5*sd(abs(rowMeans(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC))-
+                                            rowMeans(cbind(list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome)))),
+                               sd(apply(cbind(list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome),1,sd)),
+                               sd(apply(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC),1,sd))),
+                          Variable=c("Overall Mean","Delta", "Home SD", "Clinic SD"),
+                          BP="Diastolic",Population="Full"))
+
+Blood%<>%rbind(data.frame(Mean=c(mean(rowMeans(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC,
+                                             list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome))),
+                         0.5*mean(abs(rowMeans(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC))-
+                                        rowMeans(cbind(list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome)))),
+                         mean(apply(cbind(list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome),1,sd)),
+                         mean(apply(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC),1,sd))),
+                  SD=c(sd(rowMeans(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC,
+                                         list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome))),
+                       0.5*sd(abs(rowMeans(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC))-
+                                    rowMeans(cbind(list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome)))),
+                       sd(apply(cbind(list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome),1,sd)),
+                       sd(apply(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC),1,sd))),
+                  Variable=c("Overall Mean","Delta", "Home SD", "Clinic SD"),
+                  BP="Systolic",Population="FRS"))
+
+Blood%<>%rbind(data.frame(Mean=c(mean(rowMeans(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC,
+                                                     list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome))),
+                                 0.5*mean(abs(rowMeans(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC))-
+                                                rowMeans(cbind(list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome)))),
+                                 mean(apply(cbind(list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome),1,sd)),
+                                 mean(apply(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC),1,sd))),
+                          SD=c(sd(rowMeans(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC,
+                                                 list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome))),
+                               0.5*sd(abs(rowMeans(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC))-
+                                            rowMeans(cbind(list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome)))),
+                               sd(apply(cbind(list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome),1,sd)),
+                               sd(apply(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC),1,sd))),
+                          Variable=c("Overall Mean","Delta", "Home SD", "Clinic SD"),
+                          BP="Diastolic",Population="FRS"))
+
+Blood[,1:2]<-round(Blood[,1:2],2); Blood<-Blood[,c(5,4,3,1,2)]
+write_csv(Blood,"./Results/BloodVals.csv")
+
+# First check the stratification between deltas, per demography
 Delties<-data.frame(Delta=apply(RL1$D_i_S,2,median))
 Delties$Ethnicity<-nhanes$black+2*nhanes$white+3*nhanes$other
 Delties$Gender<-nhanes$female+10*nhanes$male
