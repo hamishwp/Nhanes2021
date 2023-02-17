@@ -1,73 +1,73 @@
 Year,AgeRange,EventType,Ethnicity,Gender,Deaths
-5-Year Survival,Age: 45-64,CVD and Heart,Black,Female,15
-5-Year Survival,Age: 45-64,All Deaths,Black,Female,44
-5-Year Survival,Age: 45-64,CVD and Heart,White,Female,9
-5-Year Survival,Age: 45-64,All Deaths,White,Female,33
-5-Year Survival,Age: 45-64,CVD and Heart,Other,Female,9
-5-Year Survival,Age: 45-64,All Deaths,Other,Female,24
-5-Year Survival,Age: 45-64,CVD and Heart,Black,Male,6
-5-Year Survival,Age: 45-64,All Deaths,Black,Male,25
-5-Year Survival,Age: 45-64,CVD and Heart,White,Male,7
-5-Year Survival,Age: 45-64,All Deaths,White,Male,24
-5-Year Survival,Age: 45-64,CVD and Heart,Other,Male,6
-5-Year Survival,Age: 45-64,All Deaths,Other,Male,21
-5-Year Survival,Age: 65-84,CVD and Heart,Black,Female,35
-5-Year Survival,Age: 65-84,All Deaths,Black,Female,87
-5-Year Survival,Age: 65-84,CVD and Heart,White,Female,92
-5-Year Survival,Age: 65-84,All Deaths,White,Female,253
-5-Year Survival,Age: 65-84,CVD and Heart,Other,Female,15
-5-Year Survival,Age: 65-84,All Deaths,Other,Female,45
-5-Year Survival,Age: 65-84,CVD and Heart,Black,Male,19
-5-Year Survival,Age: 65-84,All Deaths,Black,Male,49
-5-Year Survival,Age: 65-84,CVD and Heart,White,Male,55
-5-Year Survival,Age: 65-84,All Deaths,White,Male,138
-5-Year Survival,Age: 65-84,CVD and Heart,Other,Male,10
-5-Year Survival,Age: 65-84,All Deaths,Other,Male,29
-10-Year Survival,Age: 45-64,CVD and Heart,Black,Female,23
-10-Year Survival,Age: 45-64,All Deaths,Black,Female,87
-10-Year Survival,Age: 45-64,CVD and Heart,White,Female,21
-10-Year Survival,Age: 45-64,All Deaths,White,Female,67
-10-Year Survival,Age: 45-64,CVD and Heart,Other,Female,19
-10-Year Survival,Age: 45-64,All Deaths,Other,Female,63
-10-Year Survival,Age: 45-64,CVD and Heart,Black,Male,17
-10-Year Survival,Age: 45-64,All Deaths,Black,Male,67
-10-Year Survival,Age: 45-64,CVD and Heart,White,Male,13
-10-Year Survival,Age: 45-64,All Deaths,White,Male,62
-10-Year Survival,Age: 45-64,CVD and Heart,Other,Male,10
-10-Year Survival,Age: 45-64,All Deaths,Other,Male,44
-10-Year Survival,Age: 65-84,CVD and Heart,Black,Female,56
-10-Year Survival,Age: 65-84,All Deaths,Black,Female,153
-10-Year Survival,Age: 65-84,CVD and Heart,White,Female,187
-10-Year Survival,Age: 65-84,All Deaths,White,Female,501
-10-Year Survival,Age: 65-84,CVD and Heart,Other,Female,37
-10-Year Survival,Age: 65-84,All Deaths,Other,Female,105
-10-Year Survival,Age: 65-84,CVD and Heart,Black,Male,50
-10-Year Survival,Age: 65-84,All Deaths,Black,Male,121
-10-Year Survival,Age: 65-84,CVD and Heart,White,Male,144
-10-Year Survival,Age: 65-84,All Deaths,White,Male,357
-10-Year Survival,Age: 65-84,CVD and Heart,Other,Male,44
-10-Year Survival,Age: 65-84,All Deaths,Other,Male,91
-20-Year Survival,Age: 45-64,CVD and Heart,Black,Female,46
-20-Year Survival,Age: 45-64,All Deaths,Black,Female,181
-20-Year Survival,Age: 45-64,CVD and Heart,White,Female,59
-20-Year Survival,Age: 45-64,All Deaths,White,Female,218
-20-Year Survival,Age: 45-64,CVD and Heart,Other,Female,44
-20-Year Survival,Age: 45-64,All Deaths,Other,Female,150
-20-Year Survival,Age: 45-64,CVD and Heart,Black,Male,35
-20-Year Survival,Age: 45-64,All Deaths,Black,Male,157
-20-Year Survival,Age: 45-64,CVD and Heart,White,Male,37
-20-Year Survival,Age: 45-64,All Deaths,White,Male,189
-20-Year Survival,Age: 45-64,CVD and Heart,Other,Male,26
-20-Year Survival,Age: 45-64,All Deaths,Other,Male,97
-20-Year Survival,Age: 65-84,CVD and Heart,Black,Female,93
-20-Year Survival,Age: 65-84,All Deaths,Black,Female,269
-20-Year Survival,Age: 65-84,CVD and Heart,White,Female,295
-20-Year Survival,Age: 65-84,All Deaths,White,Female,835
-20-Year Survival,Age: 65-84,CVD and Heart,Other,Female,66
-20-Year Survival,Age: 65-84,All Deaths,Other,Female,205
-20-Year Survival,Age: 65-84,CVD and Heart,Black,Male,90
-20-Year Survival,Age: 65-84,All Deaths,Black,Male,229
-20-Year Survival,Age: 65-84,CVD and Heart,White,Male,268
-20-Year Survival,Age: 65-84,All Deaths,White,Male,749
-20-Year Survival,Age: 65-84,CVD and Heart,Other,Male,66
-20-Year Survival,Age: 65-84,All Deaths,Other,Male,170
+5-Year Mortality,Age: 45-64,HA-CVD-CeVD,Black,Female,15
+5-Year Mortality,Age: 45-64,All Deaths,Black,Female,44
+5-Year Mortality,Age: 45-64,HA-CVD-CeVD,White,Female,9
+5-Year Mortality,Age: 45-64,All Deaths,White,Female,33
+5-Year Mortality,Age: 45-64,HA-CVD-CeVD,Other,Female,9
+5-Year Mortality,Age: 45-64,All Deaths,Other,Female,24
+5-Year Mortality,Age: 45-64,HA-CVD-CeVD,Black,Male,6
+5-Year Mortality,Age: 45-64,All Deaths,Black,Male,25
+5-Year Mortality,Age: 45-64,HA-CVD-CeVD,White,Male,7
+5-Year Mortality,Age: 45-64,All Deaths,White,Male,24
+5-Year Mortality,Age: 45-64,HA-CVD-CeVD,Other,Male,6
+5-Year Mortality,Age: 45-64,All Deaths,Other,Male,21
+5-Year Mortality,Age: 65-84,HA-CVD-CeVD,Black,Female,35
+5-Year Mortality,Age: 65-84,All Deaths,Black,Female,87
+5-Year Mortality,Age: 65-84,HA-CVD-CeVD,White,Female,92
+5-Year Mortality,Age: 65-84,All Deaths,White,Female,253
+5-Year Mortality,Age: 65-84,HA-CVD-CeVD,Other,Female,15
+5-Year Mortality,Age: 65-84,All Deaths,Other,Female,45
+5-Year Mortality,Age: 65-84,HA-CVD-CeVD,Black,Male,19
+5-Year Mortality,Age: 65-84,All Deaths,Black,Male,49
+5-Year Mortality,Age: 65-84,HA-CVD-CeVD,White,Male,55
+5-Year Mortality,Age: 65-84,All Deaths,White,Male,138
+5-Year Mortality,Age: 65-84,HA-CVD-CeVD,Other,Male,10
+5-Year Mortality,Age: 65-84,All Deaths,Other,Male,29
+10-Year Mortality,Age: 45-64,HA-CVD-CeVD,Black,Female,23
+10-Year Mortality,Age: 45-64,All Deaths,Black,Female,87
+10-Year Mortality,Age: 45-64,HA-CVD-CeVD,White,Female,21
+10-Year Mortality,Age: 45-64,All Deaths,White,Female,67
+10-Year Mortality,Age: 45-64,HA-CVD-CeVD,Other,Female,19
+10-Year Mortality,Age: 45-64,All Deaths,Other,Female,63
+10-Year Mortality,Age: 45-64,HA-CVD-CeVD,Black,Male,17
+10-Year Mortality,Age: 45-64,All Deaths,Black,Male,67
+10-Year Mortality,Age: 45-64,HA-CVD-CeVD,White,Male,13
+10-Year Mortality,Age: 45-64,All Deaths,White,Male,62
+10-Year Mortality,Age: 45-64,HA-CVD-CeVD,Other,Male,10
+10-Year Mortality,Age: 45-64,All Deaths,Other,Male,44
+10-Year Mortality,Age: 65-84,HA-CVD-CeVD,Black,Female,56
+10-Year Mortality,Age: 65-84,All Deaths,Black,Female,153
+10-Year Mortality,Age: 65-84,HA-CVD-CeVD,White,Female,187
+10-Year Mortality,Age: 65-84,All Deaths,White,Female,501
+10-Year Mortality,Age: 65-84,HA-CVD-CeVD,Other,Female,37
+10-Year Mortality,Age: 65-84,All Deaths,Other,Female,105
+10-Year Mortality,Age: 65-84,HA-CVD-CeVD,Black,Male,50
+10-Year Mortality,Age: 65-84,All Deaths,Black,Male,121
+10-Year Mortality,Age: 65-84,HA-CVD-CeVD,White,Male,144
+10-Year Mortality,Age: 65-84,All Deaths,White,Male,357
+10-Year Mortality,Age: 65-84,HA-CVD-CeVD,Other,Male,44
+10-Year Mortality,Age: 65-84,All Deaths,Other,Male,91
+15-Year Mortality,Age: 45-64,HA-CVD-CeVD,Black,Female,37
+15-Year Mortality,Age: 45-64,All Deaths,Black,Female,132
+15-Year Mortality,Age: 45-64,HA-CVD-CeVD,White,Female,44
+15-Year Mortality,Age: 45-64,All Deaths,White,Female,139
+15-Year Mortality,Age: 45-64,HA-CVD-CeVD,Other,Female,35
+15-Year Mortality,Age: 45-64,All Deaths,Other,Female,105
+15-Year Mortality,Age: 45-64,HA-CVD-CeVD,Black,Male,26
+15-Year Mortality,Age: 45-64,All Deaths,Black,Male,113
+15-Year Mortality,Age: 45-64,HA-CVD-CeVD,White,Male,29
+15-Year Mortality,Age: 45-64,All Deaths,White,Male,117
+15-Year Mortality,Age: 45-64,HA-CVD-CeVD,Other,Male,18
+15-Year Mortality,Age: 45-64,All Deaths,Other,Male,67
+15-Year Mortality,Age: 65-84,HA-CVD-CeVD,Black,Female,79
+15-Year Mortality,Age: 65-84,All Deaths,Black,Female,231
+15-Year Mortality,Age: 65-84,HA-CVD-CeVD,White,Female,251
+15-Year Mortality,Age: 65-84,All Deaths,White,Female,694
+15-Year Mortality,Age: 65-84,HA-CVD-CeVD,Other,Female,56
+15-Year Mortality,Age: 65-84,All Deaths,Other,Female,170
+15-Year Mortality,Age: 65-84,HA-CVD-CeVD,Black,Male,76
+15-Year Mortality,Age: 65-84,All Deaths,Black,Male,185
+15-Year Mortality,Age: 65-84,HA-CVD-CeVD,White,Male,225
+15-Year Mortality,Age: 65-84,All Deaths,White,Male,589
+15-Year Mortality,Age: 65-84,HA-CVD-CeVD,Other,Male,57
+15-Year Mortality,Age: 65-84,All Deaths,Other,Male,139
