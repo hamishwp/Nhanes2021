@@ -957,6 +957,7 @@ kable(openxlsx::read.xlsx("./Results/AppendixTables.xlsx",sheet = "RL7-8",rows =
 format="latex", escape = F,booktabs = T, caption = "Parameters for survival model for HA-CVD-CeVD and all-cause mortality, NHANES III, FRS-population only, using the 1998 FRS-based model.")
 ```
 
+### Results - Model Performance
 
 To measure the performance of the model to predict the survival outcome of individuals in the population, figure \ref{fig:cumpred} shows, ordered by individual age, the cumulative hazard $H(t)$ predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
 
@@ -1006,7 +1007,7 @@ format="latex", escape = F,booktabs = T, caption = "Frequency table of the popul
 ```
 
 
-Finally, we present a series of figures that provide ROC curves and AUC values for different linear predictor (Cox's proportional hazards model) covariate configurations. By setting the covariate-specific $\beta$ parameter values to zero, we can measure the additional prediction performance that adding different covariates provides to the model. In figures \ref{fig:ROC_RL1} to \ref{fig:ROC_RL8oth}, we present three main formulations: using only the systolic and diastolic $\Delta$ terms, using the mean systolic and diastolic (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or the FRS value (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}) terms as well as the systolic and diastolic $\Delta$ terms (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL8oth}) and, finally, using the systolic mean (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or FRS value only (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}). Figures \ref{fig:ROC_RL1}, \ref{fig:ROC_RL2} and \ref{fig:ROC_RL2oth} apply to the full-population with the models trained on HA-CVD-CeVD and heart-attack related mortality, all-cause, and other mortality, respectively. Figures \ref{fig:ROC_RL7}, \ref{fig:ROC_RL8} and \ref{fig:ROC_RL8oth} apply to the population with an FRS value, with the models trained on HA-CVD-CeVD and heart-attack related mortality, all-cause, and other mortality, respectively. The first thing to note as a commonality between all these different figures is that the use of the long-term variability, $\Delta$, in the model has comparable performance with that of using the systolic mean or FRS values only. Additionally, where the number of deaths permits for prediction, the use of both the $\Delta$ and mean/FRS values results in higher AUC values than using models that use one or the other. Finally, the use of the FRS value consistently under-performs the mean diastolic and systolic blood pressure-based model.
+To finalise the section on the performance of the models using ROC and AUC values, we present a series of figures that provide ROC curves and AUC values for different linear predictor (Cox's proportional hazards model) covariate configurations. By setting the covariate-specific $\beta$ parameter values to zero, we can measure the additional prediction performance that adding different covariates provides to the model. In figures \ref{fig:ROC_RL1} to \ref{fig:ROC_RL8oth}, we present three main formulations: using only the systolic and diastolic $\Delta$ terms, using the mean systolic and diastolic (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or the FRS value (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}) terms as well as the systolic and diastolic $\Delta$ terms (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL8oth}) and, finally, using the systolic mean (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or FRS value only (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}). Figures \ref{fig:ROC_RL1}, \ref{fig:ROC_RL2} and \ref{fig:ROC_RL2oth} apply to the full-population with the models trained on HA-CVD-CeVD and heart-attack related mortality, all-cause, and other mortality, respectively. Figures \ref{fig:ROC_RL7}, \ref{fig:ROC_RL8} and \ref{fig:ROC_RL8oth} apply to the population with an FRS value, with the models trained on HA-CVD-CeVD and heart-attack related mortality, all-cause, and other mortality, respectively. The first thing to note as a commonality between all these different figures is that the use of the long-term variability, $\Delta$, in the model has comparable performance with that of using the systolic mean or FRS values only. Additionally, where the number of deaths permits for prediction, the use of both the $\Delta$ and mean/FRS values results in higher AUC values than using models that use one or the other. Finally, the use of the FRS value consistently under-performs the mean diastolic and systolic blood pressure-based model.
 
 ![ROC curves for the mean systolic and diastolic model, looking specifically at HA-CVD-CeVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png){#fig:ROC_RL1}
 
@@ -1020,8 +1021,48 @@ Finally, we present a series of figures that provide ROC curves and AUC values f
 
 ![ROC curves for for the FRS-based model, looking non-HA-CVD-CeVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8oth}
 
+### Results - Exploring $\Delta$ Directionality
 
+This section of the appendix is to explore whether the directionality of the difference in clinic-home blood pressure (represented through the non-absolute value of the $\Delta$ covariate) may have an influence on the survival outcome in the population. In the work presented in this article, $\Delta$ is the absolute value of the differences in the means of the blood pressure measurements at the clinic and at home, respectively, for both diastolic and systolic blood pressure. By 'directionality', we refer to whether the difference between the clinic and home mean measurements are positive or negative. Figure \ref{fig:DeltaDensities} shows the clinic-home directionalities, split by demographic group, indicating no significant difference between the different demographic groups. There is a general trend that the directionality for systolic and diastolic blood pressure is more likely to be the same than opposite.
 
+![The range of the non-absolute $\Delta$ values in the systolic and diastolic blood pressure measurements, split by demographic group. This reflects the differences between the average measurements at the clinic and at home. ](./Rmarkdown_Plots/Delta_plusminus_Demography.png){#fig:DeltaDensities}
+
+In order to explore whether the directionality of the clinic-home measurements influences survival outcome, we will use a combination of Kaplan-Meier curves and Cox's proportional hazards regression. The latter will implement a simple Maximum Likelihood Estimation (MLE) method based on summary statistics of the Bayesian posterior blood pressure values, not the Bayesian-HMC method applied elsewhere in this article. The Kaplan-Meier curve is a plot of the change in survival probability of a population in time since the start of a survey/census. The survival distribution is calculated using
+\begin{equation}\label{survKM}
+\hat{S}(t)=\prod_{t_j \le t}\left(1-\frac{d_j}{r_j} \right),
+\end{equation}
+for $d_j$ the number of individuals who die within the time interval $t_j$ and $r_j$ the population that are alive (at risk of death) and not censored. Greenwood's formula is used to calculate the variance of the Kaplan-Meier estimation
+\begin{equation}\label{sigKM}
+\hat{\sigma}(t)^2=\hat{S}(t)^2\sum_{t_j \le t}\left(\frac{d_j}{r_j(r_j-d_j)} \right).
+\end{equation}
+The 100(1-$\alpha$)\% confidence intervals of the Kaplan-Meier estimate are assumed to be normally distributed
+\begin{equation}\label{CIKM}
+\hat{S}(t) \pm z_{1-\alpha/2}\hat{\sigma}(t).
+\end{equation}
+
+Figures \ref{fig:KM45tot} and \ref{fig:KM65tot} show the Kaplan-Meier estimates for the full NHANES population for HA-CVD-CeVD mortality, split by demographic group, for the age range 45-64 and 65-84, respectively. The survival probability of the older population decreases faster in time than the middle-aged (45-64) population.
+
+![Kaplan-Meier plots of the full-population for HA-CVD-CeVD mortality, for ages between 45-64, split by demographic group. ](./Rmarkdown_Plots/SurvProbKM_45-64.png){#fig:KM45tot}
+
+![Kaplan-Meier plots of the full-population for HA-CVD-CeVD mortality, for ages between 65-84, split by demographic group. ](./Rmarkdown_Plots/SurvProbKM_65-84.png){#fig:KM65tot}
+
+By splitting the populations into the respective regions of the $\Delta$ directionality, we can use the different Kaplan-Meier plots to try to identify differences in the survival outcomes. Figures \ref{fig:KM45_deltaregion} and \ref{fig:KM65_deltaregion} show the Kaplan-Meier estimates for the full NHANES population for HA-CVD-CeVD mortality, split by $\Delta$ directionality and demographic group, for the age range 45-64 and 65-84, respectively. With the broad confidence intervals, all of the different $\Delta$ directionality regions overlap, for all demographic groups and both age range groups (where $\hat{S}(t)\neq 1$).
+
+![Kaplan-Meier plots of the full-population for HA-CVD-CeVD mortality, for ages between 45-64, split by demographic group and region in systolic-diastolic $\Delta$ space. ](./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png){#fig:KM45_deltaregion}
+
+![Kaplan-Meier plots of the full-population for HA-CVD-CeVD mortality, for ages between 65-84, split by demographic group and region in systolic-diastolic $\Delta$ space. ](./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png){#fig:KM65_deltaregion}
+
+We further quantify this insignificant relationship between $\Delta$ directionality and survival outcome via the use of a Cox's Proportional Hazards (CPH) model. Via the use of the 'coxph' function in the 'survival' R package, we fit (using MLE) a CPH model. The covariates used in the model are $\Delta$ directionality region, gender, ethnicity and age. Table \ref{tab:DeltaDir} shows the summary of the model fit, which reflects that being in different $\Delta$ directionality regions has a non-statistically significant influence on survival outcomes. As shown in the remainder of this article, ethnicity, gender and age are shown to have statistically significant effects on survival outcome.
+
+```{r DeltaDir,echo=F}
+DCox<-read_csv("./Results/DeltaPosTab.csv",show_col_types = FALSE)
+kable(DCox,
+format="latex", escape = F,booktabs = T, caption = "Parameters for distribution of blood pressure, for the full population")
+```
+
+Finally, we wish to confirm that the perfomance of the model does not depend on the directionality of $\Delta$. Figure \ref{fig:DeltaAUCs} plots the AUC values of 10-year HA-CVD-CeVD mortality for the all-covariate mean blood pressure-based model trained on the full NHANES population, split by the two age-ranges (45-64 and 65-84) and demographic groups. There is no clear trend between mode performance for the different regions of $\Delta$ directionality.
+
+![AUC values of the full-population, all covariate model with the mean blood pressure model, based on HA-CVD-CeVD 10-year mortality. ](./Rmarkdown_Plots/DeltaDirection_AUCs.png){#fig:DeltaAUCs}    
 
 
 
