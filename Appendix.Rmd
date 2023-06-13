@@ -8,7 +8,7 @@ output:
     toc_depth: 3
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE,message=FALSE,warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(tinytex.verbose = TRUE)
 library(tidyverse)
@@ -48,7 +48,7 @@ The majority of mortality events are censored --- not yet known at the time of d
 When HA-CVD-CeVD mortality is the event being analysed, deaths due to other causes are treated as noninformative censoring events.
 In this study, we explored the following covariates:
 
-```{r, include=FALSE}
+```{r, include=FALSE,message=FALSE,warning=FALSE}
 DF<-data.frame(varnames=c("$FRS-1998$",
                           "$FRS-ATP$",
                           "$M_S$",
@@ -94,7 +94,7 @@ DF<-data.frame(varnames=c("$FRS-1998$",
 
 ```
 
-```{r, echo=F, label= "runnumers"}
+```{r, echo=F, label= "runnumers",message=FALSE,warning=FALSE}
 kable(DF,col.names = c("Variable Name", "Support", "Description"),
 format="latex", escape = F,booktabs = T)
 
@@ -202,14 +202,14 @@ Finally, the direction of the arrows implies causality assumed in the model.
 For convenience, we provide an overview of the different blood pressure values in the full and FRS populations in tables \ref{tab:BloodFull} and \ref{tab:BloodFRS}.
 
 
-```{r BloodFull,echo=F}
+```{r BloodFull,echo=F,message=FALSE,warning=FALSE}
 Blood<-read_csv("./Results/BloodVals.csv",show_col_types = FALSE)
 kable(Blood[Blood$Population=="Full",-1],
 format="latex", escape = F,booktabs = T, caption = "Parameters for distribution of blood pressure, for the full population")
 ```
 
 
-```{r BloodFRS,echo=F}
+```{r BloodFRS,echo=F,message=FALSE,warning=FALSE}
 Blood<-read_csv("./Results/BloodVals.csv",show_col_types = FALSE)
 kable(Blood[Blood$Population=="FRS",-1],
 format="latex", escape = F,booktabs = T, caption = "Parameters for distribution of blood pressure, for the FRS population")
@@ -222,8 +222,7 @@ The methodology for this research can be split into three main sections: 1) calc
 
 ### Empirical Bayes Parameters
 
-## Extract intervals for the digits
-Suppose the fractions of digits 0,2,4,6,8 are $b_0,b_2,b_4,b_6,b_8$.
+First, we extract the intervals for the digits in the blood pressure measurement recordings. Suppose the fractions of digits 0,2,4,6,8 are $b_0,b_2,b_4,b_6,b_8$.
 Letting $B_0=0$ and $B_k=10\sum_{j=0}^{k-1}b_{2j}$ for $k=1,\dots,5$,
 we want to choose a positive $a$ and place breaks at $-a+B_k$, so that measurements between $-a+B_k$ and $-a+B_{k+1}$ modulo
 10 are assigned the final digit $2k$, for $k=0,\dots,4$.
@@ -236,7 +235,7 @@ $$
   a= \frac{1}{5}\left(B_1+B_2+B_3+B_4 - 15\right)=\sum_{j=0}^3 (8-2j) b_{2j} \, - 3.
 $$
 
-```{r load_data, include=FALSE}
+```{r load_data, include=FALSE,message=FALSE,warning=FALSE}
 w<-getwd()
 L1 <- './Data_cleaned/nhanesA.RData'
 L2 <- './Data_cleaned/nhanes_cleaned_lists.RData'
@@ -245,7 +244,7 @@ load(L1)
 load(L2)
 load(S1)
 ```
-```{r process, include=FALSE}
+```{r process, include=FALSE,message=FALSE,warning=FALSE}
 N=dim(nhanesA)[1]
 k=3
 BP_type_names <- c('Systolic','Diastolic')
@@ -269,7 +268,7 @@ L=length(sys)
 gamma_dimnames <- list( c('alpha','theta','beta') , c('Clinic' , 'Home'))
 norm_dimnames <- c('m_M','m_Delta', 'sigma2_M', 'sigma2_Delta')
 ```
-```{r imputation, eval=TRUE, tidy=TRUE,include=FALSE}
+```{r imputation, eval=TRUE, tidy=TRUE,include=FALSE,message=FALSE, warning=FALSE}
 digitbreaks <- function(bp){
   digit_table <- unname(table(unlist(bp)%%10))
   digits=digit_table/sum(digit_table)
@@ -312,8 +311,7 @@ imputeBP <- function(bp_with_breaks){
 
 allBP_imp <- lapply(allBP, function(BPtype) lapply(BPtype,function(BPplace) imputeBP(BPplace)))
 ```
-## Fit the BP distribution parameters
-We suppose that each individual has BP measures
+Next step, we fit the BP distribution parameters. We suppose that each individual has BP measures
 $\tilde{y}_{ij}^l$ for $i=1,\dots,n$, $j=1,\dots,k$ (default $k=3$),
 and $l=1,2$, which are rounded versions of 
 $$
@@ -366,7 +364,7 @@ The partial Fisher Information has entries
    \frac1\theta \sum_{i=1}^n \frac{\alpha^2+2\alpha\theta s_i^l+\frac{k-1}{2}\theta s_i^l}{(\theta s_i^l + \alpha)^2}.
 \end{align*}
 where $\psi_1$ is the trigamma function.
-```{r log_likelihoods, tidy=TRUE, echo=FALSE}
+```{r log_likelihoods, tidy=TRUE, echo=FALSE,message=FALSE, warning=FALSE}
   beta_prime_LL=function(alpha,theta,s,k=3){
     k1= (k-1)/2
     n<- length(s)
@@ -452,7 +450,7 @@ where $\sigma_\alpha$ and $\sigma_\beta$ are the standard errors for $\hat\alpha
   \operatorname{SE}\left(\hat\sigma_M^2\right)&\approx \frac{1}{2k}\Bigl(\frac{8k^2\hat\sigma_M^2}{n} + \frac{\sigma_\beta^2}{(\hat\alpha^1-1)^2} + \frac{(\hat\beta^1)^2\sigma_\alpha^2}{(\hat\alpha^1-1)^4} + \frac{\sigma_\beta^2}{(\hat\alpha^2-1)^2} + \frac{(\hat\beta^2)^2\sigma_\alpha^2}{(\hat\alpha^2-1)^4} \Bigr)^{1/2},\\
   \operatorname{SE}\left(\hat\sigma_\Delta^2\right)&\approx \frac{1}{2k}\Bigl(\frac{8k^2\hat\sigma_\Delta^2}{n} + \frac{\sigma_\beta^2}{(\hat\alpha^1-1)^2} + \frac{(\hat\beta^1)^2\sigma_\alpha^2}{(\hat\alpha^1-1)^4} + \frac{\sigma_\beta^2}{(\hat\alpha^2-1)^2} + \frac{(\hat\beta^2)^2\sigma_\alpha^2}{(\hat\alpha^2-1)^4} \Bigr)^{1/2}
 \end{align*}
-```{r parameter_fitting, tidy=TRUE, cache=TRUE,echo=FALSE, eval=TRUE,include=FALSE}
+```{r parameter_fitting, tidy=TRUE, cache=TRUE,echo=FALSE, eval=TRUE,include=FALSE,message=FALSE,warning=FALSE}
 # Input a pair of BP lists (clinical and home), and output 8 parameters, with variances for each
 all_BP_parameters <- function(measures){
   stopifnot(setequal(names(measures) , c('Clinic','Home')),all.equal(dim(measures$Clinic),dim(measures$Home)))
@@ -498,7 +496,7 @@ convert_param1 <- function(all_params){
 <!-- ## Test whether parameters are being fit correctly -->
 <!-- We simulate bootstrap data sets, find the average parameter estimate, and compare to the "true" parameters. -->
 <!-- We also compare the average estimated SE to the "true" SE (which is the SD of the estimates). -->
-```{r test_parameters, eval=TRUE, echo=FALSE, cache = TRUE, results= 'asis',include=FALSE}
+```{r test_parameters, eval=TRUE, echo=FALSE, cache = TRUE, results= 'asis',include=FALSE,message=FALSE,warning=FALSE}
 k <- 3
 num_reps <- 100
 
@@ -618,7 +616,7 @@ print(matrix(c(simulation_mean_SE, simulation_SE,
 
 
 <!-- ## Multiple imputation for the real data -->
-```{r multiple_impute, cache=TRUE, tidy= TRUE,include=FALSE}
+```{r multiple_impute, cache=TRUE, tidy= TRUE,include=FALSE,message=FALSE,warning=FALSE}
 number_impute <- 10
 all_variables_est <- c('m_M','m_Delta','sigma2_M','sigma2_Delta','alpha_C','theta_C','alpha_H','theta_H')
 all_variables_SE <- c( setNames(vapply(all_variables_est,function(N) paste0(N,'.SE'),'x'),NULL))
@@ -664,8 +662,7 @@ total_M_I_results <- lapply(total_M_I_results, function(result) c(result, list(C
                                                                                            'Home' = result$std_errors['Covar_H']/prod(result$std_errors[c('alpha_H.SE','theta_H.SE')])),c('Corr_C','Corr_H'))))
 )
 ```
-### Now compute the combined variance
-For a parameter like $\alpha$ we estimate the variance of $\hat\alpha$ by
+Now we compute the combined variance. For a parameter like $\alpha$ we estimate the variance of $\hat\alpha$ by
 \newcommand{\E}{\mathbb{E}}
 \renewcommand{\P}{\mathbb{P}}
 $$
@@ -675,12 +672,9 @@ Here $I$ represents the randomly imputed fractional part.
 We can estimate the first term by averaging the estimated variance (from Fisher Information) over all random imputations.
 We estimate the second term by the variance of the $\alpha$ estimates over imputations. Note that this is not quite right, since what we really
 want the variance of is $\alpha_0(I)$ --- effectively, the ``true'' parameter consistent with the imputation. This is a plug-in estimate,
-as is the Fisher Information estimate of the variance.
+as is the Fisher Information estimate of the variance.  
 
-## Computing residuals
-
-
-We define the deviance for an individual $i$ with observations $(Y_i)$
+We then compute the residuals. We define the deviance for an individual $i$ with observations $(Y_i)$
 given the hyperparameters $h=(m_M,m_\Delta,\sigma^2_M,\sigma^2_\Delta,\alpha^H,\theta^H,\alpha^C,\theta^C)$
 $$
   D= \sum_{i=1}^n \log \mathbb{P}\left\{ \mathbf{Y}_{i}\,|\, \text{hyperparameters}=h\right\}.
@@ -719,13 +713,12 @@ Because of rounding, the observed $S^2_i$ will be too small. We approximate the 
 of a uniform random variable on $[-1,1]$.
 -->
 
-### Check variance distribution empirically
-We wish to check whether the continuous distribution we have fit for individual variances describes the true distribution of variances in the population reasonably well.
+Finally, we check the variance distribution empirically, to check whether the continuous distribution we have fit for individual variances describes the true distribution of variances in the population reasonably well.
 The first thing we do is to compare the empirical
 variances (with imputed fractional parts) to the theoretical beta-prime distribution.
 To match the standard distribution, the variances are normalized by being divided by the factor $\alpha/\theta$.
 Note that the distribution has a very long tail, and we have truncated the plot at a point where about 
-```{r Variance test,echo=FALSE}
+```{r Variance test,echo=FALSE,message=FALSE, warning=FALSE}
 # Compare to beta-prime distribution
 params <- convert_param1(BP_parameters)
 dbetaprime <- function(x, A=1, B= BP_parameters$Systolic$Gamma$Clinic$alpha)
@@ -773,7 +766,7 @@ for(which_bp in BP_type_names){
 
 for(which_bp in BP_type_names){
   for(where_bp in BP_place_names){
-    print(G[[which_bp]][[where_bp]])
+    if(!is.null(G[[which_bp]][[where_bp]]))  print(G[[which_bp]][[where_bp]])
     all_s2k[all_SD == which_bp & all_HC == where_bp] <- sort(all_s2k[all_SD == which_bp & all_HC == where_bp])
     all_s2k_sim[all_SD == which_bp & all_HC == where_bp] <- sort(all_s2k_sim[all_SD == which_bp & all_HC == where_bp])
   }
@@ -797,7 +790,68 @@ s2k.plot <- ggplot(all_s2k.tbl, aes(x=Real, y=Simulated, colour=interaction(HC,D
   scale_color_brewer(palette="Dark2")
 
 suppressWarnings( s2k.plot)
+
 ```
+
+To finish this section, we include a table of the empirical Bayes priors, shown in table \ref{tab:empests}
+
+```{r empestsS,echo=FALSE, message=FALSE, warning=FALSE}
+
+empPriors<-data.frame(variable=names(unlist(BP_parameters)),value=unname(unlist(BP_parameters)))
+# Filter the irrelevant terms
+empPriors%<>%filter(!(grepl(variable,pattern = "variance2") |
+                      grepl(variable,pattern = "variance4") |
+                      grepl(variable,pattern = "LogLikelihood")))
+# Which blood pressure type does it correspond to?
+empPriors$BPtype<-sapply(empPriors$variable,function(x) ifelse(grepl(x,pattern = "Diastolic"),"Diastolic","Systolic"))
+# What does the summary statistic refer to?
+empPriors$Statistic<-NA_character_
+# Mu value on the Normal fits
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.Delta.m")]<-"Delta mu"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.M.m")]<-"Mean mu"
+# Sigma values on the Normal fits
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.Delta.sigma2")]<-"Delta sigma"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.M.sigma2")]<-"Mean sigma"
+# Expected values on the Gamma fits
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.alpha")]<-"Clinic SD alpha"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.alpha")]<-"Home SD alpha"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.theta")]<-"Clinic SD theta"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.theta")]<-"Home SD theta"
+# Variance values on the Gamma fits
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.variance1")]<-"Clinic SD alpha"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.variance1")]<-"Home SD alpha"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.variance3")]<-"Clinic SD theta"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.variance3")]<-"Home SD theta"
+# Is it the expected value or the standard error?
+empPriors$Error<-sapply(empPriors$variable,function(x) ifelse(grepl(x,pattern = "std.error") | grepl(x,pattern = "variance"),"Error Value","Expected Value"))
+# Convert variance to standard deviation
+empPriors$value[grepl(empPriors$Statistic,pattern = "sigma")]%<>%sqrt()
+# Clean it up and output as table
+empPriors%<>%dplyr::select(BPtype,Statistic,Error,value)
+
+outEmpP<-empPriors%>%group_by(BPtype,Statistic)%>%
+  summarise(Estimate=paste0(signif(unique(value[Error=="Expected Value"]),5),
+                            "+/-",signif(unique(value[Error!="Expected Value"]),5)))
+
+outEmpP%>%filter(BPtype=="Systolic")%>%as.data.frame()%>%
+  dplyr::select(Statistic,Estimate)%>%
+  kableExtra::kable(format="latex", escape = F,booktabs = T, 
+                  col.names=c("Parameter","Estimate"),
+      caption = "Empirical Bayes prior hyperparameter estimates for the systolic blood pressure for the NHANES III, full population.")
+
+```
+
+
+```{r empestsD,echo=FALSE, message=FALSE, warning=FALSE}
+
+outEmpP%>%filter(BPtype=="Diastolic")%>%as.data.frame()%>%
+  dplyr::select(Statistic,Estimate)%>%
+  kableExtra::kable(format="latex", escape = F,booktabs = T, 
+                  col.names=c("Parameter","Estimate"),
+      caption = "Empirical Bayes prior hyperparameter estimates for the diastolic blood pressure for the NHANES III, full population.")
+
+```
+
 
 ### Hamiltonian Monte Carlo (HMC)
 
@@ -941,18 +995,18 @@ Figure \ref{fig:gompt} reflects the same level of consistency for the Gompertz p
 ![Violin plots of the normalised $\theta$ parameter (from the Gompertz equation) of the different models.](./Plots/gompertz/theta_parameter.png){#fig:gompt}
 
 
-```{r RL12, echo=FALSE}
+```{r RL12, echo=FALSE,message=FALSE,warning=FALSE}
 kable(openxlsx::read.xlsx("./Results/AppendixTables.xlsx",sheet = "RL1-2",rows = 3:9),
 format="latex", escape = F,booktabs = T, caption = "Parameters for survival model for HA-CVD-CeVD and all-cause mortality, NHANES III, Full population, using the systolic and diastolic mean model.")
 ```
 
-```{r RL34, echo=FALSE}
+```{r RL34, echo=FALSE,message=FALSE,warning=FALSE}
 kable(openxlsx::read.xlsx("./Results/AppendixTables.xlsx",sheet = "RL3-4",rows = 3:9),
 format="latex", escape = F,booktabs = T, caption = "Parameters for survival model for HA-CVD-CeVD and all-cause mortality, NHANES III, FRS-population only, using the systolic and diastolic mean model.")
 ```
 
 
-```{r RL78, echo=FALSE}
+```{r RL78, echo=FALSE,message=FALSE,warning=FALSE}
 kable(openxlsx::read.xlsx("./Results/AppendixTables.xlsx",sheet = "RL7-8",rows = 3:9),
 format="latex", escape = F,booktabs = T, caption = "Parameters for survival model for HA-CVD-CeVD and all-cause mortality, NHANES III, FRS-population only, using the 1998 FRS-based model.")
 ```
@@ -993,14 +1047,14 @@ Comparison of the ROC curves and AUC values is also presented for the different 
 
 ![ROC curves stratified by the different demographic groups used in this research. The point and line colours represent the different event types that were used to predict on. ](./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png){#fig:ROC_Demog}
 
-```{r DeathFreq1,echo=F}
+```{r DeathFreq1,echo=F,message=FALSE,warning=FALSE}
 deaths<-read_csv("./Results/Deaths_FreqTable.csv",show_col_types = FALSE)
 kable(deaths[deaths[,2]=="Age: 45-64",-2],
 format="latex", escape = F,booktabs = T, caption = "Frequency table of the population aged 45-64 for the N-year survival outcomes as separated by demographic group and mortality cause.")
 ```
 
 
-```{r DeathFreq2,echo=F}
+```{r DeathFreq2,echo=F,message=FALSE,warning=FALSE}
 kable(deaths[deaths[,2]=="Age: 65-84",-2],
 format="latex", escape = F,booktabs = T, caption = "Frequency table of the population aged 65-84 for the N-year survival outcomes as separated by demographic group and mortality cause.")
 ```

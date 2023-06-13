@@ -2,24 +2,19 @@
 \contentsline {subsection}{Model}{1}{section*.3}
 \contentsline {subsubsection}{Survival Analysis (Time-to-Event)}{2}{section*.4}
 \contentsline {subsubsection}{Longitudinal Modelling}{3}{section*.5}
-\contentsline {subsubsection}{Combined Hierarchical Model}{4}{section*.6}
+\contentsline {subsubsection}{Combined Hierarchical Model}{3}{section*.6}
 \contentsline {subsubsection}{The modelling variants}{4}{section*.7}
-\contentsline {subsection}{Methodology}{5}{section*.8}
+\contentsline {subsection}{Methodology}{7}{section*.8}
 \contentsline {subsubsection}{Empirical Bayes Parameters}{7}{section*.9}
-\contentsline {subsection}{Extract intervals for the digits}{7}{section*.10}
-\contentsline {subsection}{Fit the BP distribution parameters}{7}{section*.11}
-\contentsline {subsubsection}{Now compute the combined variance}{9}{section*.12}
-\contentsline {subsection}{Computing residuals}{10}{section*.13}
-\contentsline {subsubsection}{Check variance distribution empirically}{10}{section*.14}
-\contentsline {subsubsection}{Hamiltonian Monte Carlo (HMC)}{12}{section*.15}
-\contentsline {subsubsection}{Centering the Linear Predictor}{13}{section*.16}
-\contentsline {subsection}{Code Description}{13}{section*.17}
-\contentsline {subsubsection}{Data Cleaning}{13}{section*.18}
-\contentsline {subsubsection}{Main}{13}{section*.19}
-\contentsline {subsubsection}{Stan}{14}{section*.20}
-\contentsline {subsubsection}{Centering}{14}{section*.21}
-\contentsline {subsubsection}{Empirical Bayes Estimation}{14}{section*.22}
-\contentsline {subsubsection}{Post-processing}{14}{section*.23}
-\contentsline {subsection}{Results}{14}{section*.24}
-\contentsline {subsubsection}{Convergence of Simulations}{14}{section*.25}
-\contentsline {subsubsection}{Results - Model Parameterization}{17}{section*.26}
+\contentsline {subsubsection}{Hamiltonian Monte Carlo (HMC)}{12}{section*.10}
+\contentsline {subsubsection}{Centering the Linear Predictor}{13}{section*.11}
+\contentsline {subsection}{Code Description}{14}{section*.12}
+\contentsline {subsubsection}{Data Cleaning}{14}{section*.13}
+\contentsline {subsubsection}{Main}{14}{section*.14}
+\contentsline {subsubsection}{Stan}{14}{section*.15}
+\contentsline {subsubsection}{Centering}{15}{section*.16}
+\contentsline {subsubsection}{Empirical Bayes Estimation}{15}{section*.17}
+\contentsline {subsubsection}{Post-processing}{15}{section*.18}
+\contentsline {subsection}{Results}{15}{section*.19}
+\contentsline {subsubsection}{Convergence of Simulations}{15}{section*.20}
+\contentsline {subsubsection}{Results - Model Parameterization}{18}{section*.21}
