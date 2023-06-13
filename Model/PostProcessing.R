@@ -5,13 +5,14 @@ library(dplyr)
 library(pracma)
 library(magrittr)
 library(ggpubr)
+library(survival)
 # devtools::install_github("ottlngr/LexisPlotR")
 # devtools::install_github("bhklab/survcomp")
 library(LexisPlotR)
-library(survcomp)
+# library(survcomp)
 source("./Model/Functions.R")
 
-directory<-'~/Documents/BEAST/Coding/Oxford/Nhanes2021/'
+directory<-'~/Documents/Coding/Oxford/Nhanes2021/'
 
 saveresultslist<-function(resultslist,RL,link){
   
@@ -707,6 +708,288 @@ p<-ROC%>%filter(RunNumber %in% c("RL1","RL2","RL2oth") & Year=="10-Year Mortalit
   theme(plot.title = element_text(hjust = 0.5));p
 ggsave(paste0("ROC_CAx-EventType_Demog_10Yr_45-64.png"),p,path = "./Plots/Survival/ROCs")
 ggsave(paste0("ROC_CAx-EventType_Demog_10Yr_45-64.png"),p,path = "./Rmarkdown_Plots",width = 7,height = 7)
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%% DELTA DIRECTIONALITY %%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+xSC_NF<-list_nhanesA$sys
+xDC_NF<-list_nhanesA$dias
+xSH_NF<-list_nhanesA$sys_home
+xDH_NF<-list_nhanesA$dias_home
+
+Delta_av_NF <- cbind(rowMeans( (as.matrix(xSC_NF)-as.matrix(xSH_NF))/2 ),rowMeans( (as.matrix(xDC_NF)-as.matrix(xDH_NF))/2 ))
+delties<-data.frame(DeltaS=Delta_av_NF[,1],DeltaD=Delta_av_NF[,2], 
+                    age=list_nhanesA$age, Time=list_nhanesA$T)
+delties$Ethnicity<-factor(list_nhanesA$black+2*list_nhanesA$white+3*list_nhanesA$other,
+                          levels = c(1,2,3),labels=c("Black","White","Other"))
+delties$Gender<-factor(list_nhanesA$female,levels=c(0,1),labels=c("Female","Male"))
+delties$Mortality<-"Censored"
+delties$Mortality[list_nhanesA$eventCVDHrt==1]<-"HA-CVD-CeVD"
+delties$Mortality[list_nhanesA$eventall==1 & list_nhanesA$eventCVDHrt==0]<-"Other"
+
+p<-delties%>%ggplot(aes(DeltaS,DeltaD))+geom_point()+
+  stat_density_2d(aes(colour=..level..))+
+  xlab("Systolic Delta")+ylab("Diastolic Delta")+labs(colour="Density")+
+  geom_hline(colour="red",yintercept = 0)+geom_vline(colour="red",xintercept = 0)+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+
+ggsave("Delta_plusminus_Demography.png",p,path = "./Plots")  
+ggsave("Delta_plusminus_Demography.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+deltdeath<-delties
+deltdeath<-deltdeath[order(deltdeath$age+deltdeath$Time),]
+deltdeath$EventAge<-deltdeath$age+deltdeath$Time
+deltdeath$DeltaRegion <- NA
+deltdeath$DeltaRegion[deltdeath$DeltaS<0 & deltdeath$DeltaD<0]<-"Sys. -ve, Dys. -ve"
+deltdeath$DeltaRegion[deltdeath$DeltaS<0 & deltdeath$DeltaD>=0]<-"Sys. -ve, Dys. +ve"
+deltdeath$DeltaRegion[deltdeath$DeltaS>=0 & deltdeath$DeltaD>=0]<-"Sys. +ve, Dys. +ve"
+deltdeath$DeltaRegion[deltdeath$DeltaS>=0 & deltdeath$DeltaD<0]<-"Sys. +ve, Dys. -ve"
+
+deltdeath%<>%group_by(Ethnicity,Gender,DeltaRegion)%>%
+  mutate(cumDeaths=100*(length(Mortality)-cumsum(as.logical(Mortality=="HA-CVD-CeVD")))/length(Mortality))
+
+p<-deltdeath%>%ggplot(aes(EventAge,cumDeaths))+
+  geom_line(aes(colour=DeltaRegion))+xlim(c(30,100))+ylim(c(85,100))+
+  ylab("Survival Percent")+xlab("Age at Event/Censorship")+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("Delta_plusminus_cumDeaths.png",p,path = "./Plots")  
+ggsave("Delta_plusminus_cumDeaths.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+deltdeath$Mortality%<>%factor()
+deltdeath$Outcome<-0; deltdeath$Outcome[deltdeath$Mortality=="HA-CVD-CeVD"]<-1
+
+KMcurve<-data.frame()
+for (ageB in c(45,65)){
+  for(Gen in c("Female","Male")) {
+    for(Eth in c("Black","White","Other")){
+      fit<-deltdeath%>%filter(age<ageB+19 & age>=ageB & 
+                                Ethnicity==Eth &
+                                Gender==Gen)%>%
+        survfit(formula = Surv(Time, Outcome) ~ DeltaRegion)
+      tmp<-summary(fit,times = 1:40/2)
+      KMcurve%<>%rbind(data.frame(
+        time=tmp$time,
+        age=ageB,
+        pSurv=tmp$surv,
+        plow=tmp$lower,
+        pupp=tmp$upper,
+        DeltaRegion=tmp$strata,
+        Gender=Gen,
+        Ethnicity=Eth
+      ))
+      
+    }
+  }
+}
+
+p<-KMcurve%>%filter(age==45)%>%
+  ggplot(aes(time,pSurv,group=DeltaRegion))+geom_line(aes(colour=DeltaRegion))+
+  geom_ribbon(aes(ymin=plow,ymax=pupp,fill=DeltaRegion,colour=DeltaRegion), size=0.2,alpha = 0.1)+
+  ylab("Survival Probability")+xlab("Time Since Initial Survey")+
+  ggtitle("Age 45-64 Kaplan Meier Curve")+theme(plot.title = element_text(hjust = 0.5))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("SurvProbKM_Delta_45-65.png",p,path = "./Plots")  
+ggsave("SurvProbKM_Delta_45-65.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+p<-KMcurve%>%filter(age==65)%>%
+  ggplot(aes(time,pSurv,group=DeltaRegion))+geom_line(aes(colour=DeltaRegion))+
+  geom_ribbon(aes(ymin=plow,ymax=pupp,fill=DeltaRegion,colour=DeltaRegion), size=0.2,alpha = 0.1)+
+  ylab("Survival Probability")+xlab("Time Since Initial Survey")+
+  ggtitle("Age 65-84 Kaplan Meier Curve")+theme(plot.title = element_text(hjust = 0.5))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("SurvProbKM_Delta_65-85.png",p,path = "./Plots")  
+ggsave("SurvProbKM_Delta_65-85.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+totKMcurve<-data.frame()
+for (ageB in c(45,65)){
+  for(Gen in c("Female","Male")) {
+    for(Eth in c("Black","White","Other")){
+      fit<-deltdeath%>%filter(age<ageB+19 & age>=ageB & 
+                                Ethnicity==Eth &
+                                Gender==Gen)%>%
+        survfit(formula = Surv(Time, Outcome) ~ 1)
+      tmp<-summary(fit,times = 1:40/2)
+      totKMcurve%<>%rbind(data.frame(
+        time=tmp$time,
+        Age=ageB,
+        pSurv=tmp$surv,
+        plow=tmp$lower,
+        pupp=tmp$upper,
+        Gender=Gen,
+        Ethnicity=Eth
+      ))
+      
+    }
+  }
+}
+
+totKMcurve$Age%<>%factor(levels = c(45,65),labels = c("Age 45-64","Age 65-84"))
+p<-totKMcurve%>%filter(Age=="Age 45-64")%>%
+  ggplot(aes(time,pSurv))+geom_line()+
+  geom_ribbon(aes(ymin=plow,ymax=pupp), size=1,alpha = 0.3)+
+  ylab("Survival Probability")+xlab("Time Since Initial Survey")+
+  labs(alpha="Age")+
+  ggtitle("Kaplan Meier Curve - 45-64 Age")+theme(plot.title = element_text(hjust = 0.5))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("SurvProbKM_45-64.png",p,path = "./Plots")  
+ggsave("SurvProbKM_45-64.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+p<-totKMcurve%>%filter(Age=="Age 65-84")%>%
+  ggplot(aes(time,pSurv))+geom_line()+
+  geom_ribbon(aes(ymin=plow,ymax=pupp), size=1,alpha = 0.3)+
+  ylab("Survival Probability")+xlab("Time Since Initial Survey")+
+  labs(alpha="Age")+
+  ggtitle("Kaplan Meier Curve - 65-84 Age")+theme(plot.title = element_text(hjust = 0.5))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("SurvProbKM_65-84.png",p,path = "./Plots")  
+ggsave("SurvProbKM_65-84.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7) 
+
+
+
+deltdeath$SysPos<-0
+deltdeath$SysPos[deltdeath$DeltaS>0]<-1
+deltdeath$DysPos<-0
+deltdeath$DysPos[deltdeath$DeltaD>0]<-1
+
+coxxie<-survival::coxph(formula = Surv(Time, Outcome) ~ DeltaRegion + Gender + Ethnicity + age, data=deltdeath)
+summary(coxxie)
+DeltaPosTab<-summary(coxxie)$coefficients
+DeltaPosTab<-cbind(data.frame(covariate=row.names(DeltaPosTab)),DeltaPosTab)
+write_csv(DeltaPosTab,"./Results/DeltaPosTab.csv")
+
+ROC<-data.frame()
+# Let's do this!
+for(Yr in c(5,10,15)){
+  for(ageL in c(45,65)){
+    for(Gen in c("female","male")) {
+      for(Eth in c("black","white","other")){
+        for(dr in c("Sys. -ve, Dys. -ve",
+                    "Sys. -ve, Dys. +ve",
+                    "Sys. +ve, Dys. +ve",
+                    "Sys. +ve, Dys. -ve")){
+          
+          Troc<-calc_Year_roc(RL1,Year=Yr,ageBnds=c(ageL,ageL+20),Gender = Gen, Ethnicity = Ethn, ind=(deltdeath$DeltaRegion==dr))
+          ROC%<>%rbind(data.frame(Year=paste0(Yr,"-Year Mortality"),
+                                  DeltaRegion=dr,
+                                  Ethnicity=stringr::str_to_title(Eth),
+                                  Gender=stringr::str_to_title(Gen),
+                                  AgeRange=paste0("Age: ",ageL,"-",ageL+19),
+                                  TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+        }
+      }
+    }
+  }
+}
+ROC$Year%<>%factor()
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(Year=="10-Year Mortality")%>%
+  group_by(AgeRange, DeltaRegion)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+
+p<-ROC%>%filter(Year=="10-Year Mortality")%>%
+  ggplot(aes(group=DeltaRegion))+
+  geom_point(aes(FPR,TPR-FPR,colour=DeltaRegion)) +
+  geom_line(aes(FPR,TPR-FPR,colour=DeltaRegion)) +
+  geom_text(data=AUROC,aes(x,y,label=label,colour=DeltaRegion)) +
+  geom_abline(slope = 0,intercept = 0) + 
+  xlab("False Positive Rate") + ylab("True Positive Rate - False Positive Rate") +
+  facet_grid(rows = vars(DeltaRegion),cols = vars(AgeRange))+
+  ggtitle("Performance by Delta Group")+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_CAx-DeltaRegion_10yr.png"),p,path = "./Plots/Survival/ROCs")
+ggsave(paste0("ROC_CAx-DeltaRegion_10yr.png"),p,path = "./Rmarkdown_Plots",width = 7,height = 7)
+
+ROC<-data.frame()
+# Let's do this!
+for(Yr in c(5,10,15)){
+  for(ageL in c(45,65)){
+    for(poss in c(0,1)){
+      
+      Troc<-calc_Year_roc(RL1,Year=Yr,ageBnds=c(ageL,ageL+20),ind=(deltdeath$SysPos==poss))
+      ROC%<>%rbind(data.frame(Year=paste0(Yr,"-Year Mortality"),
+                              DeltaRegion=ifelse(poss==0,"Positive","Negative"),
+                              BPType="Systolic",
+                              AgeRange=paste0("Age: ",ageL,"-",ageL+19),
+                              TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+      
+      Troc<-calc_Year_roc(RL1,Year=Yr,ageBnds=c(ageL,ageL+20),ind=(deltdeath$DysPos==poss))
+      ROC%<>%rbind(data.frame(Year=paste0(Yr,"-Year Mortality"),
+                              DeltaRegion=ifelse(poss==0,"Positive","Negative"),
+                              BPType="Diastolic",
+                              AgeRange=paste0("Age: ",ageL,"-",ageL+19),
+                              TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+      
+    }
+  }
+}
+ROC$Year%<>%factor()
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(Year=="10-Year Mortality")%>%
+  group_by(AgeRange, Year, DeltaRegion, BPType)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+AUROC$y[AUROC$DeltaRegion=="Positive"]<-0.35
+
+
+p<-ROC%>%filter(Year=="10-Year Mortality")%>%
+  ggplot(aes(group=DeltaRegion))+
+  geom_point(aes(FPR,TPR-FPR,colour=DeltaRegion)) +
+  geom_line(aes(FPR,TPR-FPR,colour=DeltaRegion)) +
+  geom_text(data=AUROC,aes(x,y,label=label,colour=DeltaRegion)) +
+  geom_abline(slope = 0,intercept = 0) + 
+  xlab("False Positive Rate") + ylab("True Positive Rate - False Positive Rate") +
+  facet_grid(rows = vars(BPType),cols = vars(AgeRange))+
+  ggtitle("Performance by Delta Group")+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_CAx-DeltaRegion_BPType.png"),p,path = "./Plots/Survival/ROCs")
+ggsave(paste0("ROC_CAx-DeltaRegion_BPType.png"),p,path = "./Rmarkdown_Plots",width = 7,height = 7)
+
+AUROC<-data.frame()
+# Let's do this!
+for(Yr in 1:20){
+  for(ageL in c(45,65)){
+    for(Gen in c("female","male")) {
+      for(Eth in c("black","white","other")){
+        for(dr in c("Sys. -ve, Dys. -ve",
+                    "Sys. -ve, Dys. +ve",
+                    "Sys. +ve, Dys. +ve",
+                    "Sys. +ve, Dys. -ve")){
+          
+          Troc<-calc_Year_roc(RL1,Year=Yr,ageBnds=c(ageL,ageL+20),Gender = Gen, Ethnicity = Eth, ind=(deltdeath$DeltaRegion==dr))
+          AUROC%<>%rbind(data.frame(Year=Yr,
+                                  DeltaRegion=dr,
+                                  Ethnicity=stringr::str_to_title(Eth),
+                                  Gender=stringr::str_to_title(Gen),
+                                  AgeRange=paste0("Age: ",ageL,"-",ageL+19),
+                                  AUC=unique(Troc$auroc)))
+        }
+      }
+    }
+  }
+}
+
+# Add the AUC values to the plot as well
+AUROC%>%filter(AgeRange=="Age: 45-64")%>%
+  ggplot(aes(Year,AUC))+geom_point(aes(colour=DeltaRegion))+
+  facet_grid(rows = vars(Ethnicity),cols = vars(Gender))
+
+AUROC%>%filter(AgeRange=="Age: 65-84")%>%
+  ggplot(aes(Year,AUC))+geom_point(aes(colour=DeltaRegion))+
+  facet_grid(rows = vars(Ethnicity),cols = vars(Gender))
+
+AUROC$Demog<-paste0(AUROC$Ethnicity," ",AUROC$Gender)
+
+AUROC%>%filter(Year==10)%>%
+  ggplot(aes(DeltaRegion,AUC))+geom_point(aes(colour=Demog,shape=AgeRange))
+
+AUROC%>%group_by(DeltaRegion)%>%summarise(meanAUC=mean(AUC,na.rm=T),sdAUC=sd(AUC,na.rm=T))
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%% MODEL COVARIATES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#

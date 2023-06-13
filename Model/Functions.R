@@ -286,11 +286,12 @@ FilterRL<-function(RL,ind,sigma=T){
   
 }
 
-ReduceDemog<-function(RL,Ethnicity=NULL,Gender=NULL,ageBnds=NULL,othDeaths=F){
+ReduceDemog<-function(RL,Ethnicity=NULL,Gender=NULL,ageBnds=NULL,othDeaths=F, ind=NULL){
   
   if(RL$FRS) nhanes<-DF_Nhanes(list_nhanesFRS) else nhanes<-DF_Nhanes(list_nhanesA)
   
-  if(!othDeaths) ind<-rep(T,nrow(nhanes)) else ind<-nhanes$eventall+nhanes$eventCVDHrt<2
+  if(is.null(ind) & !othDeaths) {ind<-rep(T,nrow(nhanes)) 
+  }else if(is.null(ind) & othDeaths) {ind<-nhanes$eventall+nhanes$eventCVDHrt<2}
   
   if(!is.null(Ethnicity) | !is.null(Gender) | !is.null(ageBnds)){
     # First, ethnicity
@@ -309,7 +310,7 @@ ReduceDemog<-function(RL,Ethnicity=NULL,Gender=NULL,ageBnds=NULL,othDeaths=F){
 
 # Make the predictions on the survival outcomes of the individuals, 
 # based on posterior samples from the HMC algorithm (from Stan)
-GetSurvival<-function(RL,roc=F,Ethnicity=NULL,Gender=NULL,ageBnds=NULL,Year=20,usexhat=TRUE, cumH=T, sigma=T,othDeaths=F){
+GetSurvival<-function(RL,roc=F,Ethnicity=NULL,Gender=NULL,ageBnds=NULL,Year=20,usexhat=TRUE, cumH=T, sigma=T,othDeaths=F, ind=NULL){
   
   if(usexhat) xhat<-t(cbind(RL$xhat1,RL$xhat2,RL$xhat3,RL$xhat4))
   
@@ -317,7 +318,7 @@ GetSurvival<-function(RL,roc=F,Ethnicity=NULL,Gender=NULL,ageBnds=NULL,Year=20,u
   
   if(RL$FRS) nhanes<-DF_Nhanes(list_nhanesFRS) else nhanes<-DF_Nhanes(list_nhanesA)
   
-  tmp<-ReduceDemog(RL,Ethnicity,Gender,ageBnds,othDeaths = othDeaths); nhanes<-tmp$nhanes; RL<-tmp$RL; rm(tmp)
+  tmp<-ReduceDemog(RL,Ethnicity,Gender,ageBnds,othDeaths = othDeaths, ind=ind); nhanes<-tmp$nhanes; RL<-tmp$RL; rm(tmp)
   # Set the year since start of study to calculate
   nhanes$T<-Year
   
@@ -519,7 +520,7 @@ ConfVals<-function(df,Year,threshold){
   return(outcome)
 }
 
-calc_Year_roc<-function(RL,Year=20L,Ethnicity=NULL,Gender=NULL,ageBnds=NULL, RedCovars=NULL, othDeaths=F){
+calc_Year_roc<-function(RL,Year=20L,Ethnicity=NULL,Gender=NULL,ageBnds=NULL, RedCovars=NULL, othDeaths=F, ind=NULL){
   # Calculate the cumulative hazard values per individual at the given time since cohort start
   
   if(is.null(RedCovars)) {
@@ -530,9 +531,9 @@ calc_Year_roc<-function(RL,Year=20L,Ethnicity=NULL,Gender=NULL,ageBnds=NULL, Red
     if(is.na(RL$FRSt)) RL$beta[,c(1,3,4,5,7,8)]<-0 else RL$beta[,c(1,3,4,6,7)]<-0
   }
   
-  survy<-GetSurvival(RL,roc=T,Ethnicity = Ethnicity,Gender = Gender,Year = Year,ageBnds = ageBnds, othDeaths=othDeaths)
+  survy<-GetSurvival(RL,roc=T,Ethnicity = Ethnicity,Gender = Gender,Year = Year,ageBnds = ageBnds, othDeaths=othDeaths, ind=ind)
   # Modify the nhanes and RL objects to reduce to the same demography
-  tmp<-ReduceDemog(RL = RL,Ethnicity = Ethnicity,Gender = Gender,ageBnds = ageBnds,othDeaths = othDeaths); nhanes<-tmp$nhanes; RL<-tmp$RL; rm(tmp)
+  tmp<-ReduceDemog(RL = RL,Ethnicity = Ethnicity,Gender = Gender,ageBnds = ageBnds,othDeaths = othDeaths, ind=ind); nhanes<-tmp$nhanes; RL<-tmp$RL; rm(tmp)
   eventer<-ifelse(RL$eventall,"eventall","eventCVDHrt")
   df<-data.frame(Time=nhanes$T,delta=nhanes[[eventer]],pred=survy$H_j)
   # How many values do you want to use to calculate the ROC & AUC values?
