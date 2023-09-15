@@ -629,6 +629,24 @@ Blood%<>%rbind(data.frame(Mean=c(mean(rowMeans(cbind(list_nhanesFRS$dias$diastol
 Blood[,1:2]<-round(Blood[,1:2],2); Blood<-Blood[,c(5,4,3,1,2)]
 write_csv(Blood,"./Results/BloodVals.csv")
 
+# Parameter estimates now BP_parameters
+load("./Model/BP_parameters.RData") 
+Gammiez<-cbind(as.data.frame(unlist(BP_parameters$Systolic$Gamma$Clinic)),
+               as.data.frame(unlist(BP_parameters$Systolic$Gamma$Home)),
+               as.data.frame(unlist(BP_parameters$Diastolic$Gamma$Clinic)),
+               as.data.frame(unlist(BP_parameters$Diastolic$Gamma$Home)))
+row.names(Gammiez)[3:6]<-c("variance_11","variance_12","variance_21","variance_22")
+colnames(Gammiez)<-c("Systolic_Clinic","Systolic_Home","Diastolic_Clinic","Diastolic_Home")
+write_csv(Gammiez,"./Results/EmpBayesPriors_Gammas.csv")
+
+Normiez<-cbind(as.data.frame(unlist(BP_parameters$Systolic$Normal$M)),
+               as.data.frame(unlist(BP_parameters$Systolic$Normal$Delta)),
+               as.data.frame(unlist(BP_parameters$Diastolic$Normal$M)),
+               as.data.frame(unlist(BP_parameters$Diastolic$Normal$Delta)))
+row.names(Normiez)<-c("mean","mean.std.err","sigma_sq","sigma_sq.std.err")
+colnames(Normiez)<-c("Systolic_M","Systolic_Delta","Diastolic_M","Diastolic_Delta")
+write_csv(Normiez,"./Results/EmpBayesPriors_Normals.csv")
+
 # First check the stratification between deltas, per demography
 Delties<-data.frame(Delta=apply(RL1$D_i_S,2,median))
 Delties$Ethnicity<-nhanes$black+2*nhanes$white+3*nhanes$other
