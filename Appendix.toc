@@ -1,20 +1,27 @@
-\contentsline {section}{Appendix A - Further Detail on Modelling and Results}{1}{section*.2}
-\contentsline {subsection}{Model}{1}{section*.3}
-\contentsline {subsubsection}{Survival Analysis (Time-to-Event)}{2}{section*.4}
-\contentsline {subsubsection}{Longitudinal Modelling}{3}{section*.5}
-\contentsline {subsubsection}{Combined Hierarchical Model}{3}{section*.6}
-\contentsline {subsubsection}{The modelling variants}{4}{section*.7}
-\contentsline {subsection}{Methodology}{7}{section*.8}
-\contentsline {subsubsection}{Empirical Bayes Parameters}{7}{section*.9}
-\contentsline {subsubsection}{Hamiltonian Monte Carlo (HMC)}{12}{section*.10}
-\contentsline {subsubsection}{Centering the Linear Predictor}{13}{section*.11}
-\contentsline {subsection}{Code Description}{14}{section*.12}
-\contentsline {subsubsection}{Data Cleaning}{14}{section*.13}
-\contentsline {subsubsection}{Main}{14}{section*.14}
-\contentsline {subsubsection}{Stan}{14}{section*.15}
-\contentsline {subsubsection}{Centering}{15}{section*.16}
-\contentsline {subsubsection}{Empirical Bayes Estimation}{15}{section*.17}
-\contentsline {subsubsection}{Post-processing}{15}{section*.18}
-\contentsline {subsection}{Results}{15}{section*.19}
-\contentsline {subsubsection}{Convergence of Simulations}{15}{section*.20}
-\contentsline {subsubsection}{Results - Model Parameterization}{18}{section*.21}
+\contentsline {section}{Appendix A -- Exploring the data}{1}{section*.2}%
+\contentsline {subsection}{Summarizing the data}{1}{section*.3}%
+\contentsline {subsection}{Addressing errors in blood pressure measurement}{2}{section*.4}%
+\contentsline {subsubsection}{Last digit preference}{2}{section*.5}%
+\contentsline {subsubsection}{Pseudo-replicates}{4}{section*.6}%
+\contentsline {subsubsection}{Missing or implausible measurements}{4}{section*.7}%
+\contentsline {section}{Appendix B -- Model details}{5}{section*.8}%
+\contentsline {subsubsection}{Survival Analysis (Time-to-Event)}{5}{section*.9}%
+\contentsline {subsubsection}{Longitudinal Modelling}{6}{section*.10}%
+\contentsline {subsubsection}{Combined Hierarchical Model}{7}{section*.11}%
+\contentsline {subsubsection}{The modelling variants}{7}{section*.12}%
+\contentsline {subsection}{Methodology}{8}{section*.13}%
+\contentsline {subsubsection}{Empirical Bayes Parameters}{11}{section*.14}%
+\contentsline {subsubsection}{Hamiltonian Monte Carlo (HMC)}{16}{section*.15}%
+\contentsline {subsubsection}{Centering the Linear Predictor}{17}{section*.16}%
+\contentsline {subsection}{Code Description}{18}{section*.17}%
+\contentsline {subsubsection}{Data Cleaning}{18}{section*.18}%
+\contentsline {subsubsection}{Main}{18}{section*.19}%
+\contentsline {subsubsection}{Stan}{18}{section*.20}%
+\contentsline {subsubsection}{Centering}{18}{section*.21}%
+\contentsline {subsubsection}{Empirical Bayes Estimation}{18}{section*.22}%
+\contentsline {subsubsection}{Post-processing}{19}{section*.23}%
+\contentsline {subsection}{Results}{19}{section*.24}%
+\contentsline {subsubsection}{Convergence of Simulations}{19}{section*.25}%
+\contentsline {subsubsection}{Results - Model Parameterization}{21}{section*.26}%
+\contentsline {subsubsection}{Results - Model Performance}{22}{section*.27}%
+\contentsline {subsubsection}{Results - Exploring \(\Delta \) Directionality}{27}{section*.28}%

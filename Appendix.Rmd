@@ -1,7 +1,7 @@
 ---
-title: "Nhanes 2022 Blood Pressure-Based Mortality Risk - Appendix A"
+title: "NHANES Blood Pressure-Based Mortality Risk - Appendix"
 author: "Rscripts by Hamish Patten, DW Bester and David Steinsaltz"
-date: "23/12/2022"
+date: "02/10/2023"
 output: 
   pdf_document:
     toc: true
@@ -17,13 +17,269 @@ library(magrittr)
 library(knitr)
 library(tinytex)
 library(kableExtra)
+library(VennDiagram)
+```
+# Appendix A -- Exploring the data
+
+## Summarizing the data
+The empirical means of the home and clinic measures in population B are tabulated in Table 1. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female. The average difference is about 2.3 for diastolic and 2.7 for systolic, which is small compared with the general range of the differences, which have SD of 10.1 (diastolic) and 14.0 (systolic).
+
+```{r data-cleaning, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Load data
+nhanes_old=read.csv('Data_raw/nh3bpdat290716.csv')
+# Update mortality with 2017 public release
+nhanes_update=read.csv('Data_raw/NHANES_ML_update.csv',colClasses = 'integer') %>%
+  mutate(yrsfuExam = round(permth_exm/12,2), yrsfuHome = round(permth_int/12, 2)) %>%
+  filter(eligstat == 1)
+
+nhanes_old %<>% mutate(yrsfuExam = round(yrsfuExam, 2), yrsfuHome = round(yrsfuHome,2), permth_exm = round(yrsfuExam *12), permth_int = round(yrsfuHome*12))
+
+# Compare old and new mortality
+old_dead <- sort(nhanes_old$SEQN[nhanes_old$dead==1])
+new_dead <- sort(nhanes_update$seqn[nhanes_update$mortstat==1])
+conflict_dead <- old_dead[ !(old_dead %in% new_dead)] # Tested: No resurrections
+missing_update <- nhanes_old$SEQN[!(nhanes_old$SEQN %in% nhanes_update$seqn)] #Tested: No one from old data set missing from followup
+missing_old <- !(nhanes_update$seqn %in% nhanes_old$SEQN) # 6 subjects in the updated data set with mortality data (all alive) who were not in the old data set.
+
+nhanes_update %<>% filter(!missing_old) # remove them
+identical(nhanes_old$SEQN,nhanes_update$seqn) # Sequence of ids now identical
+fu_diff <- nhanes_update$permth_int - nhanes_update$permth_exm
+fu_diff_update <- nhanes_update$permth_int - nhanes_old$permth_int
+
+identical(nhanes_old$UCOD_LEADING[!is.na(nhanes_old$UCOD_LEADING)], nhanes_update$ucod_leading[!is.na(nhanes_old$UCOD_LEADING)])
+#TRUE, so cause-of-death codes for all individuals who were dead in the first data set are identical
+
+conflict_old <- subset(nhanes_old, nhanes_old$SEQN %in% conflict_dead)
+conflict_new <- subset(nhanes_update, nhanes_update$seqn %in% conflict_dead)
+
+nhanes <- nhanes_old
+nhanes$UCOD_LEADING <- nhanes_update$ucod_leading
+nhanes$yrsfuExam <- nhanes_update$yrsfuExam
+nhanes$yrsfuHome <- nhanes_update$yrsfuHome
+nhanes$dead <- nhanes_update$mortstat
+nhanes$mrtHrt <- as.integer(nhanes$UCOD_LEADING==1)  # 1 codes for Heart
+nhanes$mrtNeo <- as.integer(nhanes$UCOD_LEADING==2)  # 2 codes for Neoplasm
+nhanes$mrtInj <- as.integer(nhanes$UCOD_LEADING==4)  # 4 codes for Injury 
+nhanes$mrtOtherCVD <- as.integer(nhanes$UCOD_LEADING==5)  # 5 codes for other CVD
+
+# Change NAs to 0
+nhanes$mrtHrt[is.na(nhanes$mrtHrt)] <- 0
+nhanes$mrtNeo[is.na(nhanes$mrtNeo)] <- 0
+nhanes$mrtInj[is.na(nhanes$mrtInj)] <- 0
+nhanes$mrtOtherCVD[is.na(nhanes$mrtOtherCVD)] <- 0
+
+nhanes$eventhrt <- with(nhanes, mrtOtherCVD+mrtHrt)
+nhanes$eventother <- with(nhanes, dead-eventhrt)
+
+nhanes$yrsfu=pmin(nhanes_update$yrsfuHome,nhanes$yrsfuExam, na.rm = TRUE)
+# Note: The most recent examination (home or clinic) is a left truncation time,
+#   so follow-up is the minimum. For some the clinic is missing.
+#   We call the follow-up the home follow-up time, but it doesn't matter,
+#   since those individuals will be excluded from analysis.
+
+whichsys=match(c('systolicA','systolicB','systolicC'),names(nhanes))
+whichdias=match(c('diastolicA','diastolicB','diastolicC'),names(nhanes))  
+
+whichsyshome=match(c('systolicAhome','systolicBhome','systolicChome'),names(nhanes))
+whichdiashome=match(c('diastolicAhome','diastolicBhome','diastolicChome'),names(nhanes))
+whichBP=c(whichsys,whichdias)
+whichBPhome=c(whichsyshome,whichdiashome)
+allBP=c(whichBP,whichBPhome)
+allsys=c(whichsys,whichsyshome)
+alldias=c(whichdias,whichdiashome)
+
+### Means and variances
+
+sys=nhanes[,whichsys]
+dias=nhanes[,whichdias]
+
+sysH=nhanes[,whichsyshome]
+diasH=nhanes[,whichdiashome]
+
+nhanes$meandias=apply(dias,1,mean)
+nhanes$meansys=apply(sys,1,mean)
+nhanes$sysDel=apply(sysH,1,mean)-apply(sys,1,mean)
+nhanes$diasDel=apply(diasH,1,mean)-apply(dias,1,mean)
+nhanes$vardias=apply(dias,1,var)
+nhanes$varsys=apply(sys,1,var)
+nhanes$sddias=sqrt(nhanes$vardias)
+nhanes$sdsys=sqrt(nhanes$varsys)
+
+nhanes$precdias=1/(nhanes$vardias+1/3)
+nhanes$precsys=1/(nhanes$varsys+1/3)
+
+race <- with(nhanes, ifelse(white==1, 2, ifelse(black==1, 1,ifelse(mexican==1,3, 0))))
+nhanes$race <- as.factor(race)
+
+type=factor(1+race+3*(1-nhanes$female)*(race>0)+6*(race==0)) # other race all type 7
+levels(type)=c('female, black','female, white','female, Mex','male, black','male, white','male, Mex','other')
+nhanes$type=type
+
+nhanesna=!(is.na(apply(nhanes[,allBP],1,prod)))
+diaslow <- apply(nhanes[,alldias],1,min)<40
+diashigh <- apply(nhanes[,alldias],1,max)>140
+syslow <- apply(nhanes[,allsys],1,min)<60
+syshigh <- apply(nhanes[,allsys],1,max)>250
+nhanessysrange=(syslow | syshigh)
+nhanesdiasrange=(diaslow | diashigh)
+dias0 <- apply(nhanes[,alldias],1,min) == 0
+sys0 <- apply(nhanes[,allsys],1,min) == 0
+nhanesgood=(nhanesna&(nhanes$yrsfu>0)&nhanes$other==0)
+
+n_original <- dim(nhanes)[1]
+n_no_other <- sum(nhanes$other==0)
+n_followup <- sum(nhanes$yrsfu>0 & nhanesna & nhanes$other==0)
+n_no_followup <- sum(nhanes$yrsfu==0 & nhanesna & nhanes$other==0)
+
+frs=read.csv('Data_raw/FRS.csv')
+
+whichfrs <- 'ATP' # 'ATP' or '1998'
+#Choose versions of FRS
+if(whichfrs=='ATP'){nhanes$FRS=frs$ATP.FRS[match(nhanes$SEQN,frs$SEQN)]} else{nhanes$FRS=frs$X1998.FRS[match(nhanes$SEQN,frs$SEQN)]}
+
+nhanesA=nhanes[nhanesgood & !nhanessysrange&!nhanesdiasrange, ]
+nhanesA$type=factor(nhanesA$type,exclude=7)
+
+N=dim(nhanesA)[1]
+k=3
+BP_type_names <- c('Systolic','Diastolic')
+BP_place_names <- c('Home','Clinic')
+whichsys=match(c('systolicA','systolicB','systolicC'),names(nhanesA))
+whichdias=match(c('diastolicA','diastolicB','diastolicC'),names(nhanesA)) 
+
+whichsyshome=match(c('systolicAhome','systolicBhome','systolicChome'),names(nhanesA))
+whichdiashome=match(c('diastolicAhome','diastolicBhome','diastolicChome'),names(nhanesA))
+whichBP=c(whichsys,whichdias)
+whichBPhome=c(whichsyshome,whichdiashome)
+```
+There were `r dim(nhanes)[1]` subjects in the initial data set.
+Of these `r sum(!nhanesgood)` were excluded because they had missing data or were not followed up, or belonged to the ``Other'' ethnic group.
+This left `r sum(nhanesgood)` subjects for further consideration.
+A small number of subjects were excluded because their blood pressure measurements were outside the normal range, as described below in section \@ref{sec:BPrange}.
+
+```{r Venn1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=4, fig.height=4, fig.align='center', fig.cap='Venn diagram of subjects excluded from the analysis.'}
+
+bprange <- nhanessysrange | nhanesdiasrange
+
+bprange[is.na(bprange)] <- FALSE
+
+v <- draw.quad.venn(
+  area1=sum(!nhanesna), # Missing BP
+  area2=sum(nhanes$yrsfu==0), # No follow-up
+  area3=sum(nhanes$other==1), # Other ethnicity
+  area4 = sum(bprange), # BP out of range
+  n12=sum(!nhanesna & nhanes$yrsfu==0),
+  n23=sum(nhanes$yrsfu==0 & nhanes$other==1),
+  n13=sum(!nhanesna & nhanes$other==1),
+  n14 = sum(!nhanesna & bprange),
+  n24 = sum(nhanes$yrsfu==0 & bprange),
+  n34 = sum(nhanes$other==1 & bprange),
+  n124 = sum(!nhanesna & nhanes$yrsfu==0 & bprange),
+  n134 = sum(!nhanesna & nhanes$other==1 & bprange),
+  n123=sum(!nhanesna & nhanes$yrsfu==0 & nhanes$other==1),
+  n234=sum(nhanes$yrsfu==0 & nhanes$other==1 & bprange),
+  n1234=sum(!nhanesna & nhanes$yrsfu==0 & nhanes$other==1 & bprange),
+  category = c("Missing", "Follow-up", "Other Ethnicity","BP out of range"),  
+  fill = c("skyblue", "pink1", "mediumorchid", "orange"),
+  lty = "blank",
+  cat.pos = c(-20, 20,0,0),
+  cex = 1
+)
+  
+
 ```
 
-# Appendix A - Further Detail on Modelling and Results
+```{r correlations, include=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
 
-This appendix aims to add more detail about the numerical modelling than was provided in the article. This is to ensure that the research methods are transparent and entirely reproducible. The numerical modelling presented in this paper was performed using R combined with Rstan. More detail will be provided here about the model, about the specific methodology used to parameterize the model, and more results are provided that were not included in the main bulk of the article.
+# Make BP measures into array
+sys=data.matrix(nhanesA[,whichsys])
+dias=data.matrix(nhanesA[,whichdias])
+sysH=data.matrix(nhanesA[,whichsyshome])
+diasH=data.matrix(nhanesA[,whichdiashome])
 
-## Model
+allBP <- list(Systolic = list(Home = sysH, Clinic = sys), Diastolic = list(Home = diasH, Clinic = dias))
+L=length(sys)
+gamma_dimnames <- list( c('alpha','theta','beta') , c('Clinic' , 'Home'))
+norm_dimnames <- c('m_M','m_Delta', 'sigma2_M', 'sigma2_Delta')
+
+demog.data <- data.frame(Ethnicity = droplevels(nhanesA$race) %>% fct_recode(Black = '1',White = '2',Mexican = '3'),
+                      Sex = factor(nhanesA$female) %>% fct_recode(Male = '0', Female = '1') )
+# Make a table of means for systolic home BP by ethnicity and sex
+bp_table <- list()
+bp.data <- data.frame()
+
+for (BPtype in BP_type_names){
+  for (BPplace in BP_place_names){
+    bp.data %<>% rbind(cbind(demog.data, BPtype = factor(BPtype, levels = BP_type_names) , BPplace = factor(BPplace), Mean = apply(allBP[[BPtype]][[BPplace]],1,mean), SD = apply(allBP[[BPtype]][[BPplace]],1,sd)))
+  }
+}
+
+mean_sd_summary <- mean_sd_summary <- bp.data %>%
+  group_by(BPtype, BPplace, Sex, Ethnicity) %>%
+  summarise(
+    Mean_of_Mean = mean(Mean, na.rm = TRUE),
+    Mean_of_SD = mean(SD, na.rm = TRUE)
+  )
+
+bp.data.cor <- bp.data %>%
+  group_by(BPtype, BPplace) %>%
+  summarize(correlation = cor(Mean, SD, use = "complete.obs"))
+```
+We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female. The average difference is about 2.3 for diastolic and 2.7 for systolic, which is small compared with the general range of the differences, which have SD of 10.1 (diastolic) and 14.0 (systolic). 
+```{r summaries, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Printing the table using kable
+    cat(kable(mean_sd_summary,format="latex", escape = F,booktabs = T, digits=1,
+              linesep = rep(c(rep("",5),"\\addlinespace"),4),
+                  col.names=c("Sys/Dias", "Place","Sex", "Ethnicity", 'Mean', 'SD'),caption = 'Summary data for blood pressure') %>%  kable_styling(latex_options = "hold_position") )
+    cat('\n')
+```
+
+We see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
+
+```{r SD-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Scatterplot of mean BP against SD of BP from bp.data
+    ggplot(bp.data, aes(x = Mean, y = SD)) +
+    geom_point(alpha=.03, color = 'navyblue' ) +
+    labs(title = "Scatterplot of Mean against SD",
+         x = "Mean",y = "SD") + ylim(0,15)+
+      geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
+    facet_grid(BPtype ~ BPplace, scales = 'free_x') +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlation), x = Inf, y = Inf), 
+                 vjust = "top", hjust = "right", inherit.aes = FALSE)
+
+```
+
+## Addressing errors in blood pressure measurement
+
+The blood pressure errors were found in the at home measurements. 
+While these did not destroy the usefulness of the home measurements, they did require some attention and decisions for how to work with these defects. 
+We also consider them inherently interesting, and worth registering for future researchers working on these or similar data. 
+In particular, the problem we have called “pseudo-replication” was entirely unexpected, although not unprecedented, and is of particular concern to researchers trying to estimate individual variation in clinically relevant measures.
+
+### Last digit preference {#sec:lastdigit}
+
+Mild tendency for observers to prefer certain last digits in reporting BP measurements has been reported in other studies, though an analysis of the 1999 wave of NHANES reported no last-digit preference.  The last-digit preference in NHANES III, on the other hand, is substantial, with about 26% of all the diastolic BP measurements ending in 0, but only about 30% ending in 4 or 6. Because the shifts due to last-digit preference are presumably small, we expect them to have little effect on the main effects that we are examining in this paper, but they do increase the probability of two measurements being rounded to the same value, something that needs to be taken into account in examining the problem of pseudo-replication.
+
+### Pseudo-replicates {#sec:pseudorep}
+
+While the protocol calls for each subject to have three independent BP measures taken, it appears from looking at the distribution of the results that this is not what happened in all cases, at least in the home measurements. Instead, it may be that one or two measurements were taken correctly, and the remaining ``observations'' were either copied in, or matched the earlier results because of the observer’s unconscious inclination to expect the same number to come up. 
+We analyze this problem at length below, two out of twelve examiners who collected the data may have committed some amount of copying (whether intentional or inadvertent), potentially affecting approximately 16% of the subjects. 
+This is a significant problem, because copying affects the variance of the reported measurements, shifting it consistently downward, to an extent that may be very large, and is impossible to reconstruct. The effect is to create a class of spurious low-variance individuals that dilute the effect of variance on survival.
+
+### Missing or implausible measurements {#sec:BPrange}
+
+Some of the reported measures were extremely implausible, particularly for diastolic BP. `r sum(dias0)`subjects had at least one diastolic BP measure recorded as 0, in addition to the `r sum(!nhanesna)` subjects who were missing at least one measurement. We excluded all of these subjects, and indeed any subject who had at least one measurement recorded outside the ranges (40,140) for diastolic and (60,250) for systolic BP, as recommended by the CDC. 
+There was just one subject with systolic BP measures that were too low, but `r sum(nhanesdiasrange)` subjects with low diastolic BP (in addition to those with measures recorded as 0). 
+One subject was excluded for diastolic BP 156, and three were excluded for systolic BP that was too high, with the maximum being 264. 
+
+
+
+
+
+
+# Appendix B -- Model details
+This appendix aims to add more detail about the numerical modelling than was provided in the article. This is to ensure that the research methods are transparent and entirely reproducible. The numerical modelling presented in this paper was performed using R combined with Rstan. More detail will be provided here about the model, about the specific methodology used to parameterize the model, and more results are provided that were not included in the main text.
 
 The model used in this research is built from the theory of joint modelling of longitudinal and time-to-event data. This will be described in detail later on in this section, however, in brief, this allows the simultaneous modelling of both longitudinal observation data (in this article, this is blood pressure measurements) and also the time-to-event outcome. 
 In this research the event of interest is either death from any cause, or death from specifically heart attack, cardiovascular disease (CVD) or cerebrovascular disease (CeVD). We henceforth will refer to this latter mortality as HA-CVD-CeVD.
@@ -235,39 +491,7 @@ $$
   a= \frac{1}{5}\left(B_1+B_2+B_3+B_4 - 15\right)=\sum_{j=0}^3 (8-2j) b_{2j} \, - 3.
 $$
 
-```{r load_data, include=FALSE,message=FALSE,warning=FALSE}
-w<-getwd()
-L1 <- './Data_cleaned/nhanesA.RData'
-L2 <- './Data_cleaned/nhanes_cleaned_lists.RData'
-S1 <- "./Model/BP_parameters.RData"
-load(L1)
-load(L2)
-load(S1)
-```
-```{r process, include=FALSE,message=FALSE,warning=FALSE}
-N=dim(nhanesA)[1]
-k=3
-BP_type_names <- c('Systolic','Diastolic')
-BP_place_names <- c('Home','Clinic')
-whichsys=match(c('systolicA','systolicB','systolicC'),names(nhanesA))
-whichdias=match(c('diastolicA','diastolicB','diastolicC'),names(nhanesA)) 
 
-whichsyshome=match(c('systolicAhome','systolicBhome','systolicChome'),names(nhanesA))
-whichdiashome=match(c('diastolicAhome','diastolicBhome','diastolicChome'),names(nhanesA))
-whichBP=c(whichsys,whichdias)
-whichBPhome=c(whichsyshome,whichdiashome)
-# allsys=c(whichsys,whichsyshome)
-# alldias=c(whichdias,whichdiashome)
-
-# Make BP measures into array
-sys=data.matrix(nhanesA[,whichsys])
-dias=data.matrix(nhanesA[,whichdias])
-sysH=data.matrix(nhanesA[,whichsyshome])
-diasH=data.matrix(nhanesA[,whichdiashome])
-L=length(sys)
-gamma_dimnames <- list( c('alpha','theta','beta') , c('Clinic' , 'Home'))
-norm_dimnames <- c('m_M','m_Delta', 'sigma2_M', 'sigma2_Delta')
-```
 ```{r imputation, eval=TRUE, tidy=TRUE,include=FALSE,message=FALSE, warning=FALSE}
 digitbreaks <- function(bp){
   digit_table <- unname(table(unlist(bp)%%10))
@@ -793,7 +1017,7 @@ suppressWarnings( s2k.plot)
 
 ```
 
-To finish this section, we include a table of the empirical Bayes priors, shown in table \ref{tab:empests}
+To finish this section, we include a table of the empirical Bayes priors, shown in tables \ref{tab:empestsS} and \ref{tab:empestsD}.
 
 ```{r empestsS,echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -1116,7 +1340,7 @@ format="latex", escape = F,booktabs = T, caption = "Parameters for distribution 
 
 Finally, we wish to confirm that the perfomance of the model does not depend on the directionality of $\Delta$. Figure \ref{fig:DeltaAUCs} plots the AUC values of 10-year HA-CVD-CeVD mortality for the all-covariate mean blood pressure-based model trained on the full NHANES population, split by the two age-ranges (45-64 and 65-84) and demographic groups. There is no clear trend between mode performance for the different regions of $\Delta$ directionality.
 
-![AUC values of the full-population, all covariate model with the mean blood pressure model, based on HA-CVD-CeVD 10-year mortality. ](./Rmarkdown_Plots/DeltaDirection_AUCs.png){#fig:DeltaAUCs}    
+![AUC values of the full-population, all covariate model with the mean blood pressure model, based on HA-CVD-CeVD 10-year mortality. ](./Rmarkdown_Plots/DeltaDirection_AUCs.png){#fig:DeltaAUCs}
 
 
 
