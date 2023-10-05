@@ -6,6 +6,8 @@ output:
   pdf_document:
     toc: true
     toc_depth: 3
+    number_sections: true
+bibliography: nhanesBP.bib
 ---
 
 ```{r setup, include=FALSE,message=FALSE,warning=FALSE}
@@ -18,13 +20,14 @@ library(knitr)
 library(tinytex)
 library(kableExtra)
 library(VennDiagram)
+library(lattice)
+library(ggtern)
+c14<-c("dodgerblue2", "#E31A1C", "green4", "#6A3D9A", "#FF7F00", "gold1", "skyblue2",  "gray70", "maroon", "orchid1", "darkturquoise", "darkorange4", "brown", "black")
 ```
-# Appendix A -- Exploring the data
+# Appendix A -- The data
 
-## Summarizing the data
-The empirical means of the home and clinic measures in population B are tabulated in Table 1. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female. The average difference is about 2.3 for diastolic and 2.7 for systolic, which is small compared with the general range of the differences, which have SD of 10.1 (diastolic) and 14.0 (systolic).
 
-```{r data-cleaning, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+```{r data-cleaning, include=FALSE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
 # Load data
 nhanes_old=read.csv('Data_raw/nh3bpdat290716.csv')
 # Update mortality with 2017 public release
@@ -133,9 +136,32 @@ n_no_followup <- sum(nhanes$yrsfu==0 & nhanesna & nhanes$other==0)
 
 frs=read.csv('Data_raw/FRS.csv')
 
-whichfrs <- 'ATP' # 'ATP' or '1998'
+whichfrs <- '1998' # 'ATP' or '1998'
 #Choose versions of FRS
 if(whichfrs=='ATP'){nhanes$FRS=frs$ATP.FRS[match(nhanes$SEQN,frs$SEQN)]} else{nhanes$FRS=frs$X1998.FRS[match(nhanes$SEQN,frs$SEQN)]}
+
+
+#################################################
+#
+#			Add in observer data
+#
+#################################################
+
+
+exm=read.csv('Data_raw/Examiners.csv')
+
+nhanes$Exam=exm$PEPTECH[match(nhanes$SEQN,exm$SEQN)]
+nhanes$Exam[is.na(nhanes$Exam)]=0
+nhanes$Exam[nhanes$Exam == 88888] = 0
+## Combine the 88888 examiner with 0
+
+#nhanesA=subset(nhanesA,Exam>0)
+
+examname=sort(unique(nhanes$Exam))
+
+examlist=lapply(examname,function(en) subset(nhanes,Exam==en)$nunq.dias)
+examlists=lapply(examname,function(en) subset(nhanes,Exam==en)$nunq.sys)
+
 
 nhanesA=nhanes[nhanesgood & !nhanessysrange&!nhanesdiasrange, ]
 nhanesA$type=factor(nhanesA$type,exclude=7)
@@ -151,11 +177,75 @@ whichsyshome=match(c('systolicAhome','systolicBhome','systolicChome'),names(nhan
 whichdiashome=match(c('diastolicAhome','diastolicBhome','diastolicChome'),names(nhanesA))
 whichBP=c(whichsys,whichdias)
 whichBPhome=c(whichsyshome,whichdiashome)
+
+
+# Make BP measures into array
+sys=data.matrix(nhanesA[,whichsys])
+dias=data.matrix(nhanesA[,whichdias])
+sysH=data.matrix(nhanesA[,whichsyshome])
+diasH=data.matrix(nhanesA[,whichdiashome])
+
+allBP <- list(Systolic = list(Home = sysH, Clinic = sys), Diastolic = list(Home = diasH, Clinic = dias))
+L=length(sys)
+gamma_dimnames <- list( c('alpha','theta','beta') , c('Clinic' , 'Home'))
+norm_dimnames <- c('m_M','m_Delta', 'sigma2_M', 'sigma2_Delta')
+
 ```
-There were `r dim(nhanes)[1]` subjects in the initial data set.
-Of these `r sum(!nhanesgood)` were excluded because they had missing data or were not followed up, or belonged to the ``Other'' ethnic group.
-This left `r sum(nhanesgood)` subjects for further consideration.
-A small number of subjects were excluded because their blood pressure measurements were outside the normal range, as described below in section \@ref{sec:BPrange}.
+
+
+```{r correlations, include=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+
+demog.data <- data.frame(Ethnicity = droplevels(nhanesA$race) %>% fct_recode(Black = '1',White = '2',Mexican = '3'),
+      Sex = factor(nhanesA$female) %>% fct_recode(Male = '0', Female = '1') , 
+                      Exam = as.factor(nhanesA$Exam) )
+levels(demog.data$Exam)[levels(demog.data$Exam) == '0'] <- 'Unknown'
+# Make a table of means for systolic home BP by ethnicity and sex
+bp_table <- list()
+bp.data <- data.frame()
+
+which_diff <- function(x) { # for a vector with 3 entries, with two the same, return the one that is different
+  if (length(unique(x)) == 1 | length(unique(x))==3) {return(0)}
+if (x[1] == x[2]) {return(3)}
+if (x[1] == x[3]) {return(2)} 
+  return(1)
+  }
+  
+  
+for (BPtype in BP_type_names){
+  for (BPplace in BP_place_names){
+    bp.data %<>% rbind(cbind(demog.data, BPtype = factor(BPtype, levels = BP_type_names) , BPplace = factor(BPplace), Mean = apply(allBP[[BPtype]][[BPplace]],1,mean), SD = apply(allBP[[BPtype]][[BPplace]],1,sd),
+    Number = apply(allBP[[BPtype]][[BPplace]],1,function(x) length(unique(x))),
+    Which_Diff = apply(allBP[[BPtype]][[BPplace]],1,which_diff)))
+  }
+}
+
+mean_sd_summary <- bp.data %>%
+  group_by(BPplace,BPtype, Sex, Ethnicity) %>%
+  summarise(
+    Mean_of_Mean = mean(Mean, na.rm = TRUE),
+    Mean_of_SD = mean(SD, na.rm = TRUE)
+  )
+
+bp.data.cor <- bp.data %>%
+  group_by(BPtype, BPplace) %>%
+  summarize(correlation = cor(Mean, SD, use = "complete.obs"))
+
+# Make a table of last digit fractions for bp by type and place
+bp_last_digit <- matrix(0,nrow=0,ncol=5)
+
+for (BPtype in BP_type_names){
+  for (BPplace in BP_place_names){
+ digit_table <- unname(table(allBP[[BPtype]][[BPplace]]%%10))
+  digits=digit_table/sum(digit_table)
+  bp_last_digit %<>% rbind(digits) 
+  }
+}
+bp_last_digit %<>% as_tibble
+names(bp_last_digit) <- 2*(0:4)
+bp_last_digit$Place <- rep(BP_place_names,each=2)
+bp_last_digit$Type <- rep(BP_type_names,2)
+bp_last_digit %<>% select(Place,Type,everything())
+```
 
 ```{r Venn1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=4, fig.height=4, fig.align='center', fig.cap='Venn diagram of subjects excluded from the analysis.'}
 
@@ -189,43 +279,256 @@ v <- draw.quad.venn(
 
 ```
 
-```{r correlations, include=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+## Exclusions
 
-# Make BP measures into array
-sys=data.matrix(nhanesA[,whichsys])
-dias=data.matrix(nhanesA[,whichdias])
-sysH=data.matrix(nhanesA[,whichsyshome])
-diasH=data.matrix(nhanesA[,whichdiashome])
+There were `r dim(nhanes)[1]` subjects in the initial data set.
+Of these `r sum(!nhanesgood)` were excluded because they had missing data or were not followed up, or belonged to the "Other" ethnic group.
+This left `r sum(nhanesgood)` subjects for further consideration.
+A small number of subjects were excluded because their blood pressure measurements were outside the normal range, as described below in section \ref{sec:BPrange}.
+In the end there were `r N` subjects in the analysis data set.
+A Venn diagram of the different causes of exclusion is given in Figure \ref{fig:Venn1}.
+We will refer to this as the "full population".
+Of these, `r sum(!is.na(nhanesA$FRS))` had a computable FRS score.
+We call this the "FRS population".
 
-allBP <- list(Systolic = list(Home = sysH, Clinic = sys), Diastolic = list(Home = diasH, Clinic = dias))
-L=length(sys)
-gamma_dimnames <- list( c('alpha','theta','beta') , c('Clinic' , 'Home'))
-norm_dimnames <- c('m_M','m_Delta', 'sigma2_M', 'sigma2_Delta')
 
-demog.data <- data.frame(Ethnicity = droplevels(nhanesA$race) %>% fct_recode(Black = '1',White = '2',Mexican = '3'),
-                      Sex = factor(nhanesA$female) %>% fct_recode(Male = '0', Female = '1') )
-# Make a table of means for systolic home BP by ethnicity and sex
-bp_table <- list()
-bp.data <- data.frame()
 
-for (BPtype in BP_type_names){
-  for (BPplace in BP_place_names){
-    bp.data %<>% rbind(cbind(demog.data, BPtype = factor(BPtype, levels = BP_type_names) , BPplace = factor(BPplace), Mean = apply(allBP[[BPtype]][[BPplace]],1,mean), SD = apply(allBP[[BPtype]][[BPplace]],1,sd)))
-  }
+## Addressing errors in blood pressure measurement
+
+The blood pressure measurement or recording errors were found particularly in the home measurements. 
+While these did not destroy the usefulness of the home measurements, they did require some attention and decisions for how to work with these defects. 
+We also consider them inherently interesting, and worth registering for future researchers working on these or similar data. 
+In particular, the problem we have called “dependent replication” was entirely unexpected, although not unprecedented, and is of particular concern to researchers trying to estimate individual variation in clinically relevant measures.
+
+### Last-digit preference {#sec:lastdigit}
+
+Mild tendency for observers to prefer certain last digits in reporting BP measurements has been reported in other studies, though an analysis of the 1999 wave of NHANES reported no last-digit preference [@ostchega2003national].  
+The last-digit preference in NHANES III, on the other hand, is substantial, with about `r sprintf('%.1f', 100*bp_last_digit$'0'[3])`% of all the clinic-measured systolic BP measurements ending in 0, but only about `r sprintf('%.1f', 100*bp_last_digit$'4'[3]+100*bp_last_digit$'6'[3])`% ending in 4 or 6. Because the shifts due to last-digit preference are presumably small, we expect them to have little effect on the main effects that we are examining in this paper, but they do increase the probability of two measurements being rounded to the same value, something that needs to be taken into account in examining the problem of dependent replication.
+
+```{r digit_summary, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Printing the table using kable
+    cat(kable(bp_last_digit,format="latex", escape = F,booktabs = T, digits=3,
+              linesep = rep(c(rep("",5),"\\addlinespace"),4),
+                  col.names=c("Place","Sys/Dias",2*(0:4)),caption = 'Summary data for BP end digits') %>%  kable_styling(latex_options = "hold_position") )
+    cat('\n')
+```
+
+### Dependent replicates {#sec:pseudorep}
+
+While the protocol calls for each subject to have three independent BP measures taken, it is not impossible that the observers may have been influenced by one measure in recording the next.
+This could happen in either direction: later measurements could be pulled closer to the first, or there could be an inclination to avoid repeated measures.
+This is relevant, because erroneously repeated measures would artificially decrease the variance of the three measurements, and avoiding repeated measures would have the opposite effect.
+
+The end-digit bias may be expected to have an effect here, since it influences the probability of two measurements being rounded to the same value.
+We begin by noting the standard deviations for measurements of individual subjects as given in the column 'Mean of SD' in Table \ref{tab:sd_summary}.
+The column 'Prob all rep' gives the theoretical probability that two of the three measurements for a subject would have the same value, if the measurements were independent and normally distributed with the given standard deviation (adjusted for the rounding), and assuming that rounding to particular digits is done in proportion to the fractions listed in Table \ref{tab:digit_summary}.
+The column 'Prob 2 rep' gives the probability that two of the three measurements would have the same value, under the same conditions.
+The column 'Frac all rep' gives the observed fraction of subjects for whom all three measurements were equal, and 'Frac 2 rep' gives the fraction for whom two of the three measurements were equal.
+The observed fractions for three equal measurements are all very close to the theoretical probabilities, but the observed fractions for two equal measurements are substantially lower than the theoretical probabilities.
+(For comparison, a 95\% probability range for the fraction of subjects with two equal measurements is about $\pm 0.008$.)
+
+
+```{r pseudorep, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Calculate expected number of all with same last digit given 3 observations of sd = S
+prob_repeated3 <- function(S, intervalwidth=2){
+  # Assume overall mean is uniform
+  # so average over the interval [0,10]
+  # then probability of same is sum_j (Phi(10j+intervalwidth-x)-Phi(10j-x))^3
+  
+  sum(sapply(seq(-1,1),function(j)
+             .1*integrate(function(x) #(1-x/intervalwidth)*dnorm(x,sd=S)*(pnorm(x,sd=S)-.5),0,intervalwidth)$value
+     (pnorm(10*j+intervalwidth-x,sd=S)-pnorm(10*j-x,sd=S))^3,-5,5)$value) )
 }
 
-mean_sd_summary <- mean_sd_summary <- bp.data %>%
-  group_by(BPtype, BPplace, Sex, Ethnicity) %>%
+prob_repeated2 <- function(S, intervalwidth=2){
+  # Assume overall mean is uniform
+  # so average over the interval [0,10]
+  # then probability of same is sum_j 3*(Phi(10j+intervalwidth-x)-Phi(10j-x))^2 - 2*prob_repeated3
+  
+  sum(sapply(seq(-1,1),function(j)
+             .1*integrate(function(x) 
+     3*(pnorm(10*j+intervalwidth-x,sd=S)-pnorm(10*j-x,sd=S))^2,-5,5)$value) ) - 2*prob_repeated3(S,intervalwidth)
+}
+
+sd_summary <- bp.data %>%
+  group_by(BPplace,BPtype) %>%
   summarise(
-    Mean_of_Mean = mean(Mean, na.rm = TRUE),
-    Mean_of_SD = mean(SD, na.rm = TRUE)
+    Mean_of_SD = mean(SD, na.rm = TRUE),
+    # fraction with all three measurements equal
+    Fraction3 = mean(Number==1, na.rm = TRUE),
+    Fraction2 = mean(Number==2, na.rm = TRUE)
   )
 
-bp.data.cor <- bp.data %>%
-  group_by(BPtype, BPplace) %>%
-  summarize(correlation = cor(Mean, SD, use = "complete.obs"))
+# Calculate probability of three measurements being equal given unequal interval lengths
+prob_repeated3_intervals <- function(S,intervals){
+  sum(sapply(intervals, function(intervalwidth) prob_repeated3(S,intervalwidth)))
+}
+
+prob_repeated2_intervals <- function(S,intervals){
+  sum(sapply(intervals, function(intervalwidth) prob_repeated2(S,intervalwidth)))
+}
+
+
+sd_summary$Prob_repeated3 <- sapply(1:4, function(j) prob_repeated3_intervals(sqrt(sd_summary$Mean_of_SD[j]^ 2+1/3),10*unlist(bp_last_digit[j,3:7])))
+sd_summary$Prob_repeated2 <- sapply(1:4, function(j) prob_repeated2_intervals(sqrt(sd_summary$Mean_of_SD[j]^2+1/3),10*unlist(bp_last_digit[j,3:7])))
+
+sd_summary %<>% relocate(Fraction2, .after = Prob_repeated3)
+
 ```
-We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female. The average difference is about 2.3 for diastolic and 2.7 for systolic, which is small compared with the general range of the differences, which have SD of 10.1 (diastolic) and 14.0 (systolic). 
+```{r sd_summary, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+#Print table of sd_summary
+cat(kable(sd_summary,format="latex", escape = F,booktabs = T, digits=3,
+          linesep = rep(c(rep("",5),"\\addlinespace"),4),
+          col.names=c("Place","Sys/Dias","Mean of SD","Frac all rep",  "Prob all rep", "Frac 2 rep", "Prob 2 rep"),caption = 'Summary data for repeated measures') %>%  kable_styling(latex_options = "hold_position") )
+```
+
+In Figure \ref{fig:examinerPlot}, we show the fraction of subjects with two equal measurements, by examiner, blocked by place and type.
+We see that the fraction of subjects with two equal measurements varies substantially by examiner, and that the variation is greater for the systolic than for the diastolic measurements.
+
+
+```{r examinerCalc, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# 2 by 2 grid of columns of number of subjects with 2 equal measurements
+#   by examiner, blocked by place and type
+
+# First, calculate the number of subjects with 2 equal measurements for each examiner
+examiner2 <- bp.data %>% 
+  group_by(BPplace,BPtype,Exam) %>%
+  summarise(
+    Number2 = sum(Number==2, na.rm = TRUE),
+    Number3 = sum(Number==1, na.rm = TRUE),
+        Total = n(),
+  )
+
+examiner2 %<>% mutate(Frac2 = Number2/Total,
+    Frac3 = Number3/Total,
+    SD2 = sqrt(Frac2*(1-Frac2)/Total),
+    SD3 = sqrt(Frac3*(1-Frac3)/Total)) 
+```
+
+```{r examinerPlot, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE,fig.cap="Number of subjects with 2 equal measurements by examiner, blocked by place and type. Red band shows 95% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners."}
+ggplot(examiner2, aes(x=Number2/Total,y=Exam)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin=Frac2 - 2*SD2,xmax=Frac2 + 2*SD2,col='red',height=.3)) +
+  facet_grid(BPplace~BPtype) +
+  labs(x="Fraction of subjects with 2 equal measurements",y="Examiner") +
+  theme_bw() +
+  # add dashed vertical line at corresponding Prob_repeated2 for that place and type
+  geom_vline(data= sd_summary, aes(xintercept=Prob_repeated2),linetype="dashed", col= 'darkolivegreen') +
+  geom_vline(data= sd_summary, aes(xintercept=Fraction2),linetype="dotted", col= 'navyblue') +
+  theme(axis.text.y = element_text(size=10),
+        axis.text.x = element_text(size=10),
+        axis.title.x = element_text(size=14),
+        axis.title.y = element_text(size=14),
+        strip.text.y = element_text(size=12),
+        strip.text.x = element_text(size=12),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "none"
+  )
+```
+
+
+```{r examinerPlot3, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE,fig.cap="Number of subjects with 3 equal measurements by examiner, blocked by place and type. Red band shows 95% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners."}
+# do the same for 3 equal measurements
+stripchart3 <-ggplot(examiner2,
+                     aes(x=Number3/Total,y=Exam)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin=pmax(0,Frac3 - 2*SD3),xmax=Frac3 + 2*SD3,col='red',height=.3)) +
+  facet_grid(BPplace~BPtype) +
+  labs(x="Fraction of subjects with 3 equal measurements",y="Examiner") +
+  theme_bw() +
+  # add dashed vertical line at corresponding Prob_repeated3 for that place and type
+  geom_vline(data= sd_summary, aes(xintercept=Prob_repeated3),linetype="dashed", col= 'darkolivegreen') +
+  geom_vline(data= sd_summary, aes(xintercept=Fraction3),linetype="dotted", col= 'navyblue') +
+  theme(axis.text.y = element_text(size=10),
+        axis.text.x = element_text(size=10),
+        axis.title.x = element_text(size=14),
+        axis.title.y = element_text(size=14),
+        strip.text.y = element_text(size=12),
+        strip.text.x = element_text(size=12),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "none"
+  )
+stripchart3
+```
+In Figure \ref{fig:examinerPlot3}, we show the fraction of subjects with three equal measurements, by examiner, blocked by place and type.
+Relative to the expected random fluctuations, we see that there is even more variation among the examiners.
+One examiner (3001) produced consistently excessive numbers of triple repeats in Home measurements, and a deficit of triple repeats in Clinic measurements.
+
+One further point to explore is the position of the two equal measures in a group of three.
+If there are three independent measures, with two equal, each of the three has equal probability of being the odd one out.
+On the other hand, if there is a trend in the measurements, then the second is least likely to be the odd one out.
+
+In fact, what we observe is that it is the third measurement that is least likely to differ from the other two, while the first is most likely.
+The proportions are listed in Table \ref{tab:ternary}.
+
+```{r ternaryTable, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+
+# make a table of bp.data$Which_Diff blocked by BPplace and BPtype
+
+b0 <- subset(bp.data,Which_Diff>0)
+table1 <- as.data.frame(table(b0$Which_Diff,b0$BPplace,b0$BPtype,b0$Exam)) 
+names(table1) <-c("Which_Diff","BPplace","BPtype","Exam","Freq")
+
+
+table1$Normalized <- ave(table1$Freq,table1$BPplace,table1$BPtype,table1$Exam,FUN=function(x) x/sum(x))
+
+table1 %<>% pivot_wider(names_from = Which_Diff, values_from = Normalized,id_cols = c("BPplace","BPtype","Exam"),names_prefix = "V")%>%
+  rbind(data.frame(BPplace=rep(c("Home","Clinic"),2),BPtype=rep(c("Systolic","Diastolic"),each=2),Exam='Centre',V1=1/3,V2=1/3,V3=1/3))
+
+size_values <- setNames(rep(1.5, length(levels(table1$Exam))), levels(table1$Exam))
+size_values["Centre"] <- 3
+
+color_values <- setNames(c14, levels(table1$Exam))
+
+```
+
+```{r ternaryPlot, include=TRUE,fig.height=8,fig.width=8, echo=FALSE,results='asis',message=FALSE,warning=FALSE,fig.cap="Ternary plot of the position of the measurement that is unique, among subjects with 2 equal measurements. V1 is the fraction with the first distinct, V2 is the fraction with the second distinct, V3 is the fraction with the third distinct."}
+# make a ternary plot of the normalized frequencies
+ggtern(data=table1, aes(x=V1, y=V2, z=V3)) +
+  geom_point(aes(col=Exam, size=Exam),alpha=.75) +
+  theme_bw() + 
+  facet_grid(BPplace~BPtype) +
+theme(tern.axis.text.L = element_text(size=10),
+      tern.axis.text.R = element_text(size=10),
+      tern.axis.text.T = element_text(size=10),
+      tern.axis.title.L = element_text(size=14),
+      tern.axis.title.R = element_text(size=14),
+      tern.axis.title.T = element_text(size=14),
+      strip.text.y = element_text(size=12),
+      strip.text.x = element_text(size=12)
+) + theme_showgrid()+ theme(legend.position ='bottom') +
+  scale_size_manual(values=size_values) +
+  scale_color_manual(values=color_values) 
+
+```
+In Figure \ref{fig:ternaryPlot}, we show a ternary plot of the normalized frequencies of the three possible positions of the measurement that is unique, with one point for each examiner, blocked by place and type.
+We see an almost uniform bias toward the first and away from the third as the distinct measurement, but also substantial differences among the examiners.
+The largest outlier is examiner 3001, who has a much higher proportion of subjects with the first measurement being the unique one in the Home measurements, for both systolic and diastolic BP.
+
+Overall, we can only conclude that there are clearly some irregularities in the BP measurement process, but we cannot identify a specific structure to them, or propose a remedy.
+As the irregularities are not very large, we will proceed with the analysis without attempting to correct for them.
+
+
+### Missing or implausible measurements {#sec:BPrange}
+
+Some of the reported measures were extremely implausible, particularly for diastolic BP. `r sum(dias0)`subjects had at least one diastolic BP measure recorded as 0, in addition to the `r sum(!nhanesna)` subjects who were missing at least one measurement. We excluded all of these subjects, and indeed any subject who had at least one measurement recorded outside the ranges (40,140) for diastolic and (60,250) for systolic BP, as recommended by the CDC. 
+There was just one subject with systolic BP measures that were too low, but `r sum(nhanesdiasrange)` subjects with low diastolic BP (in addition to those with measures recorded as 0). 
+One subject was excluded for diastolic BP 156, and three were excluded for systolic BP that was too high, with the maximum being 264. 
+
+
+## Exploratory data analysis
+The empirical means of the home and clinic measures in population B are tabulated in Table 1. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female. 
+The average difference is about `r sprintf('%.1f',mean(diasH)-mean(dias))` for diastolic and `r sprintf('%.1f', mean(sysH) - mean(sys))` for systolic, which is small compared with the general range of the differences, which have SD of 
+`r sprintf('%.1f (diastolic) and %.1f (systolic)', sd(diasH-dias),sd(sysH-sys))`.
+
 ```{r summaries, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
 # Printing the table using kable
     cat(kable(mean_sd_summary,format="latex", escape = F,booktabs = T, digits=1,
@@ -234,6 +537,7 @@ We note that the home measures are systematically higher than the clinic measure
     cat('\n')
 ```
 
+### Correlations between measurements {#sec:correlations}
 We see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
 
 ```{r SD-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
@@ -249,33 +553,6 @@ We see that there is relatively little correlation between empirical SD and empi
                  vjust = "top", hjust = "right", inherit.aes = FALSE)
 
 ```
-
-## Addressing errors in blood pressure measurement
-
-The blood pressure errors were found in the at home measurements. 
-While these did not destroy the usefulness of the home measurements, they did require some attention and decisions for how to work with these defects. 
-We also consider them inherently interesting, and worth registering for future researchers working on these or similar data. 
-In particular, the problem we have called “pseudo-replication” was entirely unexpected, although not unprecedented, and is of particular concern to researchers trying to estimate individual variation in clinically relevant measures.
-
-### Last digit preference {#sec:lastdigit}
-
-Mild tendency for observers to prefer certain last digits in reporting BP measurements has been reported in other studies, though an analysis of the 1999 wave of NHANES reported no last-digit preference.  The last-digit preference in NHANES III, on the other hand, is substantial, with about 26% of all the diastolic BP measurements ending in 0, but only about 30% ending in 4 or 6. Because the shifts due to last-digit preference are presumably small, we expect them to have little effect on the main effects that we are examining in this paper, but they do increase the probability of two measurements being rounded to the same value, something that needs to be taken into account in examining the problem of pseudo-replication.
-
-### Pseudo-replicates {#sec:pseudorep}
-
-While the protocol calls for each subject to have three independent BP measures taken, it appears from looking at the distribution of the results that this is not what happened in all cases, at least in the home measurements. Instead, it may be that one or two measurements were taken correctly, and the remaining ``observations'' were either copied in, or matched the earlier results because of the observer’s unconscious inclination to expect the same number to come up. 
-We analyze this problem at length below, two out of twelve examiners who collected the data may have committed some amount of copying (whether intentional or inadvertent), potentially affecting approximately 16% of the subjects. 
-This is a significant problem, because copying affects the variance of the reported measurements, shifting it consistently downward, to an extent that may be very large, and is impossible to reconstruct. The effect is to create a class of spurious low-variance individuals that dilute the effect of variance on survival.
-
-### Missing or implausible measurements {#sec:BPrange}
-
-Some of the reported measures were extremely implausible, particularly for diastolic BP. `r sum(dias0)`subjects had at least one diastolic BP measure recorded as 0, in addition to the `r sum(!nhanesna)` subjects who were missing at least one measurement. We excluded all of these subjects, and indeed any subject who had at least one measurement recorded outside the ranges (40,140) for diastolic and (60,250) for systolic BP, as recommended by the CDC. 
-There was just one subject with systolic BP measures that were too low, but `r sum(nhanesdiasrange)` subjects with low diastolic BP (in addition to those with measures recorded as 0). 
-One subject was excluded for diastolic BP 156, and three were excluded for systolic BP that was too high, with the maximum being 264. 
-
-
-
-
 
 
 # Appendix B -- Model details
@@ -1341,39 +1618,4 @@ format="latex", escape = F,booktabs = T, caption = "Parameters for distribution 
 Finally, we wish to confirm that the perfomance of the model does not depend on the directionality of $\Delta$. Figure \ref{fig:DeltaAUCs} plots the AUC values of 10-year HA-CVD-CeVD mortality for the all-covariate mean blood pressure-based model trained on the full NHANES population, split by the two age-ranges (45-64 and 65-84) and demographic groups. There is no clear trend between mode performance for the different regions of $\Delta$ directionality.
 
 ![AUC values of the full-population, all covariate model with the mean blood pressure model, based on HA-CVD-CeVD 10-year mortality. ](./Rmarkdown_Plots/DeltaDirection_AUCs.png){#fig:DeltaAUCs}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# References
