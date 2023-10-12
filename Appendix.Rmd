@@ -1,9 +1,10 @@
 ---
 title: "NHANES Blood Pressure-Based Mortality Risk - Appendix"
 author: "Rscripts by Hamish Patten, DW Bester and David Steinsaltz"
-date: "02/10/2023"
+date: "10/10/2023"
 output: 
-  pdf_document:
+  bookdown::pdf_document2:
+    keep_tex: true
     toc: true
     toc_depth: 3
     number_sections: true
@@ -14,6 +15,8 @@ bibliography: nhanesBP.bib
 knitr::opts_chunk$set(echo = TRUE)
 options(tinytex.verbose = TRUE)
 library(tidyverse)
+library(bookdown)
+library(kableExtra)
 library(formatR)
 library(magrittr)
 library(knitr)
@@ -305,11 +308,10 @@ In particular, the problem we have called “dependent replication” was entire
 Mild tendency for observers to prefer certain last digits in reporting BP measurements has been reported in other studies, though an analysis of the 1999 wave of NHANES reported no last-digit preference [@ostchega2003national].  
 The last-digit preference in NHANES III, on the other hand, is substantial, with about `r sprintf('%.1f', 100*bp_last_digit$'0'[3])`% of all the clinic-measured systolic BP measurements ending in 0, but only about `r sprintf('%.1f', 100*bp_last_digit$'4'[3]+100*bp_last_digit$'6'[3])`% ending in 4 or 6. Because the shifts due to last-digit preference are presumably small, we expect them to have little effect on the main effects that we are examining in this paper, but they do increase the probability of two measurements being rounded to the same value, something that needs to be taken into account in examining the problem of dependent replication.
 
-```{r digit_summary, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+```{r digit-summary, include=TRUE, echo=FALSE,results='asis'}
 # Printing the table using kable
-    cat(kable(bp_last_digit,format="latex", escape = F,booktabs = T, digits=3,
-              linesep = rep(c(rep("",5),"\\addlinespace"),4),
-                  col.names=c("Place","Sys/Dias",2*(0:4)),caption = 'Summary data for BP end digits') %>%  kable_styling(latex_options = "hold_position") )
+    kable(bp_last_digit,format="latex", escape = F,booktabs = T, digits=3,col.names=c("Place","Sys/Dias",2*(0:4)),caption = 'Summary data for BP end digits') %>%  
+          kable_styling(latex_options = "hold_position")
     cat('\n')
 ```
 
@@ -320,12 +322,15 @@ This could happen in either direction: later measurements could be pulled closer
 This is relevant, because erroneously repeated measures would artificially decrease the variance of the three measurements, and avoiding repeated measures would have the opposite effect.
 
 The end-digit bias may be expected to have an effect here, since it influences the probability of two measurements being rounded to the same value.
-We begin by noting the standard deviations for measurements of individual subjects as given in the column 'Mean of SD' in Table \ref{tab:sd_summary}.
-The column 'Prob all rep' gives the theoretical probability that two of the three measurements for a subject would have the same value, if the measurements were independent and normally distributed with the given standard deviation (adjusted for the rounding), and assuming that rounding to particular digits is done in proportion to the fractions listed in Table \ref{tab:digit_summary}.
+We begin by noting the standard deviations for measurements of individual subjects as given in the column 'Mean of SD' in Table \ref{tab:sd-summary}.
+The column 'Prob all rep' gives the theoretical probability that two of the three measurements for a subject would have the same value, if the measurements were independent and normally distributed with the given standard deviation (adjusted for the rounding), and assuming that rounding to particular digits is done in proportion to the fractions listed in Table \ref{tab:digit-summary}.
 The column 'Prob 2 rep' gives the probability that two of the three measurements would have the same value, under the same conditions.
 The column 'Frac all rep' gives the observed fraction of subjects for whom all three measurements were equal, and 'Frac 2 rep' gives the fraction for whom two of the three measurements were equal.
 The observed fractions for three equal measurements are all very close to the theoretical probabilities, but the observed fractions for two equal measurements are substantially lower than the theoretical probabilities.
 (For comparison, a 95\% probability range for the fraction of subjects with two equal measurements is about $\pm 0.008$.)
+
+In Figure \ref{fig:examinerPlot}, we show the fraction of subjects with two equal measurements, by examiner, blocked by place and type.
+We see that the fraction of subjects with two equal measurements varies substantially by examiner, and that the variation is greater for the systolic than for the diastolic measurements.
 
 
 ```{r pseudorep, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
@@ -375,15 +380,13 @@ sd_summary$Prob_repeated2 <- sapply(1:4, function(j) prob_repeated2_intervals(sq
 sd_summary %<>% relocate(Fraction2, .after = Prob_repeated3)
 
 ```
-```{r sd_summary, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+```{r sd-summary, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
 #Print table of sd_summary
 cat(kable(sd_summary,format="latex", escape = F,booktabs = T, digits=3,
           linesep = rep(c(rep("",5),"\\addlinespace"),4),
           col.names=c("Place","Sys/Dias","Mean of SD","Frac all rep",  "Prob all rep", "Frac 2 rep", "Prob 2 rep"),caption = 'Summary data for repeated measures') %>%  kable_styling(latex_options = "hold_position") )
 ```
 
-In Figure \ref{fig:examinerPlot}, we show the fraction of subjects with two equal measurements, by examiner, blocked by place and type.
-We see that the fraction of subjects with two equal measurements varies substantially by examiner, and that the variation is greater for the systolic than for the diastolic measurements.
 
 
 ```{r examinerCalc, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
@@ -429,9 +432,7 @@ ggplot(examiner2, aes(x=Number2/Total,y=Exam)) +
         legend.position = "none"
   )
 ```
-
-
-```{r examinerPlot3, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE,fig.cap="Number of subjects with 3 equal measurements by examiner, blocked by place and type. Red band shows 95% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners."}
+```{r examinerPlot3, include=TRUE, echo=FALSE,message=FALSE,warning=FALSE,fig.cap="Number of subjects with 3 equal measurements by examiner, blocked by place and type. Red band shows 95% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners."}
 # do the same for 3 equal measurements
 stripchart3 <-ggplot(examiner2,
                      aes(x=Number3/Total,y=Exam)) +
@@ -457,7 +458,9 @@ stripchart3 <-ggplot(examiner2,
         legend.position = "none"
   )
 stripchart3
+
 ```
+
 In Figure \ref{fig:examinerPlot3}, we show the fraction of subjects with three equal measurements, by examiner, blocked by place and type.
 Relative to the expected random fluctuations, we see that there is even more variation among the examiners.
 One examiner (3001) produced consistently excessive numbers of triple repeats in Home measurements, and a deficit of triple repeats in Clinic measurements.
@@ -467,51 +470,137 @@ If there are three independent measures, with two equal, each of the three has e
 On the other hand, if there is a trend in the measurements, then the second is least likely to be the odd one out.
 
 In fact, what we observe is that it is the third measurement that is least likely to differ from the other two, while the first is most likely.
-The proportions are listed in Table \ref{tab:ternary}.
+This is what we would expect if examiners sometimes either intentionally copied the second measurement into the space for the third, or unintentionally allowed themselves to be influenced into observing the same number.
+The proportions are listed in Table \ref{tab:proportionChisq}, together with chi-squared tests for difference from the expected equal proportions for each site and type.
 
-```{r ternaryTable, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+We see that there is a huge deviation from the expected proportions in the Home measurements, but less in the Home measurements, and more deviation in Systolic than in Diastolic measurements.
+
+```{r proportionChisq, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
 
 # make a table of bp.data$Which_Diff blocked by BPplace and BPtype
 
 b0 <- subset(bp.data,Which_Diff>0)
+
 table1 <- as.data.frame(table(b0$Which_Diff,b0$BPplace,b0$BPtype,b0$Exam)) 
 names(table1) <-c("Which_Diff","BPplace","BPtype","Exam","Freq")
 
+# add a column for normalized frequencies
+table1$Normalized <- ave(table1$Freq,table1$BPplace,table1$BPtype,table1$Exam,FUN=function(x) x/sum(x)) 
 
-table1$Normalized <- ave(table1$Freq,table1$BPplace,table1$BPtype,table1$Exam,FUN=function(x) x/sum(x))
+# add a column for frequencies
 
-table1 %<>% pivot_wider(names_from = Which_Diff, values_from = Normalized,id_cols = c("BPplace","BPtype","Exam"),names_prefix = "V")%>%
-  rbind(data.frame(BPplace=rep(c("Home","Clinic"),2),BPtype=rep(c("Systolic","Diastolic"),each=2),Exam='Centre',V1=1/3,V2=1/3,V3=1/3))
 
-size_values <- setNames(rep(1.5, length(levels(table1$Exam))), levels(table1$Exam))
-size_values["Centre"] <- 3
+table1 %<>% pivot_wider(names_from = Which_Diff, values_from = c(Normalized,Freq),id_cols = c("BPplace","BPtype","Exam")) %>%
+  rbind(data.frame(BPplace=rep(c("Home","Clinic"),2),BPtype=rep(c("Systolic","Diastolic"),each=2),Exam='Centre',Normalized_1=1/3,Normalized_2=1/3,Normalized_3=1/3,Freq_1=1,Freq_2=1,Freq_3=1))
 
-color_values <- setNames(c14, levels(table1$Exam))
+# Perform chi-square test for difference between observed proportions of position of unequal measurement and expect 1/3,1/3,1/3
 
+# Data are in columns Freq_1,Freq_2,Freq_3 of table1
+# Expected values are 1/3, 1/3, 1/3
+table1 %<>% rowwise() %>% mutate( chisq.val = { observed=c(Freq_1,Freq_2,Freq_3)
+  expected=c(1/3,1/3,1/3)
+  unname(chisq.test(x=observed, p=expected)$statistic)},
+chisq.p = pchisq( chisq.val, df=2, lower.tail=FALSE))
+table1$chisq.p <- chisq.test(cbind(table1$Freq_1,table1$Freq_2,table1$Freq_3),p=c(1/3,1/3,1/3))$p.value
+
+# make a table of chi-squared for total counts of unequal measurements by place and type
+chisq1 <- table1 %>% subset(Exam != 'Centre') %>%
+  group_by(BPplace,BPtype) %>% 
+  summarise(Freq_1=sum(Freq_1),Freq_2=sum(Freq_2),Freq_3=sum(Freq_3)) %>% rowwise() %>%
+  mutate(chisq.val = { observed=c(Freq_1,Freq_2,Freq_3)
+  expected=c(1/3,1/3,1/3)
+  signif(unname(chisq.test(x=observed, p=expected)$statistic),3)},
+chisq.p = format( pchisq( chisq.val, df=2, lower.tail=FALSE), scientific = TRUE, digits = 3) )
+
+cat(kable(chisq1, format="latex", escape = F,booktabs = T, 
+      linesep = rep(c(rep("",5),"\\addlinespace"),4),
+          col.names=c("Place","Sys/Dias","Freq1","Freq2","Freq3","ChiSq","p-value"),
+      caption="Chi-square test for difference between observed proportions (all examiners), stratified by place and type")%>%
+  kable_styling(latex_options = "hold_position") )
+```
+To explore this further, we can look at the proportions of first, second and third measurements from each examiner that are different from the other two.
+The results of a chi-squared test for each examiner (stratified by site and type of BP) for difference from the expected equal proportions are shown in Figure \ref{fig:proportionChisq2}.
+The dashed line represents a p-value of 0.001.
+Here we see that the Home measurements are extremely variable, while the Clinic measurements are quite consistent with the expected proportions, with the single exception of examiner 3004, who is far from the expected equal proportions in all categories of measurement.
+
+```{r proportionChisq2, include=TRUE, echo=FALSE,message=FALSE,warning=FALSE,fig.height=7,fig.cap="Proportions of first, second and third measurements from each examiner that are different from the other two, by place and type. Chi-squared value for difference from expected proportions. Dashed line represents p-value 0.001."}
+# make a strip plot of the chi-square values from table1, blocked by BPplace and BPtype
+
+stripchart_chisq <-ggplot(subset(table1,Exam != 'Centre'),
+                     aes(y=chisq.val,x=Exam)) +
+  geom_point() +
+  facet_grid(BPplace~BPtype) +
+  labs(y="Chi-square value for difference from expected proportions",x="Examiner") +
+  theme_bw() +
+  # add dashed horizontal line corresponding to p=0.001
+  geom_hline(yintercept=qchisq(0.999,df=2),linetype="dashed",col='navyblue') +
+  theme(axis.text.y = element_text(size=10),
+        axis.text.x = element_text(size=10, angle=90, vjust =.5, hjust =1),
+        axis.title.x = element_text(size=14),
+        axis.title.y = element_text(size=14),
+        strip.text.y = element_text(size=12),
+        strip.text.x = element_text(size=12),
+        panel.spacing = unit(0.5, "lines"),
+         panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(color="black", fill=NA, size=0.5),
+        panel.background = element_blank(),
+        legend.position = "none"
+  )
+stripchart_chisq
+
+```
+Given that the position of the differing measure clearly differs from the expected equal proportions, we might ask whether the examiners agree on a common proportion, suggesting that there might be some underlying systematic (observer-independent) reason for the differing measurements.
+In Table \ref{tab:ternaryChi2} we show the results of a chi-squared test for equality of observed proportions among the examiners, stratified by place and type.
+Interestingly, we see here that the examiners are fairly consistent in their proportions for the Home measures, but not for the Clinic measures.
+
+
+```{r ternaryChi2, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Chi-square test for difference between observed proportions and expected proportions for the table stratified by place and type
+chisq2 <- table1 %>% group_by(BPplace,BPtype) %>% summarise(ChiSq=signif(chisq.test(cbind(Freq_1,Freq_2,Freq_3))$statistic,3), 
+                                                            p.value=format(chisq.test(cbind(Freq_1,Freq_2,Freq_3))$p.value,scientific=TRUE,digits=3))
+
+# Print table of chisq2
+cat(kable(chisq2, format="latex", escape = F,booktabs = T,
+      linesep = rep(c(rep("",5),"\\addlinespace"),4),
+          col.names=c("Place","Sys/Dias","ChiSq","p-value"),
+      caption="Chi-square test for difference between observed proportions among the examiners, stratified by place and type")%>%
+  kable_styling(latex_options = "hold_position") )
 ```
 
 ```{r ternaryPlot, include=TRUE,fig.height=8,fig.width=8, echo=FALSE,results='asis',message=FALSE,warning=FALSE,fig.cap="Ternary plot of the position of the measurement that is unique, among subjects with 2 equal measurements. V1 is the fraction with the first distinct, V2 is the fraction with the second distinct, V3 is the fraction with the third distinct."}
 # make a ternary plot of the normalized frequencies
-ggtern(data=table1, aes(x=V1, y=V2, z=V3)) +
-  geom_point(aes(col=Exam, size=Exam),alpha=.75) +
+
+size_values <- setNames(rep(1.5, length(levels(table1$Exam))), levels(table1$Exam))
+size_values["Centre"] <- 3 # make the centre bigger
+size_values['3004'] <- 3 # make the outlier bigger
+
+color_values <- setNames(c14, levels(table1$Exam)) # set the colours
+
+ggtern(data=table1, aes(x=Normalized_1, y=Normalized_2, z=Normalized_3)) +
+  geom_point(aes(fill=Exam, size=Exam),alpha=.75, shape=21) +
   theme_bw() + 
   facet_grid(BPplace~BPtype) +
 theme(tern.axis.text.L = element_text(size=10),
       tern.axis.text.R = element_text(size=10),
       tern.axis.text.T = element_text(size=10),
-      tern.axis.title.L = element_text(size=14),
-      tern.axis.title.R = element_text(size=14),
-      tern.axis.title.T = element_text(size=14),
-      strip.text.y = element_text(size=12),
-      strip.text.x = element_text(size=12)
-) + theme_showgrid()+ theme(legend.position ='bottom') +
-  scale_size_manual(values=size_values) +
-  scale_color_manual(values=color_values) 
-
+      tern.axis.title.L = element_text(size=14, vjust=1,hjust=.5,face='bold'),
+      tern.axis.title.R = element_text(size=14, vjust=1,hjust=.5,face='bold'),
+      tern.axis.title.T = element_text(size=14, vjust=1,hjust=.5,face='bold'),
+      strip.text.y = element_text(size=14),
+      strip.text.x = element_text(size=14),
+       panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+) + labs(L="V1", T="V2", R="V3") +
+  theme_showgrid()+ theme(legend.position ='bottom') +
+  scale_size_manual(values=size_values, name='Exam') +
+  scale_color_manual(values=color_values, name='Exam') +
+  guides(size=guide_legend(override.aes=list(size=5))) 
 ```
-In Figure \ref{fig:ternaryPlot}, we show a ternary plot of the normalized frequencies of the three possible positions of the measurement that is unique, with one point for each examiner, blocked by place and type.
-We see an almost uniform bias toward the first and away from the third as the distinct measurement, but also substantial differences among the examiners.
-The largest outlier is examiner 3001, who has a much higher proportion of subjects with the first measurement being the unique one in the Home measurements, for both systolic and diastolic BP.
+
+Looking at a ternary plot \ref{fig:ternaryPlot} for the proportions from the 13 different examiners, we see very clearly the bias toward having the last two measures agree, for almost all examiners, and examiner 3004 (marked larger) standing out as a clear outlier.
 
 Overall, we can only conclude that there are clearly some irregularities in the BP measurement process, but we cannot identify a specific structure to them, or propose a remedy.
 As the irregularities are not very large, we will proceed with the analysis without attempting to correct for them.

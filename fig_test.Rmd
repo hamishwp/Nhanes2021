@@ -1,0 +1,527 @@
+---
+title: "NHANES Blood Pressure-Based Mortality Risk - Appendix"
+author: "Rscripts by Hamish Patten, DW Bester and David Steinsaltz"
+date: "10/10/2023"
+output: 
+  bookdown::pdf_document2:
+    keep_tex: true
+    toc: true
+    toc_depth: 3
+    number_sections: true
+bibliography: nhanesBP.bib
+---
+
+```{r setup, include=FALSE,message=FALSE,warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(tinytex.verbose = TRUE)
+library(tidyverse)
+library(bookdown)
+library(kableExtra)
+library(formatR)
+library(magrittr)
+library(knitr)
+library(tinytex)
+library(kableExtra)
+library(VennDiagram)
+library(lattice)
+library(ggtern)
+c14<-c("dodgerblue2", "#E31A1C", "green4", "#6A3D9A", "#FF7F00", "gold1", "skyblue2",  "gray70", "maroon", "orchid1", "darkturquoise", "darkorange4", "brown", "black")
+```
+# Appendix A -- The data
+
+
+```{r data-cleaning, include=FALSE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Load data
+nhanes_old=read.csv('Data_raw/nh3bpdat290716.csv')
+# Update mortality with 2017 public release
+nhanes_update=read.csv('Data_raw/NHANES_ML_update.csv',colClasses = 'integer') %>%
+  mutate(yrsfuExam = round(permth_exm/12,2), yrsfuHome = round(permth_int/12, 2)) %>%
+  filter(eligstat == 1)
+
+nhanes_old %<>% mutate(yrsfuExam = round(yrsfuExam, 2), yrsfuHome = round(yrsfuHome,2), permth_exm = round(yrsfuExam *12), permth_int = round(yrsfuHome*12))
+
+# Compare old and new mortality
+old_dead <- sort(nhanes_old$SEQN[nhanes_old$dead==1])
+new_dead <- sort(nhanes_update$seqn[nhanes_update$mortstat==1])
+conflict_dead <- old_dead[ !(old_dead %in% new_dead)] # Tested: No resurrections
+missing_update <- nhanes_old$SEQN[!(nhanes_old$SEQN %in% nhanes_update$seqn)] #Tested: No one from old data set missing from followup
+missing_old <- !(nhanes_update$seqn %in% nhanes_old$SEQN) # 6 subjects in the updated data set with mortality data (all alive) who were not in the old data set.
+
+nhanes_update %<>% filter(!missing_old) # remove them
+identical(nhanes_old$SEQN,nhanes_update$seqn) # Sequence of ids now identical
+fu_diff <- nhanes_update$permth_int - nhanes_update$permth_exm
+fu_diff_update <- nhanes_update$permth_int - nhanes_old$permth_int
+
+identical(nhanes_old$UCOD_LEADING[!is.na(nhanes_old$UCOD_LEADING)], nhanes_update$ucod_leading[!is.na(nhanes_old$UCOD_LEADING)])
+#TRUE, so cause-of-death codes for all individuals who were dead in the first data set are identical
+
+conflict_old <- subset(nhanes_old, nhanes_old$SEQN %in% conflict_dead)
+conflict_new <- subset(nhanes_update, nhanes_update$seqn %in% conflict_dead)
+
+nhanes <- nhanes_old
+nhanes$UCOD_LEADING <- nhanes_update$ucod_leading
+nhanes$yrsfuExam <- nhanes_update$yrsfuExam
+nhanes$yrsfuHome <- nhanes_update$yrsfuHome
+nhanes$dead <- nhanes_update$mortstat
+nhanes$mrtHrt <- as.integer(nhanes$UCOD_LEADING==1)  # 1 codes for Heart
+nhanes$mrtNeo <- as.integer(nhanes$UCOD_LEADING==2)  # 2 codes for Neoplasm
+nhanes$mrtInj <- as.integer(nhanes$UCOD_LEADING==4)  # 4 codes for Injury 
+nhanes$mrtOtherCVD <- as.integer(nhanes$UCOD_LEADING==5)  # 5 codes for other CVD
+
+# Change NAs to 0
+nhanes$mrtHrt[is.na(nhanes$mrtHrt)] <- 0
+nhanes$mrtNeo[is.na(nhanes$mrtNeo)] <- 0
+nhanes$mrtInj[is.na(nhanes$mrtInj)] <- 0
+nhanes$mrtOtherCVD[is.na(nhanes$mrtOtherCVD)] <- 0
+
+nhanes$eventhrt <- with(nhanes, mrtOtherCVD+mrtHrt)
+nhanes$eventother <- with(nhanes, dead-eventhrt)
+
+nhanes$yrsfu=pmin(nhanes_update$yrsfuHome,nhanes$yrsfuExam, na.rm = TRUE)
+# Note: The most recent examination (home or clinic) is a left truncation time,
+#   so follow-up is the minimum. For some the clinic is missing.
+#   We call the follow-up the home follow-up time, but it doesn't matter,
+#   since those individuals will be excluded from analysis.
+
+whichsys=match(c('systolicA','systolicB','systolicC'),names(nhanes))
+whichdias=match(c('diastolicA','diastolicB','diastolicC'),names(nhanes))  
+
+whichsyshome=match(c('systolicAhome','systolicBhome','systolicChome'),names(nhanes))
+whichdiashome=match(c('diastolicAhome','diastolicBhome','diastolicChome'),names(nhanes))
+whichBP=c(whichsys,whichdias)
+whichBPhome=c(whichsyshome,whichdiashome)
+allBP=c(whichBP,whichBPhome)
+allsys=c(whichsys,whichsyshome)
+alldias=c(whichdias,whichdiashome)
+
+### Means and variances
+
+sys=nhanes[,whichsys]
+dias=nhanes[,whichdias]
+
+sysH=nhanes[,whichsyshome]
+diasH=nhanes[,whichdiashome]
+
+nhanes$meandias=apply(dias,1,mean)
+nhanes$meansys=apply(sys,1,mean)
+nhanes$sysDel=apply(sysH,1,mean)-apply(sys,1,mean)
+nhanes$diasDel=apply(diasH,1,mean)-apply(dias,1,mean)
+nhanes$vardias=apply(dias,1,var)
+nhanes$varsys=apply(sys,1,var)
+nhanes$sddias=sqrt(nhanes$vardias)
+nhanes$sdsys=sqrt(nhanes$varsys)
+
+nhanes$precdias=1/(nhanes$vardias+1/3)
+nhanes$precsys=1/(nhanes$varsys+1/3)
+
+race <- with(nhanes, ifelse(white==1, 2, ifelse(black==1, 1,ifelse(mexican==1,3, 0))))
+nhanes$race <- as.factor(race)
+
+type=factor(1+race+3*(1-nhanes$female)*(race>0)+6*(race==0)) # other race all type 7
+levels(type)=c('female, black','female, white','female, Mex','male, black','male, white','male, Mex','other')
+nhanes$type=type
+
+nhanesna=!(is.na(apply(nhanes[,allBP],1,prod)))
+diaslow <- apply(nhanes[,alldias],1,min)<40
+diashigh <- apply(nhanes[,alldias],1,max)>140
+syslow <- apply(nhanes[,allsys],1,min)<60
+syshigh <- apply(nhanes[,allsys],1,max)>250
+nhanessysrange=(syslow | syshigh)
+nhanesdiasrange=(diaslow | diashigh)
+dias0 <- apply(nhanes[,alldias],1,min) == 0
+sys0 <- apply(nhanes[,allsys],1,min) == 0
+nhanesgood=(nhanesna&(nhanes$yrsfu>0)&nhanes$other==0)
+
+n_original <- dim(nhanes)[1]
+n_no_other <- sum(nhanes$other==0)
+n_followup <- sum(nhanes$yrsfu>0 & nhanesna & nhanes$other==0)
+n_no_followup <- sum(nhanes$yrsfu==0 & nhanesna & nhanes$other==0)
+
+frs=read.csv('Data_raw/FRS.csv')
+
+whichfrs <- '1998' # 'ATP' or '1998'
+#Choose versions of FRS
+if(whichfrs=='ATP'){nhanes$FRS=frs$ATP.FRS[match(nhanes$SEQN,frs$SEQN)]} else{nhanes$FRS=frs$X1998.FRS[match(nhanes$SEQN,frs$SEQN)]}
+
+
+#################################################
+#
+#			Add in observer data
+#
+#################################################
+
+
+exm=read.csv('Data_raw/Examiners.csv')
+
+nhanes$Exam=exm$PEPTECH[match(nhanes$SEQN,exm$SEQN)]
+nhanes$Exam[is.na(nhanes$Exam)]=0
+nhanes$Exam[nhanes$Exam == 88888] = 0
+## Combine the 88888 examiner with 0
+
+#nhanesA=subset(nhanesA,Exam>0)
+
+examname=sort(unique(nhanes$Exam))
+
+examlist=lapply(examname,function(en) subset(nhanes,Exam==en)$nunq.dias)
+examlists=lapply(examname,function(en) subset(nhanes,Exam==en)$nunq.sys)
+
+
+nhanesA=nhanes[nhanesgood & !nhanessysrange&!nhanesdiasrange, ]
+nhanesA$type=factor(nhanesA$type,exclude=7)
+
+N=dim(nhanesA)[1]
+k=3
+BP_type_names <- c('Systolic','Diastolic')
+BP_place_names <- c('Home','Clinic')
+whichsys=match(c('systolicA','systolicB','systolicC'),names(nhanesA))
+whichdias=match(c('diastolicA','diastolicB','diastolicC'),names(nhanesA)) 
+
+whichsyshome=match(c('systolicAhome','systolicBhome','systolicChome'),names(nhanesA))
+whichdiashome=match(c('diastolicAhome','diastolicBhome','diastolicChome'),names(nhanesA))
+whichBP=c(whichsys,whichdias)
+whichBPhome=c(whichsyshome,whichdiashome)
+
+
+# Make BP measures into array
+sys=data.matrix(nhanesA[,whichsys])
+dias=data.matrix(nhanesA[,whichdias])
+sysH=data.matrix(nhanesA[,whichsyshome])
+diasH=data.matrix(nhanesA[,whichdiashome])
+
+allBP <- list(Systolic = list(Home = sysH, Clinic = sys), Diastolic = list(Home = diasH, Clinic = dias))
+L=length(sys)
+gamma_dimnames <- list( c('alpha','theta','beta') , c('Clinic' , 'Home'))
+norm_dimnames <- c('m_M','m_Delta', 'sigma2_M', 'sigma2_Delta')
+
+```
+
+
+```{r correlations, include=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+
+demog.data <- data.frame(Ethnicity = droplevels(nhanesA$race) %>% fct_recode(Black = '1',White = '2',Mexican = '3'),
+      Sex = factor(nhanesA$female) %>% fct_recode(Male = '0', Female = '1') , 
+                      Exam = as.factor(nhanesA$Exam) )
+levels(demog.data$Exam)[levels(demog.data$Exam) == '0'] <- 'Unknown'
+# Make a table of means for systolic home BP by ethnicity and sex
+bp_table <- list()
+bp.data <- data.frame()
+
+which_diff <- function(x) { # for a vector with 3 entries, with two the same, return the one that is different
+  if (length(unique(x)) == 1 | length(unique(x))==3) {return(0)}
+if (x[1] == x[2]) {return(3)}
+if (x[1] == x[3]) {return(2)} 
+  return(1)
+  }
+  
+  
+for (BPtype in BP_type_names){
+  for (BPplace in BP_place_names){
+    bp.data %<>% rbind(cbind(demog.data, BPtype = factor(BPtype, levels = BP_type_names) , BPplace = factor(BPplace), Mean = apply(allBP[[BPtype]][[BPplace]],1,mean), SD = apply(allBP[[BPtype]][[BPplace]],1,sd),
+    Number = apply(allBP[[BPtype]][[BPplace]],1,function(x) length(unique(x))),
+    Which_Diff = apply(allBP[[BPtype]][[BPplace]],1,which_diff)))
+  }
+}
+
+mean_sd_summary <- bp.data %>%
+  group_by(BPplace,BPtype, Sex, Ethnicity) %>%
+  summarise(
+    Mean_of_Mean = mean(Mean, na.rm = TRUE),
+    Mean_of_SD = mean(SD, na.rm = TRUE)
+  )
+
+bp.data.cor <- bp.data %>%
+  group_by(BPtype, BPplace) %>%
+  summarize(correlation = cor(Mean, SD, use = "complete.obs"))
+
+# Make a table of last digit fractions for bp by type and place
+bp_last_digit <- matrix(0,nrow=0,ncol=5)
+
+for (BPtype in BP_type_names){
+  for (BPplace in BP_place_names){
+ digit_table <- unname(table(allBP[[BPtype]][[BPplace]]%%10))
+  digits=digit_table/sum(digit_table)
+  bp_last_digit %<>% rbind(digits) 
+  }
+}
+bp_last_digit %<>% as_tibble
+names(bp_last_digit) <- 2*(0:4)
+bp_last_digit$Place <- rep(BP_place_names,each=2)
+bp_last_digit$Type <- rep(BP_type_names,2)
+bp_last_digit %<>% select(Place,Type,everything())
+```
+
+```{r Venn1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=4, fig.height=4, fig.align='center', fig.cap='Venn diagram of subjects excluded from the analysis.'}
+
+bprange <- nhanessysrange | nhanesdiasrange
+
+bprange[is.na(bprange)] <- FALSE
+
+v <- draw.quad.venn(
+  area1=sum(!nhanesna), # Missing BP
+  area2=sum(nhanes$yrsfu==0), # No follow-up
+  area3=sum(nhanes$other==1), # Other ethnicity
+  area4 = sum(bprange), # BP out of range
+  n12=sum(!nhanesna & nhanes$yrsfu==0),
+  n23=sum(nhanes$yrsfu==0 & nhanes$other==1),
+  n13=sum(!nhanesna & nhanes$other==1),
+  n14 = sum(!nhanesna & bprange),
+  n24 = sum(nhanes$yrsfu==0 & bprange),
+  n34 = sum(nhanes$other==1 & bprange),
+  n124 = sum(!nhanesna & nhanes$yrsfu==0 & bprange),
+  n134 = sum(!nhanesna & nhanes$other==1 & bprange),
+  n123=sum(!nhanesna & nhanes$yrsfu==0 & nhanes$other==1),
+  n234=sum(nhanes$yrsfu==0 & nhanes$other==1 & bprange),
+  n1234=sum(!nhanesna & nhanes$yrsfu==0 & nhanes$other==1 & bprange),
+  category = c("Missing", "Follow-up", "Other Ethnicity","BP out of range"),  
+  fill = c("skyblue", "pink1", "mediumorchid", "orange"),
+  lty = "blank",
+  cat.pos = c(-20, 20,0,0),
+  cex = 1
+)
+  
+
+```
+
+## Exclusions
+
+There were `r dim(nhanes)[1]` subjects in the initial data set.
+Of these `r sum(!nhanesgood)` were excluded because they had missing data or were not followed up, or belonged to the "Other" ethnic group.
+This left `r sum(nhanesgood)` subjects for further consideration.
+A small number of subjects were excluded because their blood pressure measurements were outside the normal range, as described below in section \ref{sec:BPrange}.
+In the end there were `r N` subjects in the analysis data set.
+A Venn diagram of the different causes of exclusion is given in Figure \ref{fig:Venn1}.
+We will refer to this as the "full population".
+Of these, `r sum(!is.na(nhanesA$FRS))` had a computable FRS score.
+We call this the "FRS population".
+
+
+
+## Addressing errors in blood pressure measurement
+
+The blood pressure measurement or recording errors were found particularly in the home measurements. 
+While these did not destroy the usefulness of the home measurements, they did require some attention and decisions for how to work with these defects. 
+We also consider them inherently interesting, and worth registering for future researchers working on these or similar data. 
+In particular, the problem we have called “dependent replication” was entirely unexpected, although not unprecedented, and is of particular concern to researchers trying to estimate individual variation in clinically relevant measures.
+
+### Last-digit preference {#sec:lastdigit}
+
+Mild tendency for observers to prefer certain last digits in reporting BP measurements has been reported in other studies, though an analysis of the 1999 wave of NHANES reported no last-digit preference [@ostchega2003national].  
+The last-digit preference in NHANES III, on the other hand, is substantial, with about `r sprintf('%.1f', 100*bp_last_digit$'0'[3])`% of all the clinic-measured systolic BP measurements ending in 0, but only about `r sprintf('%.1f', 100*bp_last_digit$'4'[3]+100*bp_last_digit$'6'[3])`% ending in 4 or 6. Because the shifts due to last-digit preference are presumably small, we expect them to have little effect on the main effects that we are examining in this paper, but they do increase the probability of two measurements being rounded to the same value, something that needs to be taken into account in examining the problem of dependent replication.
+
+```{r digit-summary, include=TRUE, echo=FALSE,results='asis'}
+# Printing the table using kable
+    kable(bp_last_digit,format="latex", escape = F,booktabs = T, digits=3,col.names=c("Place","Sys/Dias",2*(0:4)),caption = 'Summary data for BP end digits') %>%  
+          kable_styling(latex_options = "hold_position")
+    cat('\n')
+```
+
+### Dependent replicates {#sec:pseudorep}
+
+While the protocol calls for each subject to have three independent BP measures taken, it is not impossible that the observers may have been influenced by one measure in recording the next.
+This could happen in either direction: later measurements could be pulled closer to the first, or there could be an inclination to avoid repeated measures.
+This is relevant, because erroneously repeated measures would artificially decrease the variance of the three measurements, and avoiding repeated measures would have the opposite effect.
+
+The end-digit bias may be expected to have an effect here, since it influences the probability of two measurements being rounded to the same value.
+We begin by noting the standard deviations for measurements of individual subjects as given in the column 'Mean of SD' in Table \ref{tab:sd-summary}.
+The column 'Prob all rep' gives the theoretical probability that two of the three measurements for a subject would have the same value, if the measurements were independent and normally distributed with the given standard deviation (adjusted for the rounding), and assuming that rounding to particular digits is done in proportion to the fractions listed in Table \ref{tab:digit-summary}.
+The column 'Prob 2 rep' gives the probability that two of the three measurements would have the same value, under the same conditions.
+The column 'Frac all rep' gives the observed fraction of subjects for whom all three measurements were equal, and 'Frac 2 rep' gives the fraction for whom two of the three measurements were equal.
+The observed fractions for three equal measurements are all very close to the theoretical probabilities, but the observed fractions for two equal measurements are substantially lower than the theoretical probabilities.
+(For comparison, a 95\% probability range for the fraction of subjects with two equal measurements is about $\pm 0.008$.)
+
+In Figure \ref{fig:examinerPlot}, we show the fraction of subjects with two equal measurements, by examiner, blocked by place and type.
+We see that the fraction of subjects with two equal measurements varies substantially by examiner, and that the variation is greater for the systolic than for the diastolic measurements.
+
+
+```{r pseudorep, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Calculate expected number of all with same last digit given 3 observations of sd = S
+prob_repeated3 <- function(S, intervalwidth=2){
+  # Assume overall mean is uniform
+  # so average over the interval [0,10]
+  # then probability of same is sum_j (Phi(10j+intervalwidth-x)-Phi(10j-x))^3
+  
+  sum(sapply(seq(-1,1),function(j)
+             .1*integrate(function(x) #(1-x/intervalwidth)*dnorm(x,sd=S)*(pnorm(x,sd=S)-.5),0,intervalwidth)$value
+     (pnorm(10*j+intervalwidth-x,sd=S)-pnorm(10*j-x,sd=S))^3,-5,5)$value) )
+}
+
+prob_repeated2 <- function(S, intervalwidth=2){
+  # Assume overall mean is uniform
+  # so average over the interval [0,10]
+  # then probability of same is sum_j 3*(Phi(10j+intervalwidth-x)-Phi(10j-x))^2 - 2*prob_repeated3
+  
+  sum(sapply(seq(-1,1),function(j)
+             .1*integrate(function(x) 
+     3*(pnorm(10*j+intervalwidth-x,sd=S)-pnorm(10*j-x,sd=S))^2,-5,5)$value) ) - 2*prob_repeated3(S,intervalwidth)
+}
+
+sd_summary <- bp.data %>%
+  group_by(BPplace,BPtype) %>%
+  summarise(
+    Mean_of_SD = mean(SD, na.rm = TRUE),
+    # fraction with all three measurements equal
+    Fraction3 = mean(Number==1, na.rm = TRUE),
+    Fraction2 = mean(Number==2, na.rm = TRUE)
+  )
+
+# Calculate probability of three measurements being equal given unequal interval lengths
+prob_repeated3_intervals <- function(S,intervals){
+  sum(sapply(intervals, function(intervalwidth) prob_repeated3(S,intervalwidth)))
+}
+
+prob_repeated2_intervals <- function(S,intervals){
+  sum(sapply(intervals, function(intervalwidth) prob_repeated2(S,intervalwidth)))
+}
+
+
+sd_summary$Prob_repeated3 <- sapply(1:4, function(j) prob_repeated3_intervals(sqrt(sd_summary$Mean_of_SD[j]^ 2+1/3),10*unlist(bp_last_digit[j,3:7])))
+sd_summary$Prob_repeated2 <- sapply(1:4, function(j) prob_repeated2_intervals(sqrt(sd_summary$Mean_of_SD[j]^2+1/3),10*unlist(bp_last_digit[j,3:7])))
+
+sd_summary %<>% relocate(Fraction2, .after = Prob_repeated3)
+
+```
+```{r sd-summary, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+#Print table of sd_summary
+cat(kable(sd_summary,format="latex", escape = F,booktabs = T, digits=3,
+          linesep = rep(c(rep("",5),"\\addlinespace"),4),
+          col.names=c("Place","Sys/Dias","Mean of SD","Frac all rep",  "Prob all rep", "Frac 2 rep", "Prob 2 rep"),caption = 'Summary data for repeated measures') %>%  kable_styling(latex_options = "hold_position") )
+```
+
+
+
+```{r examinerCalc, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# 2 by 2 grid of columns of number of subjects with 2 equal measurements
+#   by examiner, blocked by place and type
+
+# First, calculate the number of subjects with 2 equal measurements for each examiner
+examiner2 <- bp.data %>% 
+  group_by(BPplace,BPtype,Exam) %>%
+  summarise(
+    Number2 = sum(Number==2, na.rm = TRUE),
+    Number3 = sum(Number==1, na.rm = TRUE),
+        Total = n(),
+  )
+
+examiner2 %<>% mutate(Frac2 = Number2/Total,
+    Frac3 = Number3/Total,
+    SD2 = sqrt(Frac2*(1-Frac2)/Total),
+    SD3 = sqrt(Frac3*(1-Frac3)/Total)) 
+```
+
+```{r examinerPlot, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE,fig.cap="Number of subjects with 2 equal measurements by examiner, blocked by place and type. Red band shows 95% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners."}
+ggplot(examiner2, aes(x=Number2/Total,y=Exam)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin=Frac2 - 2*SD2,xmax=Frac2 + 2*SD2,col='red',height=.3)) +
+  facet_grid(BPplace~BPtype) +
+  labs(x="Fraction of subjects with 2 equal measurements",y="Examiner") +
+  theme_bw() +
+  # add dashed vertical line at corresponding Prob_repeated2 for that place and type
+  geom_vline(data= sd_summary, aes(xintercept=Prob_repeated2),linetype="dashed", col= 'darkolivegreen') +
+  geom_vline(data= sd_summary, aes(xintercept=Fraction2),linetype="dotted", col= 'navyblue') +
+  theme(axis.text.y = element_text(size=10),
+        axis.text.x = element_text(size=10),
+        axis.title.x = element_text(size=14),
+        axis.title.y = element_text(size=14),
+        strip.text.y = element_text(size=12),
+        strip.text.x = element_text(size=12),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "none"
+  )
+```
+
+
+```{r examinerPlot3, include=TRUE, echo=FALSE,message=FALSE,warning=FALSE,fig.cap="Number of subjects with 3 equal measurements by examiner, blocked by place and type. Red band shows 95% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners."}
+# do the same for 3 equal measurements
+stripchart3 <-ggplot(examiner2,
+                     aes(x=Number3/Total,y=Exam)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin=pmax(0,Frac3 - 2*SD3),xmax=Frac3 + 2*SD3,col='red',height=.3)) +
+  facet_grid(BPplace~BPtype) +
+  labs(x="Fraction of subjects with 3 equal measurements",y="Examiner") +
+  theme_bw() +
+  # add dashed vertical line at corresponding Prob_repeated3 for that place and type
+  geom_vline(data= sd_summary, aes(xintercept=Prob_repeated3),linetype="dashed", col= 'darkolivegreen') +
+  geom_vline(data= sd_summary, aes(xintercept=Fraction3),linetype="dotted", col= 'navyblue') +
+  theme(axis.text.y = element_text(size=10),
+        axis.text.x = element_text(size=10),
+        axis.title.x = element_text(size=14),
+        axis.title.y = element_text(size=14),
+        strip.text.y = element_text(size=12),
+        strip.text.x = element_text(size=12),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "none"
+  )
+stripchart3
+
+```
+
+In Figure \ref{fig:examinerPlot3}, we show the fraction of subjects with three equal measurements, by examiner, blocked by place and type.
+Relative to the expected random fluctuations, we see that there is even more variation among the examiners.
+One examiner (3001) produced consistently excessive numbers of triple repeats in Home measurements, and a deficit of triple repeats in Clinic measurements.
+
+One further point to explore is the position of the two equal measures in a group of three.
+If there are three independent measures, with two equal, each of the three has equal probability of being the odd one out.
+On the other hand, if there is a trend in the measurements, then the second is least likely to be the odd one out.
+
+In fact, what we observe is that it is the third measurement that is least likely to differ from the other two, while the first is most likely.
+This is what we would expect if examiners sometimes either intentionally copied the second measurement into the space for the third, or unintentionally allowed themselves to be influenced into observing the same number.
+The proportions are listed in Table \ref{tab:ternary}.
+A chi-squared test for difference from the expected equal proportions for each site and type is shown in Table \ref{tab:proportionChisq}.
+
+We see that there is a huge deviation from the expected proportions in the Home measurements, but less in the Home measurements, and more deviation in Systolic than in Diastolic measurements.
+
+```{r proportionChisq, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+
+# make a table of bp.data$Which_Diff blocked by BPplace and BPtype
+
+b0 <- subset(bp.data,Which_Diff>0)
+
+table1 <- as.data.frame(table(b0$Which_Diff,b0$BPplace,b0$BPtype,b0$Exam)) 
+names(table1) <-c("Which_Diff","BPplace","BPtype","Exam","Freq")
+
+# add a column for normalized frequencies
+table1$Normalized <- ave(table1$Freq,table1$BPplace,table1$BPtype,table1$Exam,FUN=function(x) x/sum(x)) 
+
+# add a column for frequencies
+
+
+table1 %<>% pivot_wider(names_from = Which_Diff, values_from = c(Normalized,Freq),id_cols = c("BPplace","BPtype","Exam")) %>%
+  rbind(data.frame(BPplace=rep(c("Home","Clinic"),2),BPtype=rep(c("Systolic","Diastolic"),each=2),Exam='Centre',Normalized_1=1/3,Normalized_2=1/3,Normalized_3=1/3,Freq_1=1,Freq_2=1,Freq_3=1))
+
+# Perform chi-square test for difference between observed proportions of position of unequal measurement and expect 1/3,1/3,1/3
+
+# Data are in columns Freq_1,Freq_2,Freq_3 of table1
+# Expected values are 1/3, 1/3, 1/3
+table1 %<>% rowwise() %>% mutate( chisq.val = { observed=c(Freq_1,Freq_2,Freq_3)
+  expected=c(1/3,1/3,1/3)
+  unname(chisq.test(x=observed, p=expected)$statistic)},
+chisq.p = pchisq( chisq.val, df=2, lower.tail=FALSE))
+table1$chisq.p <- chisq.test(cbind(table1$Freq_1,table1$Freq_2,table1$Freq_3),p=c(1/3,1/3,1/3))$p.value
+
+# make a table of chi-squared for total counts of unequal measurements by place and type
+chisq1 <- table1 %>% subset(Exam != 'Centre') %>%
+  group_by(BPplace,BPtype) %>% 
+  summarise(Freq_1=sum(Freq_1),Freq_2=sum(Freq_2),Freq_3=sum(Freq_3)) %>% rowwise() %>%
+  mutate(chisq.val = { observed=c(Freq_1,Freq_2,Freq_3)
+  expected=c(1/3,1/3,1/3)
+  signif(unname(chisq.test(x=observed, p=expected)$statistic),3)},
+chisq.p = format( pchisq( chisq.val, df=2, lower.tail=FALSE), scientific = TRUE, digits = 3) )
+
+cat(kable(chisq1, format="latex", escape = F,booktabs = T, 
+      linesep = rep(c(rep("",5),"\\addlinespace"),4),
+          col.names=c("Place","Sys/Dias","Freq1","Freq2","Freq3","ChiSq","p-value"),
+      caption="Chi-square test for difference between observed proportions (all examiners), stratified by place and type")%>%
+  kable_styling(latex_options = "hold_position") )
+```
+To explore this further, we can look at the proportions of first, second and third measurements from each examiner that are different from the other two.
+The results of a chi-squared test for each examiner (stratified by site and type of BP) for difference from the expected equal proportions are shown in Figure \ref{fig:proportionChisq2}.
+The dashed line represents a p-value of 0.001.
+Here we see that the Home measurements are extremely variable, while the Clinic measurements are quite consistent with the expected proportions, with the single exception of examiner 3004, who is far from the expected equal proportions in all categories of measurement.
