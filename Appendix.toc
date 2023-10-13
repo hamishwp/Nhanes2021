@@ -1,0 +1,30 @@
+\contentsline {section}{\numberline {1}Appendix A -- The data}{1}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Exclusions}{1}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Addressing errors in blood pressure measurement}{2}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Last-digit preference}{2}{subsubsection.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}Dependent replicates}{3}{subsubsection.1.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.3}Missing or implausible measurements}{6}{subsubsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.3}Exploratory data analysis}{7}{subsection.1.3}%
+\contentsline {subsubsection}{\numberline {1.3.1}Correlations between measurements}{7}{subsubsection.1.3.1}%
+\contentsline {section}{\numberline {2}Appendix B -- Model details}{9}{section.2}%
+\contentsline {subsubsection}{\numberline {2.0.1}Survival Analysis (Time-to-Event)}{9}{subsubsection.2.0.1}%
+\contentsline {subsubsection}{\numberline {2.0.2}Longitudinal Modelling}{10}{subsubsection.2.0.2}%
+\contentsline {subsubsection}{\numberline {2.0.3}Combined Hierarchical Model}{11}{subsubsection.2.0.3}%
+\contentsline {subsubsection}{\numberline {2.0.4}The modelling variants}{11}{subsubsection.2.0.4}%
+\contentsline {subsection}{\numberline {2.1}Methodology}{12}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}Empirical Bayes Parameters}{15}{subsubsection.2.1.1}%
+\contentsline {subsubsection}{\numberline {2.1.2}Hamiltonian Monte Carlo (HMC)}{20}{subsubsection.2.1.2}%
+\contentsline {subsubsection}{\numberline {2.1.3}Centering the Linear Predictor}{21}{subsubsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.2}Code Description}{22}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Data Cleaning}{22}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Main}{22}{subsubsection.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.3}Stan}{22}{subsubsection.2.2.3}%
+\contentsline {subsubsection}{\numberline {2.2.4}Centering}{22}{subsubsection.2.2.4}%
+\contentsline {subsubsection}{\numberline {2.2.5}Empirical Bayes Estimation}{22}{subsubsection.2.2.5}%
+\contentsline {subsubsection}{\numberline {2.2.6}Post-processing}{23}{subsubsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.3}Results}{23}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Convergence of Simulations}{23}{subsubsection.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}Results - Model Parameterization}{25}{subsubsection.2.3.2}%
+\contentsline {subsubsection}{\numberline {2.3.3}Results - Model Performance}{26}{subsubsection.2.3.3}%
+\contentsline {subsubsection}{\numberline {2.3.4}Results - Exploring \(\Delta \) Directionality}{31}{subsubsection.2.3.4}%
+\contentsline {section}{References}{49}{section*.2}%

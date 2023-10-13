@@ -13,3 +13,7 @@ tinytex
 kableExtra
 formatR
 lubridate
+futile.logger
+VennDiagram
+lattice
+ggtern

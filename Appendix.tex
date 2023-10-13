@@ -144,7 +144,7 @@ Of these 4573 were excluded because they had missing data or were not followed u
 This left 15019 subjects for further consideration.
 A small number of subjects were excluded because their blood pressure measurements were outside the normal range, as described below in section \ref{sec:BPrange}.
 In the end there were 14654 subjects in the analysis data set.
-A Venn diagram of the different causes of exclusion is given in Figure \ref{fig:Venn1}.
+A Venn diagram of the different causes of exclusion is given in figure \ref{fig:Venn1}.
 We will refer to this as the ``full population''.
 Of these, 9008 had a computable FRS score.
 We call this the ``FRS population''.
@@ -213,8 +213,20 @@ Clinic & Diastolic & 3.082 & 0.028 & 0.036 & 0.414 & 0.459\\
 \end{tabular}
 \end{table}
 
+We show the fraction of subjects with two equal measurements in figure 2, split by examiner, blocked by place and type.
+We see that the fraction of subjects with two equal measurements varies substantially by examiner, and that the variation is greater for the systolic than for the diastolic measurements.
+
+\begin{figure}
+\centering
 \includegraphics{Appendix_files/figure-latex/examinerPlot-1.pdf}
+\caption{\label{fig:examinerPlot}Number of subjects with 2 equal measurements by examiner, blocked by place and type. Red band shows 95\% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners.}
+\end{figure}
+
+\begin{figure}
+\centering
 \includegraphics{Appendix_files/figure-latex/examinerPlot3-1.pdf}
+\caption{\label{fig:examinerPlot3}Number of subjects with 3 equal measurements by examiner, blocked by place and type. Red band shows 95\% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners.}
+\end{figure}
 
 In Figure \ref{fig:examinerPlot3}, we show the fraction of subjects with three equal measurements, by examiner, blocked by place and type.
 Relative to the expected random fluctuations, we see that there is even more variation among the examiners.
@@ -227,6 +239,7 @@ On the other hand, if there is a trend in the measurements, then the second is l
 In fact, what we observe is that it is the third measurement that is least likely to differ from the other two, while the first is most likely.
 This is what we would expect if examiners sometimes either intentionally copied the second measurement into the space for the third, or unintentionally allowed themselves to be influenced into observing the same number.
 The proportions are listed in Table \ref{tab:proportionChisq}, together with chi-squared tests for difference from the expected equal proportions for each site and type.
+On the other hand, if there is a trend in the measurements, then the second is least likely to be the odd one out, which is also not what we see.
 
 We see that there is a huge deviation from the expected proportions in the Home measurements, but less in the Home measurements, and more deviation in Systolic than in Diastolic measurements.
 
@@ -247,11 +260,16 @@ Clinic & Diastolic & 2172 & 1992 & 1906 & 18.2 & 1.12e-04\\
 \end{table}
 
 To explore this further, we can look at the proportions of first, second and third measurements from each examiner that are different from the other two.
-The results of a chi-squared test for each examiner (stratified by site and type of BP) for difference from the expected equal proportions are shown in Figure \ref{fig:proportionChisq2}.
+The results of a chi-squared test for each examiner (stratified by site and type of BP) for difference from the expected equal proportions are shown in Figure \ref{fig:proportionChisq3}.
 The dashed line represents a p-value of 0.001.
 Here we see that the Home measurements are extremely variable, while the Clinic measurements are quite consistent with the expected proportions, with the single exception of examiner 3004, who is far from the expected equal proportions in all categories of measurement.
 
-\includegraphics{Appendix_files/figure-latex/proportionChisq2-1.pdf}
+\begin{figure}
+\centering
+\includegraphics{Appendix_files/figure-latex/proportionChisq3-1.pdf}
+\caption{\label{fig:proportionChisq3}Proportions of first, second and third measurements from each examiner that are different from the other two, by place and type. Chi-squared value for difference from expected proportions. Dashed line represents p-value 0.001.}
+\end{figure}
+
 Given that the position of the differing measure clearly differs from the expected equal proportions, we might ask whether the examiners agree on a common proportion, suggesting that there might be some underlying systematic (observer-independent) reason for the differing measurements.
 In Table \ref{tab:ternaryChi2} we show the results of a chi-squared test for equality of observed proportions among the examiners, stratified by place and type.
 Interestingly, we see here that the examiners are fairly consistent in their proportions for the Home measures, but not for the Clinic measures.
@@ -278,7 +296,7 @@ Clinic & Diastolic & 110.0 & 3.05e-12\\
 \caption{\label{fig:ternaryPlot}Ternary plot of the position of the measurement that is unique, among subjects with 2 equal measurements. V1 is the fraction with the first distinct, V2 is the fraction with the second distinct, V3 is the fraction with the third distinct.}
 \end{figure}
 
-Looking at a ternary plot \ref{fig:ternaryPlot} for the proportions from the 13 different examiners, we see very clearly the bias toward having the last two measures agree, for almost all examiners, and examiner 3004 (marked larger) standing out as a clear outlier.
+Looking at a ternary plot Figure \ref{fig:ternaryPlot} for the proportions from the 13 different examiners, we see very clearly the bias toward having the last two measures agree, for almost all examiners, and examiner 3004 (marked larger) standing out as a clear outlier.
 
 Overall, we can only conclude that there are clearly some irregularities in the BP measurement process, but we cannot identify a specific structure to them, or propose a remedy.
 As the irregularities are not very large, we will proceed with the analysis without attempting to correct for them.
@@ -406,8 +424,8 @@ For the parametrization of this model, we assume that the Gompertz parameters an
 \begin{equation}\label{priorsS}
 \begin{aligned}
   \boldsymbol{B}\sim\mathbb{C}(\mu_B,\sigma_B),\\
-  \boldsymbol{\theta}\sim\mathfrak{N}(\mu_\theta,\sigma_\theta),\\
-  \boldsymbol{\beta}\sim \mathfrak{N}(\mu_\beta,\sigma_\beta),
+  \boldsymbol{\theta}\sim\mathcal{N}(\mu_\theta,\sigma_\theta),\\
+  \boldsymbol{\beta}\sim \mathcal{N}(\mu_\beta,\sigma_\beta),
 \end{aligned}
 \end{equation}
 noting that \(\mathbb{C}(\mu,\sigma)\) is the Cauchy distribution.
@@ -426,10 +444,10 @@ These characteristics are not directly observed, but are inferred from their inf
 Let \(Y_i(t_j)\) be the observed blood pressure for patient \(i\) at time \(t_j\), for the individual \(i\in 1,2,...,N\) and the number of blood pressure measurements per individual \(j\in 1,2,...,k\). Due to the fact that the blood pressure measurement data was taken at both the home and clinic (written using subscripts H and C, respectively), with approximately 6 months between these two measurements, we model the blood pressure using the following model, assuming the diastolic \(Y_{i}^D\) and systolic \(Y_{i}^S\) blood pressure to be Gaussian-distributed:
 \begin{equation}\label{bp}
 \begin{aligned}
-  (Y_{i}^D)_{H} \sim \mathfrak{N}(M_i^D+\Delta_i^D,(\sigma_i^D)_H),\\
-  (Y_{i}^D)_{C} \sim \mathfrak{N}(M_i^D-\Delta_i^D,(\sigma_i^D)_C),\\
-  (Y_{i}^S)_{H} \sim \mathfrak{N}(M_i^S+\Delta_i^S,(\sigma_i^S)_H),\\
-  (Y_{i}^S)_{C} \sim \mathfrak{N}(M_i^S-\Delta_i^S,(\sigma_i^S)_C),
+  (Y_{i}^D)_{H} \sim \mathcal{N}(M_i^D+\Delta_i^D,(\sigma_i^D)_H),\\
+  (Y_{i}^D)_{C} \sim \mathcal{N}(M_i^D-\Delta_i^D,(\sigma_i^D)_C),\\
+  (Y_{i}^S)_{H} \sim \mathcal{N}(M_i^S+\Delta_i^S,(\sigma_i^S)_H),\\
+  (Y_{i}^S)_{C} \sim \mathcal{N}(M_i^S-\Delta_i^S,(\sigma_i^S)_C),
 \end{aligned}
 \end{equation}
 where superscripts \(D\) and \(S\) refer to diastolic and systolic blood pressure, respectively.
@@ -437,8 +455,8 @@ where superscripts \(D\) and \(S\) refer to diastolic and systolic blood pressur
 The blood pressure characteristics --- the individual-level parameters --- are themselves distributed according to a hierarchical model, determined by population-level parameters (also called ``hyperparameters'\,'):
 \begin{equation}\label{priorsL}
 \begin{aligned}
-  M_i^{\{D,S\}}\sim \mathfrak{N}(\mu_M^{\{D,S\}},\sigma_M^{\{D,S\}}),\\
-  \Delta_i^{\{D,S\}}\sim \mathfrak{N}(\mu_D^{\{D,S\}},\sigma_D^{\{D,S\}}),\\
+  M_i^{\{D,S\}}\sim \mathcal{N}(\mu_M^{\{D,S\}},\sigma_M^{\{D,S\}}),\\
+  \Delta_i^{\{D,S\}}\sim \mathcal{N}(\mu_D^{\{D,S\}},\sigma_D^{\{D,S\}}),\\
   \sigma_{i,C}^{\{D,S\}}\sim \Gamma(r_C^{\{D,S\}},\lambda_C^{\{D,S\}}),\\
   \sigma_{i,H}^{\{D,S\}}\sim \Gamma(r_H^{\{D,S\}},\lambda_H^{\{D,S\}}).
 \end{aligned}
@@ -468,7 +486,7 @@ One approach to estimating the complete set of hyperparameters
   \Omega_H=\{\mu_B,\sigma_B,\mu_\theta,\sigma_\theta,\mu_\beta,\sigma_\beta,\mu_M^{\{D,S\}},\sigma_M^{\{D,S\}},\mu_D^{\{D,S\}},\sigma_D^{\{D,S\}},r_C^{\{D,S\}},\lambda_C^{\{D,S\}},r_H^{\{D,S\}},\lambda_H^{\{D,S\}}\}
 \end{equation}
 is to impose a higher-level prior distribution, and use the machinery of Bayesian inference to produce posteriors for everything.
-This approach runs into computational difficulties, which have led us to a two-stage ``empirical Bayes'\,' approach, where the hyperparameters for the longitudinal model are first fixed by a maximum-likelihood calculation, after which the remaining hyperparameters and individual-level parameters can be estimated with Bayesian machinery.
+This approach runs into computational difficulties, which have led us to a two-stage `empirical Bayes' approach, where the hyperparameters for the longitudinal model are first fixed by a maximum-likelihood calculation, after which the remaining hyperparameters and individual-level parameters can be estimated with Bayesian machinery.
 For the time-to-event parameters we choose flat hyperpriors, selecting the hyperparameters \(\mu_B=\mu_\theta=\mu_\beta=0\), \(\sigma_B=\sigma_\theta=2\), and \(\sigma_\beta=100\).
 
 \hypertarget{the-modelling-variants}{%
@@ -481,9 +499,9 @@ However, this was only to ensure that there were no differences between the use 
 Throughout the remainder of this appendix, we refer to the 8 main models using the following run numbers:
 
 \begin{enumerate}
-\item All participants (15,295), using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from HA-CVD-CeVD.
-\item All participants (15,295), using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as all-causes of death.
-\item Only participants that had data from which FRS values could be computed (N=9,418) --- the ``FRS population'' but using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from HA-CVD-CeVD.
+\item All participants (14,654), using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from HA-CVD-CeVD.
+\item All participants (14,654), using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as all-causes of death.
+\item Only participants that had data from which FRS values could be computed (N=9,008) --- the ``FRS population'' but using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from HA-CVD-CeVD.
 \item FRS population, but using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as all-causes of death.
 \item FRS population, and using the FRS ATP-III value in the linear predictor term, with the outcome data as death specifically from HA-CVD-CeVD.
 \item FRS population, and using the FRS ATP-III value in the linear predictor term, with the outcome data as all-causes of death.
@@ -723,15 +741,15 @@ To finish this section, we include a table of the empirical Bayes priors, shown 
 \toprule
 Parameter & Estimate\\
 \midrule
-Clinic SD alpha & 2.5486+/-0.0058688\\
-Clinic SD theta & 0.075434+/--4.9887e-05\\
-Delta mu & 1.3468+/-0.057983\\
-Delta sigma & 6.8127+/-1.1526\\
-Home SD alpha & 2.1597+/-0.0032284\\
+Clinic SD alpha & 2.5649+/-0.0059218\\
+Clinic SD theta & 0.075067+/--4.9283e-05\\
+Delta mu & 1.3498+/-0.058006\\
+Delta sigma & 6.8156+/-1.1497\\
+Home SD alpha & 2.1847+/-0.0033326\\
 \addlinespace
-Home SD theta & 0.1496+/--7.1299e-05\\
-Mean mu & 123.34+/-0.16096\\
-Mean sigma & 19.412+/-1.3567\\
+Home SD theta & 0.14848+/--7.1403e-05\\
+Mean mu & 123.34+/-0.16094\\
+Mean sigma & 19.408+/-1.3549\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -744,15 +762,15 @@ Mean sigma & 19.412+/-1.3567\\
 \toprule
 Parameter & Estimate\\
 \midrule
-Clinic SD alpha & 2.7786+/-0.0078203\\
-Clinic SD theta & 0.10888+/--8.2224e-05\\
-Delta mu & 1.096+/-0.040361\\
-Delta sigma & 4.6823+/-0.94718\\
-Home SD alpha & 2.3167+/-0.0040113\\
+Clinic SD alpha & 2.782+/-0.0078113\\
+Clinic SD theta & 0.10861+/--8.1602e-05\\
+Delta mu & 1.1028+/-0.040339\\
+Delta sigma & 4.6794+/-0.94675\\
+Home SD alpha & 2.3107+/-0.0039685\\
 \addlinespace
-Home SD theta & 0.19507+/--0.00010161\\
-Mean mu & 72.312+/-0.085055\\
-Mean sigma & 10.201+/-1.0485\\
+Home SD theta & 0.19559+/--0.00010116\\
+Mean mu & 72.308+/-0.085014\\
+Mean sigma & 10.196+/-1.0481\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1340,8 +1358,17 @@ age & 0.0995937 & 1.1047220 & 0.0019693 & 50.5727891 & 0.0000000\\
 
 Finally, we wish to confirm that the perfomance of the model does not depend on the directionality of \(\Delta\). Figure \ref{fig:DeltaAUCs} plots the AUC values of 10-year HA-CVD-CeVD mortality for the all-covariate mean blood pressure-based model trained on the full NHANES population, split by the two age-ranges (45-64 and 65-84) and demographic groups. There is no clear trend between mode performance for the different regions of \(\Delta\) directionality.
 
+\begin{figure}
+\hypertarget{fig:DeltaAUCs}{%
+\centering
 \includegraphics{./Rmarkdown_Plots/DeltaDirection_AUCs.png}
-\# References
+\caption{AUC values of the full-population, all covariate model with the mean blood pressure model, based on HA-CVD-CeVD 10-year mortality.}\label{fig:DeltaAUCs}
+}
+\end{figure}
+
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
 
 \hypertarget{refs}{}
 \begin{CSLReferences}{1}{0}
