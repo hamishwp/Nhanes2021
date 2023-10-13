@@ -7,5 +7,7 @@ Samples/**
 Plots/**
 Plots_Save/**
 Appendix.log
-.pdf
+**.pdf
 .docx
+NHANES-BP-Appendix/Cache/**
+NHANES-BP-Appendix/Files/**
