@@ -8,6 +8,6 @@ Plots/**
 Plots_Save/**
 Appendix.log
 **.pdf
-.docx
-NHANES-BP-Appendix/Cache/**
-NHANES-BP-Appendix/Files/**
+**.docx
+NHANES-BP-Appendix_cache/**
+NHANES-BP-Appendix_files/**
