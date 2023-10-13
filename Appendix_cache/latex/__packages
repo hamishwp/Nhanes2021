@@ -7,12 +7,13 @@ purrr
 dplyr
 stringr
 forcats
+lubridate
+bookdown
+kableExtra
+formatR
 magrittr
 knitr
 tinytex
-kableExtra
-formatR
-lubridate
 futile.logger
 VennDiagram
 lattice
