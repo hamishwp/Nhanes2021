@@ -1477,7 +1477,7 @@ During the MCMC simulations, the centering values play a non-negligible role in 
 
 ## Code Description
 
-The code can be found at [https://github.com/hamishwp/Nhanes2021](https://github.com/hamishwp/Nhanes2021). The numerical code has been built in multiple stages. Below, we explain the principal files required to replicate the entire analysis presented in the article. There are 5 main groups for the code:
+The code can be found at [https://github.com/hamishwp/NHANES_HPOX](https://github.com/hamishwp/NHANES_HPOX). The numerical code has been built in multiple stages. Below, we explain the principal files required to replicate the entire analysis presented in the article. There are 5 main groups for the code:
 
 1. Data cleaning scripts
 2. Main file
