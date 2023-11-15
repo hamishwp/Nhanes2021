@@ -648,7 +648,7 @@ We see that there is relatively little correlation between empirical SD and empi
 
 ```
 
-
+\newpage
 # Appendix B -- Model details
 This appendix aims to add more detail about the numerical modelling than was provided in the article. This is to ensure that the research methods are transparent and entirely reproducible. The numerical modelling presented in this paper was performed using R combined with Rstan. More detail will be provided here about the model, about the specific methodology used to parameterize the model, and more results are provided that were not included in the main text.
 
@@ -1521,7 +1521,8 @@ The file `gamma_fits.Rmd` contains all the necessary routines in order to replic
 ### Post-processing
 The post-processing script is called `PostProcessing.R`, which heavily relies on the `Functions.R` script which contains all the necessary functions to analyse the data. The post-processing script generates many useful plots of the MCMC posterior distribution for the user, including Bayes' factors, violin plots of the normalised beta and gompertz posteriors, and more.
 
-## Results
+\newpage
+# Appendix C -- Further Results
 
 In this section, we add some additional detail to the results section covered in the article. Extra information is given to explain how convergence of the simulations was ensured, and to also include more visualisations of the converged model parameterizations. The authors feel that this is particularly useful to provide confidence in the model parameterization and the predictions.
 

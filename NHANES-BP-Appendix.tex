@@ -362,6 +362,8 @@ We see that there is relatively little correlation between empirical SD and empi
 \caption{\label{fig:SD-mean}Scatterplot of individual mean BP against individual SD of BP}
 \end{figure}
 
+\newpage
+
 \hypertarget{appendix-b-model-details}{%
 \section{Appendix B -- Model details}\label{appendix-b-model-details}}
 
@@ -738,15 +740,15 @@ To finish this section, we include a table of the empirical Bayes priors, shown 
 \toprule
 Parameter & Estimate\\
 \midrule
-Clinic SD alpha & 2.5559+/-0.0058968\\
-Clinic SD theta & 0.075192+/--4.9614e-05\\
-Delta mu & 1.3511+/-0.057979\\
-Delta sigma & 6.8124+/-1.1508\\
-Home SD alpha & 2.199+/-0.003406\\
+Clinic SD alpha & 2.5466+/-0.0058379\\
+Clinic SD theta & 0.0754+/--4.9643e-05\\
+Delta mu & 1.3474+/-0.057978\\
+Delta sigma & 6.8119+/-1.1522\\
+Home SD alpha & 2.1826+/-0.0033466\\
 \addlinespace
-Home SD theta & 0.1481+/--7.2004e-05\\
-Mean mu & 123.35+/-0.16097\\
-Mean sigma & 19.413+/-1.3557\\
+Home SD theta & 0.14835+/--7.198e-05\\
+Mean mu & 123.34+/-0.16095\\
+Mean sigma & 19.41+/-1.3564\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -759,15 +761,15 @@ Mean sigma & 19.413+/-1.3557\\
 \toprule
 Parameter & Estimate\\
 \midrule
-Clinic SD alpha & 2.7853+/-0.0077832\\
-Clinic SD theta & 0.10852+/--8.0842e-05\\
-Delta mu & 1.1009+/-0.040347\\
-Delta sigma & 4.6802+/-0.9463\\
-Home SD alpha & 2.3116+/-0.0039999\\
+Clinic SD alpha & 2.7804+/-0.007777\\
+Clinic SD theta & 0.10891+/--8.1475e-05\\
+Delta mu & 1.0952+/-0.040385\\
+Delta sigma & 4.6849+/-0.94742\\
+Home SD alpha & 2.3024+/-0.0039808\\
 \addlinespace
-Home SD theta & 0.19518+/--0.00010199\\
-Mean mu & 72.307+/-0.085009\\
-Mean sigma & 10.195+/-1.0477\\
+Home SD theta & 0.19471+/--0.00010234\\
+Mean mu & 72.311+/-0.085036\\
+Mean sigma & 10.199+/-1.0486\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -888,8 +890,10 @@ The file \texttt{gamma\_fits.Rmd} contains all the necessary routines in order t
 
 The post-processing script is called \texttt{PostProcessing.R}, which heavily relies on the \texttt{Functions.R} script which contains all the necessary functions to analyse the data. The post-processing script generates many useful plots of the MCMC posterior distribution for the user, including Bayes' factors, violin plots of the normalised beta and gompertz posteriors, and more.
 
-\hypertarget{results}{%
-\subsection{Results}\label{results}}
+\newpage
+
+\hypertarget{appendix-c-further-results}{%
+\section{Appendix C -- Further Results}\label{appendix-c-further-results}}
 
 In this section, we add some additional detail to the results section covered in the article. Extra information is given to explain how convergence of the simulations was ensured, and to also include more visualisations of the converged model parameterizations. The authors feel that this is particularly useful to provide confidence in the model parameterization and the predictions.
 
