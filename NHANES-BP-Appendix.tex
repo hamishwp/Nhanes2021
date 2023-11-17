@@ -5,16 +5,19 @@
 \documentclass[
 ]{article}
 \usepackage{amsmath,amssymb}
-\usepackage{lmodern}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -103,7 +106,7 @@
 \fi
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
+\urlstyle{same}
 \hypersetup{
   pdftitle={NHANES Blood Pressure-Based Mortality Risk - Appendix},
   pdfauthor={Rscripts by Hamish Patten, DW Bester and David Steinsaltz},
@@ -354,13 +357,72 @@ Clinic & Diastolic & Female & Mexican & 69.2 & 3.0\\
 \hypertarget{sec:correlations}{%
 \subsubsection{Correlations between measurements}\label{sec:correlations}}
 
-We see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
+In Figure \ref{fig:SD-mean} see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
 
 \begin{figure}
 \centering
 \includegraphics{NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf}
 \caption{\label{fig:SD-mean}Scatterplot of individual mean BP against individual SD of BP}
 \end{figure}
+
+\#```\{r Delta-mean,fig.pos=`H', fig.cap=`Scatterplot of individual mean BP against individual absolute difference between Clinic and Home mean', echo=FALSE,results=`asis',message=FALSE,warning=FALSE\}
+\#bp.sub \textless- data.frame(Mean=bp.data\(TotalMean[bp.data\)BPplace==`Clinic'{]},Delta=bp.data\(Delta[bp.data\)BPplace==`Clinic'{]}, \#BPtype=bp.data\(BPtype[bp.data\)BPplace==`Clinic'{]}) \%\textgreater\% \# Home and clinic are identical
+\# group\_by(BPtype)
+
+\hypertarget{bp.data.cor---bp.sub}{%
+\section{bp.data.cor \textless- bp.sub \%\textgreater\%}\label{bp.data.cor---bp.sub}}
+
+\hypertarget{summarizecorrelationdelta-cormean-delta-use-complete.obs}{%
+\section{summarize(correlationDelta = cor(Mean, Delta, use = ``complete.obs''))}\label{summarizecorrelationdelta-cormean-delta-use-complete.obs}}
+
+\hypertarget{scatterplot-of-mean-bp-against-sd-of-bp-from-bp.data}{%
+\section{\# Scatterplot of mean BP against SD of BP from bp.data}\label{scatterplot-of-mean-bp-against-sd-of-bp-from-bp.data}}
+
+\hypertarget{ggplotbp.sub-group_bybptype-aesx-mean-y-delta}{%
+\section{ggplot(bp.sub \%\textgreater\% group\_by(BPtype), aes(x = Mean, y = Delta)) +}\label{ggplotbp.sub-group_bybptype-aesx-mean-y-delta}}
+
+\hypertarget{geom_pointalpha.03-color-navyblue}{%
+\section{geom\_point(alpha=.03, color = `navyblue' ) +}\label{geom_pointalpha.03-color-navyblue}}
+
+\hypertarget{labstitle-scatterplot-of-mean-against-delta}{%
+\section{\texorpdfstring{labs(title = ``Scatterplot of Mean against \textbar Delta\textbar{}'',}{labs(title = ``Scatterplot of Mean against \textbar Delta\textbar'',}}\label{labstitle-scatterplot-of-mean-against-delta}}
+
+\hypertarget{x-meany-delta-ylim020}{%
+\section{\texorpdfstring{x = ``Mean'',y = ``\textbar Delta\textbar{}'') + ylim(0,20)+}{x = ``Mean'',y = ``\textbar Delta\textbar'') + ylim(0,20)+}}\label{x-meany-delta-ylim020}}
+
+\hypertarget{geom_smoothmethod-lm-se-false-color-black-add-regression-line}{%
+\section{geom\_smooth(method = ``lm'', se = FALSE, color = ``black'') + \# Add regression line}\label{geom_smoothmethod-lm-se-false-color-black-add-regression-line}}
+
+\hypertarget{facet_grid-bptype-scales-free_x}{%
+\section{facet\_grid(\textasciitilde{} BPtype, scales = `free\_x') +}\label{facet_grid-bptype-scales-free_x}}
+
+\hypertarget{themeplot.title-element_texthjust-0.5}{%
+\section{theme(plot.title = element\_text(hjust = 0.5)) +}\label{themeplot.title-element_texthjust-0.5}}
+
+\hypertarget{geom_textdata-bp.data.cor2-aeslabel-sprintfcor-.2f-correlationdelta-x-inf-y-inf}{%
+\section{geom\_text(data = bp.data.cor2, aes(label = sprintf(``Cor: \%.2f'', correlationDelta), x = Inf, y = Inf),}\label{geom_textdata-bp.data.cor2-aeslabel-sprintfcor-.2f-correlationdelta-x-inf-y-inf}}
+
+\hypertarget{vjust-top-hjust-right-inherit.aes-false}{%
+\section{vjust = ``top'', hjust = ``right'', inherit.aes = FALSE)}\label{vjust-top-hjust-right-inherit.aes-false}}
+
+\begin{table}[!h]
+
+\caption{\label{tab:Delta-mean}Correlation between mean and Delta. Rows correspond to type of Delta, columns to type of mean.}
+\centering
+\begin{tabular}[t]{lrr}
+\toprule
+  & SysMean & DiasMean\\
+\midrule
+SysDelta & 0.137 & 0.014\\
+DiasDelta & 0.347 & 0.128\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In Table \ref{tab:Delta-Mean} we show the correlations between overall mean and absolute difference (\(|\Delta|\)) between clinic and home measurements.
+The results are given as a \(2\times2\) table, showing correlations within systolic and diastolic BP, and between the two.
+The only moderately high correlation is between Systolic mean and Diastolic absolute Delta, which would correspond to a Variance Inflation Factor of 1.14.
+While this is not directly relevant to the present Bayesian methodology, it suggests that this correlation should not substantially affect the estimation of the model coefficients.
 
 \newpage
 
@@ -401,9 +463,9 @@ $FRS-1998$ & $R^N$ & 1998 version of the FRS score\\
 $FRS-ATP$ & $R^N$ & ATP version of the FRS score\\
 $M_S$ & $R^{+,N}$ & Mean systolic blood pressure\\
 $M_D$ & $R^{+,N}$ & Mean diastolic blood pressure\\
-$\Delta_S$ & $R^{+,N}$ & Difference between Home and Clinic mean systolic blood pressure\\
+$\Delta_S$ & $R^{+,N}$ & Semi-difference between Home and Clinic mean systolic blood pressure\\
 \addlinespace
-$\Delta_D$ & $R^{+,N}$ & Difference between Home and Clinic mean diastolic blood pressure\\
+$\Delta_D$ & $R^{+,N}$ & Semi-difference between Home and Clinic mean diastolic blood pressure\\
 $\sigma_{\{S,H\}}$ & $R^{+,N}$ & Standard deviation of the systolic blood pressure taken at home\\
 $\sigma_{\{D,H\}}$ & $R^{+,N}$ & Standard deviation of the diastolic blood pressure taken at home\\
 $\sigma_{\{S,C\}}$ & $R^{+,N}$ & Standard deviation of the systolic blood pressure taken at the clinic\\
@@ -740,15 +802,15 @@ To finish this section, we include a table of the empirical Bayes priors, shown 
 \toprule
 Parameter & Estimate\\
 \midrule
-Clinic SD alpha & 2.5466+/-0.0058379\\
-Clinic SD theta & 0.0754+/--4.9643e-05\\
-Delta mu & 1.3474+/-0.057978\\
-Delta sigma & 6.8119+/-1.1522\\
-Home SD alpha & 2.1826+/-0.0033466\\
+Clinic SD alpha & 2.5358+/-0.0057502\\
+Clinic SD theta & 0.075555+/--4.9319e-05\\
+Delta mu & 1.35+/-0.057989\\
+Delta sigma & 6.8136+/-1.1509\\
+Home SD alpha & 2.2024+/-0.0034248\\
 \addlinespace
-Home SD theta & 0.14835+/--7.198e-05\\
-Mean mu & 123.34+/-0.16095\\
-Mean sigma & 19.41+/-1.3564\\
+Home SD theta & 0.14809+/--7.217e-05\\
+Mean mu & 123.34+/-0.16096\\
+Mean sigma & 19.412+/-1.3557\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -761,15 +823,15 @@ Mean sigma & 19.41+/-1.3564\\
 \toprule
 Parameter & Estimate\\
 \midrule
-Clinic SD alpha & 2.7804+/-0.007777\\
-Clinic SD theta & 0.10891+/--8.1475e-05\\
-Delta mu & 1.0952+/-0.040385\\
-Delta sigma & 4.6849+/-0.94742\\
-Home SD alpha & 2.3024+/-0.0039808\\
+Clinic SD alpha & 2.7914+/-0.0078652\\
+Clinic SD theta & 0.10834+/--8.1306e-05\\
+Delta mu & 1.0992+/-0.040354\\
+Delta sigma & 4.681+/-0.94736\\
+Home SD alpha & 2.299+/-0.0039401\\
 \addlinespace
-Home SD theta & 0.19471+/--0.00010234\\
-Mean mu & 72.311+/-0.085036\\
-Mean sigma & 10.199+/-1.0486\\
+Home SD theta & 0.19576+/--0.00010184\\
+Mean mu & 72.311+/-0.085033\\
+Mean sigma & 10.198+/-1.0486\\
 \bottomrule
 \end{tabular}
 \end{table}

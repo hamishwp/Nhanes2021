@@ -102,10 +102,10 @@ dias=nhanes[,whichdias]
 sysH=nhanes[,whichsyshome]
 diasH=nhanes[,whichdiashome]
 
-nhanes$meandias=apply(dias,1,mean)
-nhanes$meansys=apply(sys,1,mean)
-nhanes$sysDel=apply(sysH,1,mean)-apply(sys,1,mean)
-nhanes$diasDel=apply(diasH,1,mean)-apply(dias,1,mean)
+nhanes$meandias=(apply(sysH,1,mean)+apply(sys,1,mean))/2
+nhanes$meansys=(apply(diasH,1,mean)+apply(dias,1,mean))/2
+nhanes$sysDel=(apply(sysH,1,mean)-apply(sys,1,mean))/2
+nhanes$diasDel=(apply(diasH,1,mean)-apply(dias,1,mean))/2
 nhanes$vardias=apply(dias,1,var)
 nhanes$varsys=apply(sys,1,var)
 nhanes$sddias=sqrt(nhanes$vardias)
@@ -217,6 +217,9 @@ if (x[1] == x[3]) {return(2)}
 for (BPtype in BP_type_names){
   for (BPplace in BP_place_names){
     bp.data %<>% rbind(cbind(demog.data, BPtype = factor(BPtype, levels = BP_type_names) , BPplace = factor(BPplace), Mean = apply(allBP[[BPtype]][[BPplace]],1,mean), SD = apply(allBP[[BPtype]][[BPplace]],1,sd),
+    TotalMean = (apply(allBP[[BPtype]][['Home']],1,mean)+apply(allBP[[BPtype]][['Clinic']],1,mean))/2,
+    Delta = abs(apply(allBP[[BPtype]][['Home']],1,mean)-apply(allBP[[BPtype]][['Clinic']],1,mean))/2,
+    # Note: TotalMean and Delta are identical for home and clinic
     Number = apply(allBP[[BPtype]][[BPplace]],1,function(x) length(unique(x))),
     Which_Diff = apply(allBP[[BPtype]][[BPplace]],1,which_diff)))
   }
@@ -231,7 +234,9 @@ mean_sd_summary <- bp.data %>%
 
 bp.data.cor <- bp.data %>%
   group_by(BPtype, BPplace) %>%
-  summarize(correlation = cor(Mean, SD, use = "complete.obs"))
+  summarize(correlationSD = cor(Mean, SD, use = "complete.obs"),correlationDelta = cor(TotalMean, Delta, use = "complete.obs"))
+
+
 
 # Make a table of last digit fractions for bp by type and place
 bp_last_digit <- matrix(0,nrow=0,ncol=5)
@@ -632,7 +637,8 @@ The average difference is about `r sprintf('%.1f',mean(diasH)-mean(dias))` for d
 ```
 
 ### Correlations between measurements {#sec:correlations}
-We see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
+In Figure \ref{fig:SD-mean} see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
+
 
 ```{r SD-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
 # Scatterplot of mean BP against SD of BP from bp.data
@@ -643,10 +649,49 @@ We see that there is relatively little correlation between empirical SD and empi
       geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
     facet_grid(BPtype ~ BPplace, scales = 'free_x') +
     theme(plot.title = element_text(hjust = 0.5)) +
-    geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlation), x = Inf, y = Inf), 
+    geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlationSD), x = Inf, y = Inf), 
                  vjust = "top", hjust = "right", inherit.aes = FALSE)
 
 ```
+
+
+#```{r Delta-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual absolute difference between Clinic and Home mean', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+#bp.sub <- data.frame(Mean=bp.data$TotalMean[bp.data$BPplace=='Clinic'],Delta=bp.data$Delta[bp.data$BPplace=='Clinic'], #BPtype=bp.data$BPtype[bp.data$BPplace=='Clinic']) %>%   # Home and clinic are identical
+#  group_by(BPtype)
+  
+# bp.data.cor <- bp.sub %>%
+#   summarize(correlationDelta = cor(Mean, Delta, use = "complete.obs"))
+# # Scatterplot of mean BP against SD of BP from bp.data
+#     ggplot(bp.sub %>% group_by(BPtype), aes(x = Mean, y = Delta)) + 
+#     geom_point(alpha=.03, color = 'navyblue' ) +
+#     labs(title = "Scatterplot of Mean against |Delta|",
+#          x = "Mean",y = "|Delta|") + ylim(0,20)+
+#       geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
+#     facet_grid(~ BPtype, scales = 'free_x') +
+#     theme(plot.title = element_text(hjust = 0.5)) +
+#     geom_text(data = bp.data.cor2, aes(label = sprintf("Cor: %.2f", correlationDelta), x = Inf, y = Inf), 
+#                  vjust = "top", hjust = "right", inherit.aes = FALSE)
+```{r Delta-mean,include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+DeltaSD <- cbind(nhanesA$meansys,nhanesA$meandias)
+MeanSD <- abs(cbind(nhanesA$sysDel,nhanesA$diasDel))
+colnames(DeltaSD) <- c('SysDelta','DiasDelta')
+colnames(MeanSD) <- c('SysMean','DiasMean')
+cor_table <- cor(DeltaSD,MeanSD,use='complete.obs')
+cat(kable(cor_table, 
+          caption = 'Correlation between mean and Delta. Rows correspond to type of Delta, columns to type of mean.',
+          format = "latex", 
+          escape = FALSE,
+          booktabs = TRUE, 
+          digits = 3)  %>%  
+          kable_styling(latex_options = "hold_position"))
+    cat('\n')
+
+```
+
+In Table \ref{tab:Delta-Mean} we show the correlations between overall mean and absolute difference ($|\Delta|$) between clinic and home measurements.
+The results are given as a $2\times2$ table, showing correlations within systolic and diastolic BP, and between the two.
+The only moderately high correlation is between Systolic mean and Diastolic absolute Delta, which would correspond to a Variance Inflation Factor of `r round(1/(1-cor_table["DiasDelta","SysMean"]^2),2)`.
+While this is not directly relevant to the present Bayesian methodology, it suggests that this correlation should not substantially affect the estimation of the model coefficients.
 
 \newpage
 # Appendix B -- Model details
