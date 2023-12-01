@@ -1,13 +1,16 @@
 ---
 title: "NHANES Blood Pressure-Based Mortality Risk - Appendix"
 author: "Rscripts by Hamish Patten, DW Bester and David Steinsaltz"
-date: "10/10/2023"
+date: "27/11/2023"
 output: 
   bookdown::pdf_document2:
     keep_tex: true
     toc: true
     toc_depth: 3
     number_sections: true
+    latex_engine: xelatex  # Change the LaTeX engine to xelatex
+header-includes:
+  - "\\usepackage{lscape}"  # Use lscape package to change page orientation
 bibliography: nhanesBP.bib
 ---
 
@@ -16,7 +19,6 @@ knitr::opts_chunk$set(echo = TRUE)
 options(tinytex.verbose = TRUE)
 library(tidyverse)
 library(bookdown)
-library(kableExtra)
 library(formatR)
 library(magrittr)
 library(knitr)
@@ -25,6 +27,7 @@ library(kableExtra)
 library(VennDiagram)
 library(lattice)
 library(ggtern)
+library(parallel)
 c14<-c("dodgerblue2", "#E31A1C", "green4", "#6A3D9A", "#FF7F00", "gold1", "skyblue2",  "gray70", "maroon", "orchid1", "darkturquoise", "darkorange4", "brown", "black")
 ```
 # Appendix A -- The data
@@ -90,7 +93,6 @@ whichsyshome=match(c('systolicAhome','systolicBhome','systolicChome'),names(nhan
 whichdiashome=match(c('diastolicAhome','diastolicBhome','diastolicChome'),names(nhanes))
 whichBP=c(whichsys,whichdias)
 whichBPhome=c(whichsyshome,whichdiashome)
-allBP=c(whichBP,whichBPhome)
 allsys=c(whichsys,whichsyshome)
 alldias=c(whichdias,whichdiashome)
 
@@ -102,17 +104,27 @@ dias=nhanes[,whichdias]
 sysH=nhanes[,whichsyshome]
 diasH=nhanes[,whichdiashome]
 
+nhanes$meandiasH=apply(diasH,1,mean)
+nhanes$meansysH=apply(sysH,1,mean)
+nhanes$meandiasC=apply(dias,1,mean)
+nhanes$meansysC=apply(sys,1,mean)
 nhanes$meandias=(apply(sysH,1,mean)+apply(sys,1,mean))/2
 nhanes$meansys=(apply(diasH,1,mean)+apply(dias,1,mean))/2
 nhanes$sysDel=(apply(sysH,1,mean)-apply(sys,1,mean))/2
 nhanes$diasDel=(apply(diasH,1,mean)-apply(dias,1,mean))/2
-nhanes$vardias=apply(dias,1,var)
-nhanes$varsys=apply(sys,1,var)
-nhanes$sddias=sqrt(nhanes$vardias)
-nhanes$sdsys=sqrt(nhanes$varsys)
+nhanes$vardiasC=apply(dias,1,var)
+nhanes$varsysC=apply(sys,1,var)
+nhanes$vardiasH=apply(diasH,1,var)
+nhanes$varsysH=apply(sysH,1,var)
+nhanes$sddiasC=sqrt(nhanes$vardiasC)
+nhanes$sdsysC=sqrt(nhanes$varsysC)
+nhanes$sddiasH=sqrt(nhanes$vardiasH)
+nhanes$sdsysH=sqrt(nhanes$varsysH)
 
-nhanes$precdias=1/(nhanes$vardias+1/3)
-nhanes$precsys=1/(nhanes$varsys+1/3)
+nhanes$precdiasC=1/(nhanes$vardiasC+1/3)
+nhanes$precsysC=1/(nhanes$varsysC+1/3)
+nhanes$precdiasH=1/(nhanes$vardiasH+1/3)
+nhanes$precsysH=1/(nhanes$varsysH+1/3)
 
 race <- with(nhanes, ifelse(white==1, 2, ifelse(black==1, 1,ifelse(mexican==1,3, 0))))
 nhanes$race <- as.factor(race)
@@ -121,7 +133,7 @@ type=factor(1+race+3*(1-nhanes$female)*(race>0)+6*(race==0)) # other race all ty
 levels(type)=c('female, black','female, white','female, Mex','male, black','male, white','male, Mex','other')
 nhanes$type=type
 
-nhanesna=!(is.na(apply(nhanes[,allBP],1,prod)))
+nhanesna=!(is.na(apply(nhanes[,c(whichBP,whichBPhome)],1,prod)))
 diaslow <- apply(nhanes[,alldias],1,min)<40
 diashigh <- apply(nhanes[,alldias],1,max)>140
 syslow <- apply(nhanes[,allsys],1,min)<60
@@ -190,7 +202,7 @@ diasH=data.matrix(nhanesA[,whichdiashome])
 
 allBP <- list(Systolic = list(Home = sysH, Clinic = sys), Diastolic = list(Home = diasH, Clinic = dias))
 L=length(sys)
-gamma_dimnames <- list( c('alpha','theta','beta') , c('Clinic' , 'Home'))
+gamma_dimnames <- list( c('alpha','theta','beta') , BP_place_names)
 norm_dimnames <- c('m_M','m_Delta', 'sigma2_M', 'sigma2_Delta')
 
 ```
@@ -200,7 +212,7 @@ norm_dimnames <- c('m_M','m_Delta', 'sigma2_M', 'sigma2_Delta')
 
 demog.data <- data.frame(Ethnicity = droplevels(nhanesA$race) %>% fct_recode(Black = '1',White = '2',Mexican = '3'),
       Sex = factor(nhanesA$female) %>% fct_recode(Male = '0', Female = '1') , 
-                      Exam = as.factor(nhanesA$Exam) )
+                      Exam = as.factor(nhanesA$Exam) ) %>% mutate(Demog = factor(paste(Ethnicity,Sex)))
 levels(demog.data$Exam)[levels(demog.data$Exam) == '0'] <- 'Unknown'
 # Make a table of means for systolic home BP by ethnicity and sex
 bp_table <- list()
@@ -236,7 +248,9 @@ bp.data.cor <- bp.data %>%
   group_by(BPtype, BPplace) %>%
   summarize(correlationSD = cor(Mean, SD, use = "complete.obs"),correlationDelta = cor(TotalMean, Delta, use = "complete.obs"))
 
-
+bp.data.cor2 <- bp.data %>% 
+  group_by(BPtype,BPplace,Demog) %>%
+  summarize(correlationSD = cor(Mean, SD, use = "complete.obs"),correlationDelta = cor(TotalMean, Delta, use = "complete.obs"))
 
 # Make a table of last digit fractions for bp by type and place
 bp_last_digit <- matrix(0,nrow=0,ncol=5)
@@ -293,15 +307,126 @@ There were `r dim(nhanes)[1]` subjects in the initial data set.
 Of these `r sum(!nhanesgood)` were excluded because they had missing data or were not followed up, or belonged to the "Other" ethnic group.
 This left `r sum(nhanesgood)` subjects for further consideration.
 A small number of subjects were excluded because their blood pressure measurements were outside the normal range, as described below in section \ref{sec:BPrange}.
+As our method depends on estimating the mortality rates for each demographic group (ethnicity and sex),
+we removed the small number of subjects whose ethnic group was given as "Other" (n=`r sum(nhanes$other)`).
+(The three included ethnic groups were Mexican American (n=`r sum(nhanes$mexican)`), Black (n=`r sum(nhanes$black)`), and White (n=`r sum(nhanes$white)`).
 In the end there were `r N` subjects in the analysis data set.
 A Venn diagram of the different causes of exclusion is given in figure \ref{fig:Venn1}.
 We will refer to this as the "full population".
 Of these, `r sum(!is.na(nhanesA$FRS))` had a computable FRS score.
-We call this the "FRS population".
+We call this the ``FRS population''.
 
 
 
-## Addressing errors in blood pressure measurement
+
+## Exploratory data analysis
+The empirical means of the home and clinic measures in population B are tabulated in Table \ref{tab:summaries}. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female. 
+The average difference is about `r sprintf('%.1f',mean(diasH)-mean(dias))` for diastolic and `r sprintf('%.1f', mean(sysH) - mean(sys))` for systolic, which is small compared with the general range of the differences, which have SD of 
+`r sprintf('%.1f (diastolic) and %.1f (systolic)', sd(diasH-dias),sd(sysH-sys))`.
+
+```{r summaries, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Printing the table using kable
+    cat(kable(mean_sd_summary,format="latex", escape = F,booktabs = T, digits=1,
+              linesep = rep(c(rep("",5),"\\addlinespace"),4),
+                  col.names=c("Place","Sys/Dias", "Sex", "Ethnicity", 'Mean', 'SD'),caption = 'Summary data for blood pressure') %>%  kable_styling(latex_options = c("hold_position","striped")) )
+    cat('\n')
+```
+
+### Correlations between measurements {#sec:correlations}
+In Figure \ref{fig:SD-mean} see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
+
+
+```{r SD-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Scatterplot of mean BP against SD of BP from bp.data
+    ggplot(bp.data, aes(x = Mean, y = SD)) +
+    geom_point(alpha=.03, color = 'navyblue' ) +
+    labs(title = "Scatterplot of Mean against SD",
+         x = "Mean",y = "SD") + ylim(0,15)+
+      geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
+    facet_grid(BPtype ~ BPplace, scales = 'free_x') +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlationSD), x = Inf, y = Inf), 
+                 vjust = "top", hjust = "right", inherit.aes = FALSE)
+
+```
+
+<!--#```{r Delta-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual absolute difference between Clinic and Home mean', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+#bp.sub <- data.frame(Mean=bp.data$TotalMean[bp.data$BPplace=='Clinic'],Delta=bp.data$Delta[bp.data$BPplace=='Clinic'], #BPtype=bp.data$BPtype[bp.data$BPplace=='Clinic']) %>%   # Home and clinic are identical
+#  group_by(BPtype)
+  
+# bp.data.cor <- bp.sub %>%
+#   summarize(correlationDelta = cor(Mean, Delta, use = "complete.obs"))
+# # Scatterplot of mean BP against SD of BP from bp.data
+#     ggplot(bp.sub %>% group_by(BPtype), aes(x = Mean, y = Delta)) + 
+#     geom_point(alpha=.03, color = 'navyblue' ) +
+#     labs(title = "Scatterplot of Mean against |Delta|",
+#          x = "Mean",y = "|Delta|") + ylim(0,20)+
+#       geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
+#     facet_grid(~ BPtype, scales = 'free_x') +
+#     theme(plot.title = element_text(hjust = 0.5)) +
+#     geom_text(data = bp.data.cor2, aes(label = sprintf("Cor: %.2f", correlationDelta), x = Inf, y = Inf), 
+#                  vjust = "top", hjust = "right", inherit.aes = FALSE)
+-->
+```{r Delta-mean,include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+DeltaSD <- cbind(nhanesA$meansys,nhanesA$meandias)
+MeanSD <- abs(cbind(nhanesA$sysDel,nhanesA$diasDel))
+colnames(DeltaSD) <- c('SysDelta','DiasDelta')
+colnames(MeanSD) <- c('SysMean','DiasMean')
+cor_table <- cor(DeltaSD,MeanSD,use='complete.obs')
+cat(kable(cor_table, 
+          caption = 'Correlation between mean and Delta. Rows correspond to type of Delta, columns to type of mean.',
+          format = "latex", 
+          escape = FALSE,
+          booktabs = TRUE, 
+          digits = 3))
+    cat('\n')
+```
+
+```{r SD-mean2,include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+DiasSDMean <- cbind(nhanesA$sddiasC,nhanesA$meandiasC,nhanesA$sddiasH,nhanesA$meandiasH)
+SysSDMean <- cbind(nhanesA$sdsysC,nhanesA$meansysC,nhanesA$sdsysH,nhanesA$meansysH)
+allSD <- with(nhanesA,cbind(sdsysC,sdsysH,sddiasC,sddiasH))
+allMean <- with(nhanesA,cbind(meansysC,meansysH,meandiasC,meandiasH))
+colnames(allSD) <- c('Clinic Sys SD','Home Sys SD','Clinic Dias SD','Home Dias SD')
+colnames(allMean) <- c('Clinic Sys Mean','Home Sys Mean','Clinic Dias Mean','Home Dias Mean')
+cor_table2 <- cor(allSD,allMean,use='complete.obs')
+cat(kable(cor_table2, 
+          caption = 'Correlation between mean and SD. Rows correspond to type and location of SD, columns to type and location of mean.',
+          format = "latex", 
+          escape = FALSE,
+          booktabs = TRUE, 
+          digits = 3) %>%  
+          kable_styling(latex_options = c("hold_position","striped")) )
+    cat('\n')
+```
+
+In Table \ref{tab:Delta-mean} we show the correlations between overall mean and absolute difference ($|\Delta|$) between clinic and home measurements.
+The results are given as a $2\times2$ table, showing correlations within systolic and diastolic BP, and between the two.
+The only moderately high correlation is between Systolic mean and Diastolic absolute Delta, which would correspond to a Variance Inflation Factor of `r round(1/(1-cor_table["DiasDelta","SysMean"]^2),2)`.
+While this is not directly relevant to the present Bayesian methodology, it suggests that this correlation should not substantially affect the estimation of the model coefficients.
+
+In Table \ref{tab:SD-mean2} we show the correlations between mean and standard deviation for the three BP measures, considering all pairs of (Clinic,Home) and (Systolic,Diastolic). 
+Finally, Table \ref{tab:SD-mean3} shows the correlations between systolic and diastolic, ranging over (Clinic,Home) and (Mean,SD).
+(Some of the numbers here of course duplicate those in Table \ref{tab:SD-mean2}.)
+Again, the correlations are too low to require any special treatment.
+
+```{r SD-mean3,include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+DiasSDMean <- cbind(nhanesA$sddiasC,nhanesA$meandiasC,nhanesA$sddiasH,nhanesA$meandiasH)
+SysSDMean <- cbind(nhanesA$sdsysC,nhanesA$meansysC,nhanesA$sdsysH,nhanesA$meansysH)
+colnames(DiasSDMean) <- c('Clinic Dias SD','Clinic Dias Mean','Home Dias SD','Home Dias Mean')
+colnames(SysSDMean) <- c('Clinic Sys SD','Clinic Sys Mean','Home Sys SD','Home Sys Mean')
+cor_table3 <- cor(DiasSDMean,SysSDMean,use='complete.obs')
+cat(kable(cor_table3, 
+          caption = 'Correlation between diastolic and systolic summary statistics. Rows correspond to variables and locations for diastolic, columns to variables and locations for systolic.',
+          format = "latex", 
+          escape = FALSE,
+          booktabs = TRUE, 
+          digits = 3) %>%  
+          kable_styling(latex_options = c("hold_position","striped")) )
+    cat('\n')
+```
+
+## Errors in blood pressure measurement or recording {#sec:errors}
 
 The blood pressure measurement or recording errors were found particularly in the home measurements. 
 While these did not destroy the usefulness of the home measurements, they did require some attention and decisions for how to work with these defects. 
@@ -316,7 +441,7 @@ The last-digit preference in NHANES III, on the other hand, is substantial, with
 ```{r digit-summary, include=TRUE, echo=FALSE,results='asis'}
 # Printing the table using kable
     kable(bp_last_digit,format="latex", escape = F,booktabs = T, digits=3,col.names=c("Place","Sys/Dias",2*(0:4)),caption = 'Summary data for BP end digits') %>%  
-          kable_styling(latex_options = "hold_position")
+          kable_styling(latex_options = c("hold_position","striped"))
     cat('\n')
 ```
 
@@ -389,11 +514,11 @@ sd_summary %<>% relocate(Fraction2, .after = Prob_repeated3)
 #Print table of sd_summary
 cat(kable(sd_summary,format="latex", escape = F,booktabs = T, digits=3,
           linesep = rep(c(rep("",5),"\\addlinespace"),4),
-          col.names=c("Place","Sys/Dias","Mean of SD","Frac all rep",  "Prob all rep", "Frac 2 rep", "Prob 2 rep"),caption = 'Summary data for repeated measures') %>%  kable_styling(latex_options = "hold_position") )
+          col.names=c("Place","Sys/Dias","Mean of SD","Frac all rep",  "Prob all rep", "Frac 2 rep", "Prob 2 rep"),caption = 'Summary data for repeated measures') %>%  kable_styling(latex_options = c("hold_position","striped")) )
 ```
 
 
-We show the fraction of subjects with two equal measurements in figure 2, split by examiner, blocked by place and type.
+We show the fraction of subjects with two equal measurements in Figure {fig:examinerPlot}, split by examiner, blocked by place and type.
 We see that the fraction of subjects with two equal measurements varies substantially by examiner, and that the variation is greater for the systolic than for the diastolic measurements.
 
 
@@ -529,7 +654,7 @@ cat(kable(chisq1, format="latex", escape = F,booktabs = T,
       linesep = rep(c(rep("",5),"\\addlinespace"),4),
           col.names=c("Place","Sys/Dias","Freq1","Freq2","Freq3","ChiSq","p-value"),
       caption="Chi-square test for difference between observed proportions (all examiners), stratified by place and type")%>%
-  kable_styling(latex_options = "hold_position") )
+  kable_styling(latex_options = c("hold_position","striped")) )
 ```
 To explore this further, we can look at the proportions of first, second and third measurements from each examiner that are different from the other two.
 The results of a chi-squared test for each examiner (stratified by site and type of BP) for difference from the expected equal proportions are shown in Figure \ref{fig:proportionChisq3}.
@@ -574,7 +699,7 @@ cat(kable(chisq2, format="latex", escape = F,booktabs = T,
       linesep = rep(c(rep("",5),"\\addlinespace"),4),
           col.names=c("Place","Sys/Dias","ChiSq","p-value"),
       caption="Chi-square test for difference between observed proportions among the examiners, stratified by place and type")%>%
-  kable_styling(latex_options = "hold_position") )
+  kable_styling(latex_options = c("hold_position","striped")) )
 ```
 
 ```{r ternaryPlot, include=TRUE,fig.height=8,fig.width=8, echo=FALSE,results='asis',message=FALSE,warning=FALSE,fig.cap="Ternary plot of the position of the measurement that is unique, among subjects with 2 equal measurements. V1 is the fraction with the first distinct, V2 is the fraction with the second distinct, V3 is the fraction with the third distinct."}
@@ -622,83 +747,14 @@ Some of the reported measures were extremely implausible, particularly for diast
 There was just one subject with systolic BP measures that were too low, but `r sum(nhanesdiasrange)` subjects with low diastolic BP (in addition to those with measures recorded as 0). 
 One subject was excluded for diastolic BP 156, and three were excluded for systolic BP that was too high, with the maximum being 264. 
 
-
-## Exploratory data analysis
-The empirical means of the home and clinic measures in population B are tabulated in Table 1. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female. 
-The average difference is about `r sprintf('%.1f',mean(diasH)-mean(dias))` for diastolic and `r sprintf('%.1f', mean(sysH) - mean(sys))` for systolic, which is small compared with the general range of the differences, which have SD of 
-`r sprintf('%.1f (diastolic) and %.1f (systolic)', sd(diasH-dias),sd(sysH-sys))`.
-
-```{r summaries, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
-# Printing the table using kable
-    cat(kable(mean_sd_summary,format="latex", escape = F,booktabs = T, digits=1,
-              linesep = rep(c(rep("",5),"\\addlinespace"),4),
-                  col.names=c("Sys/Dias", "Place","Sex", "Ethnicity", 'Mean', 'SD'),caption = 'Summary data for blood pressure') %>%  kable_styling(latex_options = "hold_position") )
-    cat('\n')
-```
-
-### Correlations between measurements {#sec:correlations}
-In Figure \ref{fig:SD-mean} see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
-
-
-```{r SD-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
-# Scatterplot of mean BP against SD of BP from bp.data
-    ggplot(bp.data, aes(x = Mean, y = SD)) +
-    geom_point(alpha=.03, color = 'navyblue' ) +
-    labs(title = "Scatterplot of Mean against SD",
-         x = "Mean",y = "SD") + ylim(0,15)+
-      geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
-    facet_grid(BPtype ~ BPplace, scales = 'free_x') +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlationSD), x = Inf, y = Inf), 
-                 vjust = "top", hjust = "right", inherit.aes = FALSE)
-
-```
-
-
-#```{r Delta-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual absolute difference between Clinic and Home mean', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
-#bp.sub <- data.frame(Mean=bp.data$TotalMean[bp.data$BPplace=='Clinic'],Delta=bp.data$Delta[bp.data$BPplace=='Clinic'], #BPtype=bp.data$BPtype[bp.data$BPplace=='Clinic']) %>%   # Home and clinic are identical
-#  group_by(BPtype)
-  
-# bp.data.cor <- bp.sub %>%
-#   summarize(correlationDelta = cor(Mean, Delta, use = "complete.obs"))
-# # Scatterplot of mean BP against SD of BP from bp.data
-#     ggplot(bp.sub %>% group_by(BPtype), aes(x = Mean, y = Delta)) + 
-#     geom_point(alpha=.03, color = 'navyblue' ) +
-#     labs(title = "Scatterplot of Mean against |Delta|",
-#          x = "Mean",y = "|Delta|") + ylim(0,20)+
-#       geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
-#     facet_grid(~ BPtype, scales = 'free_x') +
-#     theme(plot.title = element_text(hjust = 0.5)) +
-#     geom_text(data = bp.data.cor2, aes(label = sprintf("Cor: %.2f", correlationDelta), x = Inf, y = Inf), 
-#                  vjust = "top", hjust = "right", inherit.aes = FALSE)
-```{r Delta-mean,include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
-DeltaSD <- cbind(nhanesA$meansys,nhanesA$meandias)
-MeanSD <- abs(cbind(nhanesA$sysDel,nhanesA$diasDel))
-colnames(DeltaSD) <- c('SysDelta','DiasDelta')
-colnames(MeanSD) <- c('SysMean','DiasMean')
-cor_table <- cor(DeltaSD,MeanSD,use='complete.obs')
-cat(kable(cor_table, 
-          caption = 'Correlation between mean and Delta. Rows correspond to type of Delta, columns to type of mean.',
-          format = "latex", 
-          escape = FALSE,
-          booktabs = TRUE, 
-          digits = 3)  %>%  
-          kable_styling(latex_options = "hold_position"))
-    cat('\n')
-
-```
-
-In Table \ref{tab:Delta-Mean} we show the correlations between overall mean and absolute difference ($|\Delta|$) between clinic and home measurements.
-The results are given as a $2\times2$ table, showing correlations within systolic and diastolic BP, and between the two.
-The only moderately high correlation is between Systolic mean and Diastolic absolute Delta, which would correspond to a Variance Inflation Factor of `r round(1/(1-cor_table["DiasDelta","SysMean"]^2),2)`.
-While this is not directly relevant to the present Bayesian methodology, it suggests that this correlation should not substantially affect the estimation of the model coefficients.
-
 \newpage
+
 # Appendix B -- Model details
 This appendix aims to add more detail about the numerical modelling than was provided in the article. This is to ensure that the research methods are transparent and entirely reproducible. The numerical modelling presented in this paper was performed using R combined with Rstan. More detail will be provided here about the model, about the specific methodology used to parameterize the model, and more results are provided that were not included in the main text.
 
+## The Statistical Model
 The model used in this research is built from the theory of joint modelling of longitudinal and time-to-event data. This will be described in detail later on in this section, however, in brief, this allows the simultaneous modelling of both longitudinal observation data (in this article, this is blood pressure measurements) and also the time-to-event outcome. 
-In this research the event of interest is either death from any cause, or death from specifically heart attack, cardiovascular disease (CVD) or cerebrovascular disease (CeVD). We henceforth will refer to this latter mortality as HA-CVD-CeVD.
+In this research the event of interest is either death from any cause, or death from specifically cardiovascular or cerebrovascular causes. We henceforth will refer to this latter mortality as CVD.
 In the latter case, death from a different cause is treated as a noninformative censoring event.
 
 ### Survival Analysis (Time-to-Event)
@@ -708,7 +764,7 @@ The Gompertz equation
 \begin{equation}\label{gompertz}
 h_0(t)=B\exp{\left(\theta(x+T)\right)},
 \end{equation}
-describes the baseline hazard of the population to a particular risk, which, for this article, investigates HA-CVD-CeVD mortality specifically, as well as studying mortality risk in general. $x\in\mathbb{N^N}$ is the age of the individual at the initial interview time, for $N$ the number of individuals, and $T\in\mathbb{R}^{+,N}$ the time since the individual entered the survey. 
+describes the baseline hazard of the population to a particular risk, which, for this article, investigates CVD mortality specifically, as well as studying mortality risk in general. $x\in\mathbb{N^N}$ is the age of the individual at the initial interview time, for $N$ the number of individuals, and $T\in\mathbb{R}^{+,N}$ the time since the individual entered the survey. 
 Note that both $B$ and $\theta$ have 6 different values, depending on the sex reported at the initial interview -- female or male --- or the race --- black, white or 'other'. 
 Note that 'other' in the race category is a combination of all non-black or non-white racial identities, such as Hispanic populations. 
 The log-linear proportional hazards model links the covariates of the model (mean systolic blood pressure, variance in the diastolic blood pressure, etc) to the survival outcome of the individual via the equation
@@ -717,7 +773,7 @@ h(t)=h_0(t)\exp{\left(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{\boldsymbol{X}
 \end{equation}
 where $\boldsymbol{X}\in\mathbb{R}^{+,N\times d}$ is a vector of summary statistics of the blood pressure measurements of individual covariates in our model, $\hat{\boldsymbol{X}}\in\mathbb{R}^{+,d}$ is the centering of the covariates such that the equation $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{\boldsymbol{X}}))}=0$ is approximately satisfied (more on this later), and $\boldsymbol{\beta}\in\mathbb{R}^d$ implies the strength of the influence of the covariate on the mortality risk. 
 The majority of mortality events are censored --- not yet known at the time of data collection --- the censoring indicator being notated as $\delta\in \{0,1\}$.
-When HA-CVD-CeVD mortality is the event being analysed, deaths due to other causes are treated as noninformative censoring events.
+When CVD mortality is the event being analysed, deaths due to other causes are treated as noninformative censoring events.
 In this study, we explored the following covariates:
 
 ```{r, include=FALSE,message=FALSE,warning=FALSE}
@@ -768,22 +824,21 @@ DF<-data.frame(varnames=c("$FRS-1998$",
 
 ```{r, echo=F, label= "runnumers",message=FALSE,warning=FALSE}
 kable(DF,col.names = c("Variable Name", "Support", "Description"),
-format="latex", escape = F,booktabs = T)
+format="latex", escape = F,booktabs = T, linesep = "")
 
 ```
 
 Please note that the last four elements of this list, the precision values, were only carried out to ensure model consistency with the use of standard deviation instead. 
 Note as well that the $\Delta$ covariates, representing the medium-term variability, enter into the log relative risk sum as an **absolute value**.
 
-For the parametrization of this model, we assume that the Gompertz parameters and the parameters in the linear predictor term are distributed as follows:
+For the parametrization of this model, we assume that the Gompertz parameters and the parameters in the linear predictor term have prior distributions as follows:
 \begin{equation}\label{priorsS}
-\begin{aligned}
-  \boldsymbol{B}\sim\mathbb{C}(\mu_B,\sigma_B),\\
-  \boldsymbol{\theta}\sim\mathcal{N}(\mu_\theta,\sigma_\theta),\\
-  \boldsymbol{\beta}\sim \mathcal{N}(\mu_\beta,\sigma_\beta),
-\end{aligned}
+\begin{align*}
+  \boldsymbol{B}&\sim\mathcal{N}(0,2),\\
+  \boldsymbol{\theta}&\sim\mathcal{N}(0,2),\\
+  \boldsymbol{\beta}&\sim \mathrm{Cauchy}(0,100).
+\end{align*}
 \end{equation}
-noting that $\mathbb{C}(\mu,\sigma)$ is the Cauchy distribution. 
 
 The likelihood for this Gompertz proportional hazards model, over all individuals in the census, is as follows:
 \begin{equation}\label{likesurv}
@@ -851,13 +906,13 @@ However, this was only to ensure that there were no differences between the use 
 Throughout the remainder of this appendix, we refer to the 8 main models using the following run numbers:
 
 \begin{enumerate}
-\item All participants (14,654), using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from HA-CVD-CeVD.
+\item All participants (14,654), using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from CVD.
 \item All participants (14,654), using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as all-causes of death.
-\item Only participants that had data from which FRS values could be computed (N=9,008) --- the ``FRS population'' but using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from HA-CVD-CeVD.
+\item Only participants that had data from which FRS values could be computed (N=9,008) --- the ``FRS population'' but using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as death specifically from CVD.
 \item FRS population, but using mean systolic and diastolic blood pressure (not FRS) in the linear predictor term, with the outcome data as all-causes of death.
-\item FRS population, and using the FRS ATP-III value in the linear predictor term, with the outcome data as death specifically from HA-CVD-CeVD.
+\item FRS population, and using the FRS ATP-III value in the linear predictor term, with the outcome data as death specifically from CVD.
 \item FRS population, and using the FRS ATP-III value in the linear predictor term, with the outcome data as all-causes of death.
-\item FRS population, and using the FRS 1998-version value in the linear predictor term, with the outcome data as death specifically from HA-CVD-CeVD.
+\item FRS population, and using the FRS 1998-version value in the linear predictor term, with the outcome data as death specifically from CVD.
 \item FRS population, and using the FRS 1998-version value in the linear predictor term, with the outcome data as all-causes of death.
 \label{tab:runnums}
 \end{enumerate}
@@ -867,25 +922,31 @@ In order to read the DAGs, note that each square background layer that appears a
 The outcome variables measured are represented by a square-shaped text box, and a parameter of the model is represented by a circular-shaped text box. If either a square or circular text box is placed on top of a stacked rectangular layer, it means that multiple values of that variable (as many as there are layers to the stack) are either measured (for outcome variables) or simulated (for parameters of the model). Please note that the number of layers in the stack is written in the text box that does not contain a frame which is intentionally displayed on top of the stacked layer that it represents. For example, $i=1,...,N$. 
 Finally, the direction of the arrows implies causality assumed in the model.
 
-![An illustration of the DAG of the mean blood pressure-based model presented in this article. ](./DAG_Mean.png){#fig:DAGmean}
+The distribution of the blood pressure parameters in the population are derived from the model, and are summarised with other outputs of the model in Table \ref{tab:Mean-SD} of Appendix C.
 
-![An illustration of the DAG of the FRS-based model presented in this article. ](./DAG_FRS.png){#fig:DAGFRS}
+![An illustration of the DAG of the mean blood pressure-based model presented in this article. ](./DAG_Mean2.png){#fig:DAGmean}
 
+![An illustration of the DAG of the FRS-based model presented in this article. ](./DAG_FRS2.png){#fig:DAGFRS}
+
+<!--
 For convenience, we provide an overview of the different blood pressure values in the full and FRS populations in tables \ref{tab:BloodFull} and \ref{tab:BloodFRS}.
 
 
 ```{r BloodFull,echo=F,message=FALSE,warning=FALSE}
 Blood<-read_csv("./Results/BloodVals.csv",show_col_types = FALSE)
 kable(Blood[Blood$Population=="Full",-1] ,
-format="latex", escape = F,booktabs = T, caption = "Parameters for distribution of blood pressure, for the full population")
+format="latex", escape = F,booktabs = T, caption = "Parameters for distribution of blood pressure, for the full population") %>%
+  row_spec(4, extra_latex_after = "\\addlinespace")
 ```
 
 
 ```{r BloodFRS,echo=F,message=FALSE,warning=FALSE}
 Blood<-read_csv("./Results/BloodVals.csv",show_col_types = FALSE)
 kable(Blood[Blood$Population=="FRS",-1],
-format="latex", escape = F,booktabs = T, caption = "Parameters for distribution of blood pressure, for the FRS population")
+format="latex", escape = F,booktabs = T, caption = "Parameters for distribution of blood pressure, for the FRS population") %>%
+  row_spec(4, extra_latex_after = "\\addlinespace")
 ```
+-->
 
 
 ## Methodology
@@ -920,7 +981,7 @@ digitbreaks <- function(bp){
 #   First level, Systolic or Diastolic
 #   Second level, Home or Clinic
 #  Third level, BP and breaks
-allBP <- list(Systolic=list(Clinic=digitbreaks(sys),Home=digitbreaks(sysH)),Diastolic=list(Clinic=digitbreaks(dias),Home=digitbreaks(diasH)))
+allBP <- list(Systolic=list(Home=digitbreaks(sysH),Clinic=digitbreaks(sys)),Diastolic=list(Home=digitbreaks(diasH),Clinic=digitbreaks(dias)))
 
   # Shift by the mean of the cumulative sums; apply transposes, so we transpose back
 
@@ -975,8 +1036,8 @@ $$
 We begin by assuming $y_{ij}^l$ observed directly. We estimate
 by maximising the partial likelihood on the observations
 \begin{align*}
-  \bar{y}_{i+}&:= \frac{1}{2k} \sum_{j=1}^k y_{ij}^1 + y_{ij}^2,\\
-  \bar{y}_{i-}&:= \frac{1}{2k} \sum_{j=1}^k y_{ij}^1 - y_{ij}^2,\\
+  \bar{y}_{i+}&:= \frac{1}{2k} \sum_{j=1}^k \bigl( y_{ij}^1 + y_{ij}^2\bigr),\\
+  \bar{y}_{i-}&:= \frac{1}{2k} \sum_{j=1}^k \bigl( y_{ij}^1 - y_{ij}^2 \bigr),\\
   s_i^l&:=  \frac{1}{k-1}\sum_{j=1}^k \Bigl( y_{ij}^l - \frac{1}{k} \sum_{j=1}^k y_{ij}^l \Bigr)^2.
 \end{align*}
 Note that 
@@ -986,7 +1047,7 @@ $$
 where $z_{ij}^l$ are i.i.d.\ standard normal
 is independent of $\tau_i^l$, thus has a chi-squared distribution
 with $k-1$ degrees of freedom --- hence $\frac{k-1}{2}\cdot s_i^l\tau_i^l$ is
-gamma distributed with parameters $(\frac{k-1}{2},1)$. Since $\frac{\alpha}{\theta}\tau_i^l$ is independent of $s_i^l\tau_i^l$, with $\mathrm{Gamma}(\alpha,1)$ distribution, we see that $\frac{\theta(k-1)}{2\alpha}s_i^l$ is the ratio of two independent gamma random variables, hence has beta-prime distribution with parameters $\left(\frac{k-1}{2}, \alpha \right)$, so log partial likelihood
+gamma distributed with parameters $(\frac{k-1}{2},1)$. Since $\frac{\alpha}{\theta}\tau_i^l$ is independent of $s_i^l\tau_i^l$, with $\mathrm{Gamma}(\alpha,1)$ distribution, we see that $\frac{(k-1)\theta}{2\alpha}s_i^l$ is the ratio of two independent gamma random variables, hence has beta-prime distribution with parameters $\left(\frac{k-1}{2}, \alpha \right)$, so log partial likelihood
 $$
   \ell_{\operatorname{Beta}}(\alpha,\theta;s^l_\cdot)=n\alpha \log\frac{\alpha}{\theta}+n\log\Gamma\left(\alpha+\frac{k-1}{2}\right)-n\log\Gamma(\alpha)
   + \frac{k-1}{2} \sum_{i=1}^n \log s_i^l -\left(\alpha+\frac{k-1}{2}\right) \sum_{i=1}^n \log \left(s_i^l+\frac\alpha\theta\right).
@@ -1005,7 +1066,7 @@ The partial Fisher Information has entries
 \end{align*}
 where $\psi_1$ is the trigamma function.
 ```{r log_likelihoods, tidy=TRUE, echo=FALSE,message=FALSE, warning=FALSE}
-  beta_prime_LL=function(alpha,theta,s,k=3){
+  beta_prime_LL=function(alpha,theta,s,k=3){ # k= # of BP measures
     k1= (k-1)/2
     n<- length(s)
     alpha * n * log( alpha / theta ) - n * lbeta(k1 , alpha )+ (k1-1)* sum(log(s)) -
@@ -1048,7 +1109,7 @@ alphatheta <- function(BP){
   list( alpha = fit$par[1], theta = fit$par[2], variance = solve(fisher_info), LogLikelihood = -fit$value)
 }
 ```
-Let $(\hat\alpha^l,\hat\beta^l)$ be the maximum partial likelihood estimators. Conditioned on $(\tau_i^l)$ we have
+Let $(\hat\alpha^l,\hat\theta^l)$ be the maximum partial likelihood estimators. Conditioned on $(\tau_i^l)$ we have
 \begin{align*}
   \bar{y}_{i+}&\sim \mathcal{N}\left(m_M, \sigma^2_M + \frac{1}{4k}\left( \frac{1}{\tau_i^1}+\frac{1}{\tau_i^2}\right)\right),\\
   \bar{y}_{i-}&\sim \mathcal{N}\left(m_\Delta,\sigma^2_\Delta + \frac{1}{4k}\left( \frac{1}{\tau_i^1}+\frac{1}{\tau_i^2}\right)\right).
@@ -1063,37 +1124,41 @@ $$
   \frac{\sigma_M^2}{n}+\frac{1}{4kn^2} \sum_{i=1}^n (\tau_i^1)^{-1} + (\tau_i^2)^{-1} \quad \text{ and } \quad
   \frac{\sigma_\Delta^2}{n}+\frac{1}{4kn^2} \sum_{i=1}^n (\tau_i^1)^{-1} + (\tau_i^2)^{-1},
 $$
-which we may approximate --- with error on the order of $n^{-3/2}$ --- replaceing the mean of $(\tau_i^l)^{-1}$ by its expected value $\beta^l/(\alpha^l-1)$ to obtain
+which we may approximate --- with error on the order of $n^{-3/2}$ --- replacing the mean of $(\tau_i^l)^{-1}$ by its expected value $\theta^l/(\alpha^l-1)$ to obtain
 \begin{align*}
-  \mathrm{Var}(\hat{m}_M) &\approx \frac{\sigma_M^2}{n}+\frac{1}{4kn}\left( \frac{\beta^1}{\alpha^1-1}+ \frac{\beta^2}{\alpha^2-1}\right) \\
-  \mathrm{Var}(\hat{m}_\Delta) &\approx \frac{\sigma_\Delta^2}{n}+\frac{1}{4kn}\left( \frac{\beta^1}{\alpha^1-1}+ \frac{\beta^2}{\alpha^2-1}\right) 
+  \mathrm{Var}(\hat{m}_M) &\approx \frac{\sigma_M^2}{n}+\frac{1}{4kn}\left( \frac{\theta^1}{\alpha^1-1}+ \frac{\theta^2}{\alpha^2-1}\right) \\
+  \mathrm{Var}(\hat{m}_\Delta) &\approx \frac{\sigma_\Delta^2}{n}+\frac{1}{4kn}\left( \frac{\theta^1}{\alpha^1-1}+ \frac{\theta^2}{\alpha^2-1}\right) 
 \end{align*}
 Finally, conditioned on the $\tau_i^l$ we have that the random variables $\bar{y}_{i+}$ are normal with variance
 $$
-  \sigma_M^2+\frac{1}{4k}\left((\tau_i^1)^{-1} + (\tau_i^1)^{-1} \right),
+  \sigma_M^2+\frac{1}{4k}\left((\tau_i^1)^{-1} + (\tau_i^2)^{-1} \right),
 $$
 so the unconditional variance is the expected value, or
 $$
-  \sigma_M^2+\frac{1}{4k}\left(\frac{\beta^1}{\alpha^1-1}+ \frac{\beta^2}{\alpha^2-1} \right).
+  \sigma_M^2+\frac{1}{4k}\left(\frac{\theta_1}{\alpha_1-1}+ \frac{\theta_2}{\alpha_2-1} \right).
 $$
 This yields the estimators
 \begin{align*}
-  \hat\sigma_M^2 &=\frac{1}{n-1}\sum_{i=1}^n\left(\bar{y}_{i+}-n^{-1}\sum_{i=1}^n y_{i+}\right)^2 - \frac{1}{4k}\left(\frac{\hat\beta^1}{\hat\alpha^1-1}+ \frac{\hat\beta^2}{\hat\alpha^2-1} \right),\\
-  \hat\sigma_\Delta^2 &=\frac{1}{n-1}\sum_{i=1}^n\left(\bar{y}_{i-}-n^{-1}\sum_{i=1}^n y_{i-}\right)^2 - \frac{1}{4k}\left(\frac{\hat\beta^1}{\hat\alpha^1-1}+ \frac{\hat\beta^2}{\hat\alpha^2-1} \right).
+  \hat\sigma_M^2 &=\frac{1}{n-1}\sum_{i=1}^n\left(\bar{y}_{i+}-n^{-1}\sum_{i=1}^n \bar{y}_{i+}\right)^2 - \frac{1}{4k}\left(\frac{\hat\theta_1}{\hat\alpha_1-1}+ \frac{\hat\theta_2}{\hat\alpha_2-1} \right),\\
+  \hat\sigma_\Delta^2 &=\frac{1}{n-1}\sum_{i=1}^n\left(\bar{y}_{i-}-n^{-1}\sum_{i=1}^n \bar{y}_{i-}\right)^2 - \frac{1}{4k}\left(\frac{\hat\theta_1}{\hat\alpha_1-1}+ \frac{\hat\theta_2}{\hat\alpha_2-1} \right).
 \end{align*}
-Using the delta method, and the fact that  we see that the variance of $\hat\beta/(\hat\alpha-1)$ is approximately
+Using the delta method, and the fact that the correlation between $\hat\alpha$ and $\hat\theta$ is small, we see that the variance of $\hat\theta/(\hat\alpha-1)$ is approximately
 $$
-  \frac{\sigma_\beta^2}{(\hat\alpha-1)^2} + \frac{\hat\beta^2\sigma_\alpha^2}{(\hat\alpha-1)^4},
+  \frac{\sigma_\theta^2}{(\hat\alpha-1)^2} + \frac{\hat\theta^2\sigma_\alpha^2}{(\hat\alpha-1)^4},
 $$
-where $\sigma_\alpha$ and $\sigma_\beta$ are the standard errors for $\hat\alpha$ and $\hat\beta$ respectively, so the standard errors for $\hat\sigma_M^2$ and $\hat\sigma_\Delta^2$ are approximately
+where $\sigma_\alpha$ and $\sigma_\theta$ are the standard errors for $\hat\alpha$ and $\hat\theta$ respectively. Define
+$$
+  \hat\sigma_{\alpha\theta}^2 := \frac{1}{16k^2} \left(\frac{\hat\sigma_{\theta_1}^2}{(\hat\alpha_1-1)^2} + \frac{(\hat\theta_1)^2\hat\sigma_{\alpha_1}^2}{(\hat\alpha_1-1)^4} + \frac{\hat\sigma_{\theta_2}^2}{(\hat\alpha_2-1)^2} + \frac{(\hat\theta_2)^2\hat\sigma_{\alpha_2}}{(\hat\alpha_2-1)^4}\right)
+$$
+so the standard errors for $\hat\sigma_M^2$ and $\hat\sigma_\Delta^2$ are approximately
 \begin{align*}
-  \operatorname{SE}\left(\hat\sigma_M^2\right)&\approx \frac{1}{2k}\Bigl(\frac{8k^2\hat\sigma_M^2}{n} + \frac{\sigma_\beta^2}{(\hat\alpha^1-1)^2} + \frac{(\hat\beta^1)^2\sigma_\alpha^2}{(\hat\alpha^1-1)^4} + \frac{\sigma_\beta^2}{(\hat\alpha^2-1)^2} + \frac{(\hat\beta^2)^2\sigma_\alpha^2}{(\hat\alpha^2-1)^4} \Bigr)^{1/2},\\
-  \operatorname{SE}\left(\hat\sigma_\Delta^2\right)&\approx \frac{1}{2k}\Bigl(\frac{8k^2\hat\sigma_\Delta^2}{n} + \frac{\sigma_\beta^2}{(\hat\alpha^1-1)^2} + \frac{(\hat\beta^1)^2\sigma_\alpha^2}{(\hat\alpha^1-1)^4} + \frac{\sigma_\beta^2}{(\hat\alpha^2-1)^2} + \frac{(\hat\beta^2)^2\sigma_\alpha^2}{(\hat\alpha^2-1)^4} \Bigr)^{1/2}
+  \operatorname{SE}\left(\hat\sigma_M^2\right)&\approx \Bigl(\frac{2\hat\sigma_M^4}{n} + \hat\sigma_{\alpha\theta}^2 \Bigr)^{1/2},\\
+  \operatorname{SE}\left(\hat\sigma_\Delta^2\right)&\approx \Bigl(\frac{2\hat\sigma_\Delta^4}{n} + \hat\sigma_{\alpha\theta}^2 \Bigr)^{1/2}.
 \end{align*}
 ```{r parameter_fitting, tidy=TRUE, cache=TRUE,echo=FALSE, eval=TRUE,include=FALSE,message=FALSE,warning=FALSE}
 # Input a pair of BP lists (clinical and home), and output 8 parameters, with variances for each
 all_BP_parameters <- function(measures){
-  stopifnot(setequal(names(measures) , c('Clinic','Home')),all.equal(dim(measures$Clinic),dim(measures$Home)))
+  stopifnot(setequal(names(measures) , BP_place_names),all.equal(dim(measures$Clinic),dim(measures$Home)))
   k <- dim(measures$Clinic$BP)[2]
   n <- dim(measures$Clinic$BP)[1]
   s <- lapply(measures,function(m) (k-1)/2*apply(m$BP,1,var))
@@ -1104,10 +1169,10 @@ all_BP_parameters <- function(measures){
   m_Delta <- mean(ybar_minus)
   gamma_fits <- lapply(measures,function(m) alphatheta(m$BP))
   variance_correction <- sum(sapply(gamma_fits,function(GF) GF$alpha/GF$theta/(GF$alpha - 1)))/4/k
-  vv_correction <- sum(sapply(gamma_fits,function(GF) diag(GF$variance)*c(GF$alpha^2/GF$theta^2/(GF$alpha-1)^4,1/(GF$alpha-1)^2))) # correction to the variance of the variance
+  sigmaalphatheta <- sum(sapply(gamma_fits,function(GF) diag(GF$variance)*c(GF$alpha^2/GF$theta^2/(GF$alpha-1)^4,1/(GF$alpha-1)^2)))/16/k^2 # correction to the variance of the variance
   sigma2_M <- var(ybar_plus) - variance_correction
   sigma2_Delta <- var(ybar_minus) - variance_correction
-  list(Gamma=gamma_fits,Normal=list(M=list(m=m_M,m.std.error=sd(ybar_plus)/sqrt(n),sigma2 = sigma2_M, sigma2.std.error = sqrt(8*k*k*sigma2_M/n+vv_correction)),Delta=list(m=m_Delta,m.std.error=sd(ybar_minus)/sqrt(n),sigma2 = sigma2_Delta, sigma2.std.error = sqrt(8*k*k*sigma2_Delta/n+vv_correction))))
+  list(Gamma=gamma_fits,Normal=list(M=list(m=m_M,m.std.error=sd(ybar_plus)/sqrt(n),sigma2 = sigma2_M, sigma2.std.error = sqrt(2*sigma2_M^2/n+sigmaalphatheta)),Delta=list(m=m_Delta,m.std.error=sd(ybar_minus)/sqrt(n),sigma2 = sigma2_Delta, sigma2.std.error = sqrt(2*sigma2_Delta^2/n+sigmaalphatheta))))
 }
 
 # Apply separately to Systolic and Diastolic
@@ -1124,8 +1189,8 @@ convert_param1 <- function(all_params){
   })
   gamma_params <- lapply(all_params, function(params) {
     GP <- array( 0, dim = c(3,2) , dimnames = gamma_dimnames)
-  GP[ 'alpha', ] <- c(params$Gamma$Clinic$alpha, params$Gamma$Home$alpha)
-  GP[ 'theta', ] <- c(params$Gamma$Clinic$theta, params$Gamma$Home$theta)
+  GP[ 'alpha', ] <- c(params$Gamma$Home$alpha, params$Gamma$Clinic$alpha)
+  GP[ 'theta', ] <- c(params$Gamma$Home$theta, params$Gamma$Clinic$theta)
   GP[ 'beta', ] <- GP[ 'alpha', ] / GP[ 'theta', ]
   GP
   })
@@ -1136,9 +1201,9 @@ convert_param1 <- function(all_params){
 <!-- ## Test whether parameters are being fit correctly -->
 <!-- We simulate bootstrap data sets, find the average parameter estimate, and compare to the "true" parameters. -->
 <!-- We also compare the average estimated SE to the "true" SE (which is the SD of the estimates). -->
-```{r test_parameters, eval=TRUE, echo=FALSE, cache = TRUE, results= 'asis',include=FALSE,message=FALSE,warning=FALSE}
+```{r testparameters, eval=TRUE, echo=FALSE, cache = TRUE, results= 'asis',include=TRUE,message=FALSE,warning=FALSE}
 k <- 3
-num_reps <- 100
+num_reps <- 10
 
 BP_simulation <- function(norm_params,gamma_params,num_indiv, num_sim=1,k=3){
   # norm_params is a vector with named entries 'm_M','m_Delta','sigma_M','sigma_Delta',
@@ -1148,7 +1213,7 @@ BP_simulation <- function(norm_params,gamma_params,num_indiv, num_sim=1,k=3){
               all(is.element(c('Clinic','Home'),dimnames(gamma_params)[[2]])),
               setequal(names(norm_params),norm_dimnames)
     )
-  lapply(seq_len(num_sim),function(i){
+  mclapply(seq_len(num_sim),function(i){
     M <- rnorm(num_indiv,mean = norm_params['m_M'],sd = sqrt(norm_params['sigma2_M']))
     Delta <- rnorm(num_indiv,mean = norm_params['m_Delta'], sd = sqrt(norm_params['sigma2_Delta']))
     muH <- (M+Delta)
@@ -1165,7 +1230,7 @@ BP_simulation <- function(norm_params,gamma_params,num_indiv, num_sim=1,k=3){
 BP_simulation2 <- function(norm_params,gamma_params, num_indiv, num_sim=1,k=3){
   stopifnot(setequal(names(norm_params) , BP_type_names), 
             setequal(names(gamma_params) , BP_type_names))
-  bp <- lapply(BP_type_names, function(BPtype) BP_simulation(norm_params[[BPtype]],gamma_params[[BPtype]],num_indiv, num_sim,k))
+  bp <- mclapply(BP_type_names, function(BPtype) BP_simulation(norm_params[[BPtype]],gamma_params[[BPtype]],num_indiv, num_sim,k))
   names(bp) <- BP_type_names
   lapply(seq_len(num_sim),function(i) lapply(BP_type_names, function(BP_type) bp[[BP_type]][[i]]) %>% 
            setNames(BP_type_names))
@@ -1203,59 +1268,85 @@ BP_simulation2_rounded <- function(norm_params,gamma_params, num_indiv,
   lapply(seq_len(num_sim),function(i) lapply(BP_type_names, function(BPtype) bp[[BPtype]][[i]])) %>% setNames(BP_type_names)
 }
 
-num_reps <- 100
 params <- convert_param1(BP_parameters)
 #b= BP_simulation2(norm_params , gamma_params2,num_indiv = N,num_sim = num_reps)
 
+# Make a list to store the output tables
+output_tables <- vector("list",2) %>% setNames(BP_type_names)
 
+norm_dimnames2 <- c('$m_M$','$m_\\Delta$','$\\sigma^2_M$','$\\sigma^2_\\Delta$')
+gamma_dimnames2 <- c('$\\alpha_H$','$\\theta_H$','$\\alpha_C$','$\\theta_C$')
 for(which_bp in BP_type_names){
-  estimates <- array(0,dim = c(num_reps,8),dimnames = list( NULL , c(norm_dimnames,'alpha_C','theta_C','alpha_H','theta_H')))
-  std_errors <- array(0,dim = c(num_reps,8),dimnames = list( NULL , c(norm_dimnames,'alpha_C','theta_C','alpha_H','theta_H')))
+  estimates <- array(0,dim = c(num_reps,8),dimnames = list( NULL , c(norm_dimnames2,gamma_dimnames2)))
+  std_errors <- array(0,dim = c(num_reps,8),dimnames = list( NULL , c(norm_dimnames2,gamma_dimnames2)))
 
   bp <- BP_simulation(params$Normal[[which_bp]],params$Gamma[[which_bp]], num_indiv=N, num_reps)
-simulation_params <- lapply(bp, function(bp_sim) all_BP_parameters(bp_sim)) # simulated parameter estimates
+simulation_params <- mclapply(bp, function(bp_sim) all_BP_parameters(bp_sim)) # simulated parameter estimates
 
 for(i in seq_len(num_reps)){
   spe <- simulation_params[[i]]
-  estimates[i,'m_M'] <- spe$Normal$M$m
-  estimates[i,'m_Delta'] <- spe$Normal$Delta$m
-  estimates[i,'sigma2_M'] <- spe$Normal$M$sigma2
-  estimates[i,'sigma2_Delta'] <- spe$Normal$Delta$sigma2
-  std_errors[i,'m_M'] <- spe$Normal$M$m.std.error
-  std_errors[i,'m_Delta'] <- spe$Normal$Delta$m.std.error
-  std_errors[i,'sigma2_M'] <- spe$Normal$M$sigma2.std.error
-  std_errors[i,'sigma2_Delta'] <- spe$Normal$Delta$sigma2.std.error
-  estimates[i, 'alpha_C'] <- spe$Gamma$Clinic$alpha
-  estimates[i, 'theta_C'] <- spe$Gamma$Clinic$theta
-  estimates[i, 'alpha_H'] <- spe$Gamma$Home$alpha
-  estimates[i, 'theta_H'] <- spe$Gamma$Home$theta
-  std_errors[i, c('alpha_C','theta_C')] <- sqrt(diag(spe$Gamma$Clinic$variance))
-  std_errors[i, c('alpha_H','theta_H')] <- sqrt(diag(spe$Gamma$Home$variance))
+  estimates[i,'$m_M$'] <- spe$Normal$M$m
+  estimates[i,'$m_\\Delta$'] <- spe$Normal$Delta$m
+  estimates[i,'$\\sigma^2_M$'] <- spe$Normal$M$sigma2
+  estimates[i,'$\\sigma^2_\\Delta$'] <- spe$Normal$Delta$sigma2
+  std_errors[i,'$m_M$'] <- spe$Normal$M$m.std.error
+  std_errors[i,'$m_\\Delta$'] <- spe$Normal$Delta$m.std.error
+  std_errors[i,'$\\sigma^2_M$'] <- spe$Normal$M$sigma2.std.error
+  std_errors[i,'$\\sigma^2_\\Delta$'] <- spe$Normal$Delta$sigma2.std.error
+  estimates[i, '$\\alpha_C$'] <- spe$Gamma$Clinic$alpha
+  estimates[i, '$\\theta_C$'] <- spe$Gamma$Clinic$theta
+  estimates[i, '$\\alpha_H$'] <- spe$Gamma$Home$alpha
+  estimates[i, '$\\theta_H$'] <- spe$Gamma$Home$theta
+  std_errors[i, c('$\\alpha_C$','$\\theta_C$')] <- sqrt(diag(spe$Gamma$Clinic$variance))
+  std_errors[i, c('$\\alpha_H$','$\\theta_H$')] <- sqrt(diag(spe$Gamma$Home$variance))
 }
 
 simulation_mean_estimate <- apply(estimates,2,mean)
 simulation_mean_SE <- apply(std_errors,2, mean )
 simulation_SE <- apply(estimates,2,sd)
 true_params <- simulation_SE  # Just a dummy with the right names
-true_params[norm_dimnames] <- params$Normal[[which_bp]][norm_dimnames]
-true_params[c('alpha_C','theta_C','alpha_H','theta_H')]<-params$Gamma[[which_bp]][c('alpha','theta'),c('Clinic','Home')]
+true_params[norm_dimnames2] <- params$Normal[[which_bp]][norm_dimnames]
+true_params[gamma_dimnames2]<-params$Gamma[[which_bp]][c('alpha','theta'),c('Home','Clinic')]
 #Make a matrix for comparing true parameters to average simulation estimates
-cat(which_bp , "Parameter estimates",'\n')
-print(signif(matrix(c(simulation_mean_estimate,true_params,
-                    simulation_mean_estimate/true_params-1), 
+
+mean_mat <- rbind(matrix(sub("\\.?0*$","",signif(c(simulation_mean_estimate,true_params,
+                    simulation_mean_estimate/true_params-1),4) ), 
                   nrow= 8,ncol = 3,
                   dimnames=list(names(simulation_SE),
-                                c("Sim.average",'True','Error'))),3))
-cat('\n',which_bp, 'parameter SE','\n')
-print(matrix(c(simulation_mean_SE, simulation_SE,
-         simulation_mean_SE / simulation_SE -1), nrow= 8,ncol = 3,
+                                c("SimAverage",'True','RelError'))),
+                  matrix(sub("\\.?0*$","",signif(c(simulation_mean_SE, simulation_SE,
+         simulation_mean_SE / simulation_SE -1) ,4) ), nrow= 8,ncol = 3,
            dimnames=list(names(simulation_SE),
-                     c("Sim.average",'True SE', 'Error'))))
+                     c("SimAverage",'True SE', 'RelError'))) )
+
+output_tables[[which_bp]] <- mean_mat
 }
+
+combined_data <- cbind(output_tables[[1]], output_tables[[2]])
+# Create a single kable for the combined data
+kable_combined <- kable(combined_data, format = "latex", escape = FALSE, 
+                        booktabs = TRUE, linesep = rep(c(rep("",4),"\\addlinespace"),4), 
+                        caption = "Results of estimating parameters from simulated data. 
+    First column on top is the average parameter estimate from the simulations, second is the true parameter from which the simulations were made, third is the relative error.
+    On bottom are the standard errors for the parameters: True is the theoretically computed standard error, SimAverage is the SD of the simulated parameter estimates, and RelError is the relative error.")
+
+# Use pack_rows to add headers
+final_table <- kable_combined %>%
+  pack_rows("Parameter estimates", 1, 8, bold = TRUE) %>%
+  pack_rows("Parameter SE estimates", 9,16, bold = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) %>%
+  add_header_above(c(" " = 1, "Systolic" = 3, "Diastolic" = 3))
+
+
+# Print the table
+cat(final_table)
+
+
 ```
 
 
 <!-- ## Multiple imputation for the real data -->
+
 ```{r multiple_impute, cache=TRUE, tidy= TRUE,include=FALSE,message=FALSE,warning=FALSE}
 number_impute <- 10
 all_variables_est <- c('m_M','m_Delta','sigma2_M','sigma2_Delta','alpha_C','theta_C','alpha_H','theta_H')
@@ -1311,9 +1402,12 @@ $$
 Here $I$ represents the randomly imputed fractional part. 
 We can estimate the first term by averaging the estimated variance (from Fisher Information) over all random imputations.
 We estimate the second term by the variance of the $\alpha$ estimates over imputations. Note that this is not quite right, since what we really
-want the variance of is $\alpha_0(I)$ --- effectively, the ``true'' parameter consistent with the imputation. This is a plug-in estimate,
+want the variance of is $\alpha_0(I)$ --- effectively, the "true" parameter consistent with the imputation. This is a plug-in estimate,
 as is the Fisher Information estimate of the variance.  
 
+The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled "True" in Table \ref{tab:testparameters}.
+
+<!--
 We then compute the residuals. We define the deviance for an individual $i$ with observations $(Y_i)$
 given the hyperparameters $h=(m_M,m_\Delta,\sigma^2_M,\sigma^2_\Delta,\alpha^H,\theta^H,\alpha^C,\theta^C)$
 $$
@@ -1327,7 +1421,7 @@ D&= \sum_{i=1}^n \log \E_h\left[ \P\left\{ \mathbf{Y}_i \, |\, M_i,\Delta_i,\tau
 \end{align*}
 where $(M_{i,r},\Delta_{i,r},\tau_{i,r}^{C},\tau_{i,r}^{H})$ are independent samples from a distribution $q$ that may depend
 on $\mathbf{Y}_i$ and $h$, and $\pi_h$ is the true density of those individual parameters given hyperparameters $h$.
-
+-->
 <!-- 
 We can try estimating this simply by Monte Carlo sampling of the individual parameters.
 -->
@@ -1353,12 +1447,7 @@ Because of rounding, the observed $S^2_i$ will be too small. We approximate the 
 of a uniform random variable on $[-1,1]$.
 -->
 
-Finally, we check the variance distribution empirically, to check whether the continuous distribution we have fit for individual variances describes the true distribution of variances in the population reasonably well.
-The first thing we do is to compare the empirical
-variances (with imputed fractional parts) to the theoretical beta-prime distribution.
-To match the standard distribution, the variances are normalized by being divided by the factor $\alpha/\theta$.
-Note that the distribution has a very long tail, and we have truncated the plot at a point where about 
-```{r Variance test,echo=FALSE,message=FALSE, warning=FALSE}
+```{r VarianceTest,echo=FALSE,message=FALSE, warning=FALSE}
 # Compare to beta-prime distribution
 params <- convert_param1(BP_parameters)
 dbetaprime <- function(x, A=1, B= BP_parameters$Systolic$Gamma$Clinic$alpha)
@@ -1372,67 +1461,150 @@ all_s2k_sim_noimp <- NULL
 all_SD <-NULL
 all_HC <- NULL
 
-oversample <- 1
+oversample <- 10
 
 bp_sim <- BP_simulation2(params$Normal,params$Gamma,
-                      num_indiv= N, num_sim = oversample) # Get oversample sets of simulations; 
-    #We're going to take 1/oversample of them, to get a more accurate
+                      num_indiv= N*2*oversample, num_sim = 1)[[1]] # Get oversample sets of simulations; 
+    #We could take 1/oversample of them, to get a more accurate
 #    estimate of the distribution, particularly at the upper end
 
-G <- lapply(1:2,function(w) vector(mode='list', length=2L) %>% setNames(BP_place_names)) %>% setNames(BP_type_names)
 
-for(which_bp in BP_type_names){
-#    s2k <- apply(bp_sim[[which_bp]])
-    for(i in seq_len(oversample)){
-      allBP_imp <- lapply(allBP, function(BPtype) lapply(BPtype,function(BPplace) imputeBP(BPplace)))
-    for ( where_bp in BP_place_names){
-      
-      s2k <- apply(allBP_imp[[which_bp]][[where_bp]]$BP,1,var) /
-                        params$Gamma[[which_bp]]['beta',where_bp]
-      s2k_sim <- apply(bp_sim[[i]][[which_bp]][[where_bp]]$BP,1,var) /
-                         params$Gamma[[which_bp]]['beta',where_bp]
-      all_s2k %<>% c(sort(s2k))
-      all_s2k_sim %<>% c(sort(s2k_sim)[seq(from = ceiling(oversample/2), by = oversample, length.out = N)])
-      all_SD %<>% c(rep(which_bp,length(s2k)))
-      all_HC %<>% c(rep(where_bp,length(s2k)))
-}
-    G[[which_bp]][[where_bp]] <- ggplot(tibble(Variance = s2k[s2k<4]), aes(x=Variance)) + 
-      geom_histogram(alpha=0.2, position="identity", aes(y = ..density..), binwidth = .04) +
-      labs(title =  paste(which_bp,where_bp, ': Histogram of Variances/beta' )) +
-      stat_function(fun = function(xx) dbetaprime(xx,A =1, 
-                          B = params$Gamma[[which_bp]]['alpha',where_bp]))
-  }
-}
+# Function to combine histograms and beta curves
+# add_beta_curve <- function(data) {
+#   p <- ggplot(data, aes(x = s2k)) +
+#     geom_histogram(aes(y = ..density..), binwidth = 0.04, boundary=0, fill = "grey", color = "black", alpha = 0.2) +
+#     stat_function(fun = function(x) dbetaprime(x, A=1, B=data$params),
+#                   color = "red", size = 1.5)
+#   return(p)
+# }
 
-for(which_bp in BP_type_names){
-  for(where_bp in BP_place_names){
-    if(!is.null(G[[which_bp]][[where_bp]]))  print(G[[which_bp]][[where_bp]])
-    all_s2k[all_SD == which_bp & all_HC == where_bp] <- sort(all_s2k[all_SD == which_bp & all_HC == where_bp])
-    all_s2k_sim[all_SD == which_bp & all_HC == where_bp] <- sort(all_s2k_sim[all_SD == which_bp & all_HC == where_bp])
-  }
-}
-# Need to sort the variances within simulation groups.
+# Compute individual variances for imputed data, and normalise based on appropriate beta prime distribution
+s2k <- lapply(BP_type_names,function(BPtype) lapply(BP_place_names,function(BPplace) sort(apply(allBP_imp[[BPtype]][[BPplace]]$BP,1,var) /
+                        params$Gamma[[BPtype]]['beta',BPplace])) %>% setNames(BP_place_names) ) %>% setNames(BP_type_names)
 
+# Do the same for data simulated from the fitted model
+#   We have oversample times as many simulations as we need, so we can take 1/oversample of them
+s2k_sim <- mclapply(BP_type_names,function(BPtype) mclapply(BP_place_names,function(BPplace) sort(apply(bp_sim[[BPtype]][[BPplace]]$BP,1,var) /
+params$Gamma[[BPtype]]['beta',BPplace])[seq(from=oversample,by = 2*oversample,length.out=N)]) %>% setNames(BP_place_names) ) %>% setNames(BP_type_names)
+
+# Convert lists into a data frame suitable for plotting
+plot_data <- expand.grid( s2k = seq(N),Type=BP_type_names, Place = BP_place_names) # Empty data frame of appropriate structure
+plot_data$s2k <- unlist(lapply(s2k, unlist))
+plot_data$s2k_sim <- unlist(lapply(s2k_sim, unlist))
+plot_data %<>% mutate(dbetaprime_val = dbetaprime(s2k, A=1, B = rep(c(sapply(params$Gamma,function(x) x['alpha',])), rep(N,4)) ))
 ```
-Now we generate data from the inferred model that mimic the true data, with three systolic and three diastolic BP measures per person.
-These cannot be directly compared with the observed data, which are rounded to the nearest 2 (in a somewhat biased way), so we randomly impute the fractional part, which we add to the true observations.
+
+Finally, we check the variance distribution empirically, to check whether the continuous distribution we have fit for individual variances describes the true distribution of variances in the population reasonably well.
+The first thing we do is to compare the empirical
+variances (with fractional parts imputed according to the observed proportions for the unequal digit preference, as discussed in section \ref{sec:lastdigit}) to the theoretical beta-prime distribution.
+To match the standard distribution, the variances are normalized by being divided by the factor $\alpha/\theta$.
+We show histograms of these "unrounded" empirical variances and the theoretical beta-prime distribution in Figure \ref{fig:histograms}.
+Note that the distribution has a very long tail, and we have truncated about 2\% of the data to make the figures more readable.
+
+In Figure \ref{fig:QQplots} we show essentially the same data in the form of Q--Q plots.
+Here we have extended the plot far out into the tails of the distribution, including values in the range $[0,10]$, covering around `r round(100*mean(plot_data$s2k<10),1)`\% of the data.
+We generate data from the inferred model that mimic the true data, with three systolic and three diastolic BP measures per person.
+As before, we impute the fractional parts to the real data.
 This gives us a set of true variances and a set of simulated variances, which we hope will have approximately the same distribution.
-We compare these --- for each of the four combinations of systolic/diastolic and home/clinic --- by Q--Q plots.
-```{r Compare_variances,echo=FALSE, message=FALSE, warning=FALSE}
-all_s2k.tbl <- subset(tibble(Real = all_s2k, Simulated = all_s2k_sim, 
-                      HC = factor(all_HC),
-                      DS = factor(all_SD)), 
-                      pmax(Real, Simulated) < 12 )
+We see some deviation here, but it is slight, and quite deep into the tails.
+Furthermore, the deviation is in the direction of the simulated data having slightly fatter tails than the true data, which is the direction we would wish to err in for the sake of making conservative inferences.
 
-s2k.plot <- ggplot(all_s2k.tbl, aes(x=Real, y=Simulated, colour=interaction(HC,DS),
-  group=interaction(HC, DS))) + 
-  geom_point() + geom_line() +  stat_function(fun = identity , color = 'black' ) + labs( colour = 'BP type', title = 'Real vs. Simulated variances with imputed fractional parts') +
-  scale_color_brewer(palette="Dark2")
+The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled "True" in Table \ref{tab:testparameters}.
+These parameters (and SEs) are accompanied by the results of `r num_reps` estimates of data simulated from the model with the parameters inferred from the data, and then fitted by the same procedure.
+Note that the errors for the estimates are consistent with the stated standard errors ($\pm \sqrt{\operatorname{SE}}$), and the relative errors for the SE are small, confirming that the estimation procedure is reliable.
 
-suppressWarnings( s2k.plot)
+\begin{landscape}
+```{r histograms,echo=FALSE,message=FALSE, warning=FALSE, fig.align='center',fig.show='hold',fig.width=12,fig.height=8, fig.cap='Comparison of the distribution of empirical variances, normalized by dividing by $\\beta=\\alpha/\\theta$, to the fitted beta-prime distribution.'}
+p <- ggplot(plot_data, aes(x = s2k)) +
+  geom_histogram(aes(y = ..density..), binwidth = 0.04, fill = "grey", color = NA, alpha=.6)+
+  geom_line(aes(y = dbetaprime_val), color = "blue", size = 1) + xlim(0,4)+
+  facet_grid(Type ~ Place) + labs(x = "Normalized Variance", y = "Density") +
+  theme_bw() +
+  theme(strip.background = element_blank(),
+        strip.text = element_text(face = "bold", size = 12),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12),
+        legend.position = "none") 
+
+suppressWarnings(print(p))
+
+# G <- lapply(1:2,function(w) vector(mode='list', length=2L) %>% setNames(BP_place_names)) %>% setNames(BP_type_names)
+# for(which_bp in BP_type_names){
+# #    s2k <- apply(bp_sim[[which_bp]])
+#     for(i in seq_len(oversample)){
+#       allBP_imp <- lapply(allBP, function(BPtype) lapply(BPtype,function(BPplace) imputeBP(BPplace)))
+#     for ( where_bp in BP_place_names){
+# 
+#       s2k <- apply(allBP_imp[[which_bp]][[where_bp]]$BP,1,var) /
+#                         params$Gamma[[which_bp]]['beta',where_bp]
+#       s2k_sim <- apply(bp_sim[[i]][[which_bp]][[where_bp]]$BP,1,var) /
+#                          params$Gamma[[which_bp]]['beta',where_bp]
+#       all_s2k %<>% c(sort(s2k))
+#       all_s2k_sim %<>% c(sort(s2k_sim)[seq(from = ceiling(oversample/2), by = oversample, length.out = N)])
+#       all_SD %<>% c(rep(which_bp,length(s2k)))
+#       all_HC %<>% c(rep(where_bp,length(s2k)))
+# }
+#     G[[which_bp]][[where_bp]] <- ggplot(tibble(Variance = s2k[s2k<3]), aes(x=Variance)) +
+#       geom_histogram(alpha=0.2, position="identity", aes(y = ..density..), binwidth = .04) +
+#       labs(title =  paste(which_bp,where_bp, ': Histogram of Variances/beta' )) +
+#       stat_function(fun = function(xx) dbetaprime(xx,A =1,
+#                           B = params$Gamma[[which_bp]]['alpha',where_bp]))
+#   }
+# }
+
+
 
 ```
 
+\end{landscape}
+
+
+```{r QQplots,echo=FALSE,message=FALSE, warning=FALSE, fig.align='center', fig.cap="Q--Q plots of the variances of the observed data with imputed fractional parts (x-axis) against the variances of the simulated data (y-axis)."}
+# Add the simulated data to the plot_data data frame
+
+plot_limit <- 10
+# Note: s2k and s2k_sim are already sorted
+
+s2k.plot <- ggplot(plot_data%>% group_by(Type, Place) %>% filter(pmax(s2k,s2k_sim)<plot_limit), aes(x=s2k, y=s2k_sim,color=interaction(Type,Place), group=interaction(Type,Place))) +
+  geom_point() + geom_line() +  geom_abline(intercept=0,slope = 1, color = 'black' ) + labs( colour = 'BP type', title = '') +
+  scale_color_brewer(palette="Dark2") + xlim(0,10) + ylim(0,10)+ labs(x='Observed variances', y='Simulated variances')
+
+print(s2k.plot)
+
+
+s2k.plot <- ggplot(plot_data%>% filter(Type=='Systolic' & Place=='Home') %>% filter(pmax(s2k,s2k_sim)<plot_limit), aes(x=s2k, y=s2k_sim,color=interaction(Type,Place), group=interaction(Type,Place))) +
+  geom_point() + geom_line() +  geom_abline(intercept=0,slope = 1, color = 'black' ) + labs( colour = 'BP type', title = '') +
+  scale_color_brewer(palette="Dark2") + xlim(0,10) + ylim(0,10)+ labs(x='Observed variances', y='Simulated variances')
+# # Function to calculate quantiles
+# calculate_qq <- function(df) {
+#   n <- min(length(df$s2k), length(df$s2k_sim))
+#   qq_df <- data.frame(qq_s2k = quantile(df$s2k, probs = (1:n - 0.5) / n),
+#                       qq_s2k_sim = quantile(df$s2k_sim, probs = (1:n - 0.5) / n),
+#                       Type = df,
+#                       Place = df)
+#   return(qq_df)
+# }
+# # Apply the function to each group
+# qq_data <- plot_data %>%
+#   group_by(Type, Place) %>%
+#   do(calculate_qq(.)) %>%
+#   ungroup()
+# # suppressWarnings( s2k.plot)
+# 
+# # Create the QQ plot
+# p <- ggplot(qq_data, aes(x = qq_s2k_sim, y = qq_s2k, color = interaction(Type, Place))) +
+#   geom_point() +
+#   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray") +
+#   theme_minimal() +
+#   labs(x = "Theoretical Quantiles (s2k_sim)", y = "Sample Quantiles (s2k)", 
+#        title = "QQ Plots of s2k against s2k_sim",
+#        color = "Group")
+# 
+# p
+
+```
+<!--
+Note: The empirical Bayes priors are now included in Table VarianceTest
 To finish this section, we include a table of the empirical Bayes priors, shown in tables \ref{tab:empestsS} and \ref{tab:empestsD}.
 
 ```{r empestsS,echo=FALSE, message=FALSE, warning=FALSE}
@@ -1440,28 +1612,28 @@ To finish this section, we include a table of the empirical Bayes priors, shown 
 empPriors<-data.frame(variable=names(unlist(BP_parameters)),value=unname(unlist(BP_parameters)))
 # Filter the irrelevant terms
 empPriors%<>%filter(!(grepl(variable,pattern = "variance2") |
-                      grepl(variable,pattern = "variance4") |
+                      grepl(variable,pattern = "variance3") |
                       grepl(variable,pattern = "LogLikelihood")))
 # Which blood pressure type does it correspond to?
 empPriors$BPtype<-sapply(empPriors$variable,function(x) ifelse(grepl(x,pattern = "Diastolic"),"Diastolic","Systolic"))
 # What does the summary statistic refer to?
 empPriors$Statistic<-NA_character_
 # Mu value on the Normal fits
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.Delta.m")]<-"Delta mu"
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.M.m")]<-"Mean mu"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.Delta.m")]<-"$\\mu$ for $\\Delta$"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.M.m")]<-"$\\mu$ for $M$"
 # Sigma values on the Normal fits
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.Delta.sigma2")]<-"Delta sigma"
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.M.sigma2")]<-"Mean sigma"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.Delta.sigma2")]<-"$\\sigma^2$ for $\\Delta$"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Normal.M.sigma2")]<-"$\\sigma^2$ for $M$"
 # Expected values on the Gamma fits
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.alpha")]<-"Clinic SD alpha"
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.alpha")]<-"Home SD alpha"
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.theta")]<-"Clinic SD theta"
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.theta")]<-"Home SD theta"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.alpha")]<-"$\\alpha$ for Clinic SD"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.alpha")]<-"$\\alpha$ for Home SD"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.theta")]<-"$\\theta$ for Clinic SD"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.theta")]<-"$\\theta$ for Home SD"
 # Variance values on the Gamma fits
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.variance1")]<-"Clinic SD alpha"
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.variance1")]<-"Home SD alpha"
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.variance3")]<-"Clinic SD theta"
-empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.variance3")]<-"Home SD theta"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.variance1")]<-"$\\alpha$ for Clinic SD"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.variance1")]<-"$\\alpha$ for Home SD"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Clinic.variance4")]<-"$\\theta$ for Clinic SD"
+empPriors$Statistic[grepl(empPriors$variable,pattern = "Gamma.Home.variance4")]<-"$\\theta$ for Home SD"
 # Is it the expected value or the standard error?
 empPriors$Error<-sapply(empPriors$variable,function(x) ifelse(grepl(x,pattern = "std.error") | grepl(x,pattern = "variance"),"Error Value","Expected Value"))
 # Convert variance to standard deviation
@@ -1470,12 +1642,12 @@ empPriors$value[grepl(empPriors$Statistic,pattern = "sigma")]%<>%sqrt()
 empPriors%<>%dplyr::select(BPtype,Statistic,Error,value)
 
 outEmpP<-empPriors%>%group_by(BPtype,Statistic)%>%
-  summarise(Estimate=paste0(signif(unique(value[Error=="Expected Value"]),5),
-                            "+/-",signif(unique(value[Error!="Expected Value"]),5)))
+  summarise(Estimate=paste0(signif(unique(value[Error=="Expected Value"]),3),"$",
+                            " \\pm ","$",signif(unique(sqrt(value[Error!="Expected Value"])),3)))
 
 outEmpP%>%filter(BPtype=="Systolic")%>%as.data.frame()%>%
   dplyr::select(Statistic,Estimate)%>%
-  kableExtra::kable(format="latex", escape = F,booktabs = T, 
+  kableExtra::kable(format="latex", escape = F,booktabs = T,
                   col.names=c("Parameter","Estimate"),
       caption = "Empirical Bayes prior hyperparameter estimates for the systolic blood pressure for the NHANES III, full population.")
 
@@ -1490,8 +1662,9 @@ outEmpP%>%filter(BPtype=="Diastolic")%>%as.data.frame()%>%
                   col.names=c("Parameter","Estimate"),
       caption = "Empirical Bayes prior hyperparameter estimates for the diastolic blood pressure for the NHANES III, full population.")
 
-```
 
+```
+-->
 
 ### Hamiltonian Monte Carlo (HMC)
 
@@ -1504,17 +1677,16 @@ The model, as described in the article, is a Bayesian hierarchical model. In ord
   \end{equation}
   and
   \begin{equation}
-    \phi\leftarrow \phi+\epsilon\frac{1}{2}\frac{d\log\{p(\theta|y)\}}{d\theta},
+    \phi\leftarrow \phi+\epsilon\frac{1}{2}\frac{\mathrm{d}\log\{p(\theta|y)\}}{\mathrm{d}\theta},
   \end{equation}
-where $M$ is the jacobian of the parameters. This can be set to a diagonal matrix for no correlation between parameters, and is pointwise updated throughout the calculation. This is the leapfrog method, whereby $\epsilon$ dictates the scale size of the step to ensure convergence on the correct point is made, and L is the number of steps to be `leaped'.
+where $M$ is the Jacobian of the parameters. This can be set to a diagonal matrix for no correlation between parameters, and is updated pointwise throughout the calculation. This is the leapfrog method, whereby $\epsilon$ dictates the scale size of the step to ensure convergence on the correct point is made, and L is the number of steps to be `leaped'.
 \item Compute the rejection parameter:
   \begin{equation}
     r=\frac{p(\theta^*|y)p(\phi^*)}{p(\theta^{t-1}|y)p(\phi^{t-1})}
   \end{equation}
 \item Set $\theta^t$ to $\theta^*$ with probability $\min\{1,r\}$, or otherwise keep $\theta^{t-1}$.
 \end{enumerate}  
-The tuning parameters $\epsilon$ and L should be chosen according to a desired acceptance rate. The No-U-Turn Sampler of Stan automates the calculation of these tuning parameters. A more detailed overview of HMC and the NUTS algorithm integrated into the Stan package, see *'The No-U-Turn Sampler: Adaptively Setting Path Lengths
-in Hamiltonian Monte Carlo'* by M. Hoffman and A. Gelman, Journal of Machine Learning Research, 15, 1351-1381 (2014).
+The tuning parameters $\epsilon$ and L should be chosen according to a desired acceptance rate. The No-U-Turn Sampler of Stan automates the calculation of these tuning parameters. A more detailed overview of HMC and the NUTS algorithm integrated into the Stan package, see [@NUTS].
 
 ### Centering the Linear Predictor
 
@@ -1571,7 +1743,7 @@ The post-processing script is called `PostProcessing.R`, which heavily relies on
 
 In this section, we add some additional detail to the results section covered in the article. Extra information is given to explain how convergence of the simulations was ensured, and to also include more visualisations of the converged model parameterizations. The authors feel that this is particularly useful to provide confidence in the model parameterization and the predictions.
 
-### Convergence of Simulations
+## Convergence of Simulations
 
 Convergence of the simulations required to parameterize the model presented in this work is required for the MCMC simulations performed by Stan, as well as convergence in the centering values that requires repeating the Stan calculations several times. Convergence of the latter is shown in figure \ref{fig:linpred_conv}. The upper plot in figure \ref{fig:linpred_conv} illustrates convergence in the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations. The lower plot in figure \ref{fig:linpred_conv} illustrates convergence in the average sum of the linear predictor terms over all MCMC chain iterations.
 
@@ -1621,13 +1793,13 @@ This comes from the expectation of the variance $E[(\psi_i-\psi_{i-t})^2]=2(1-\r
 \end{equation}
 Where T is the index at which the sum of the autocorrelation estimates $\hat{\rho}_{t'}+\hat{\rho}_{t'+1}$ is negative. As a general guide, we should have $\hat{n}_{eff}\sim 10N/k$ effective independent marker draws and that $\hat{R}\to 1\sim 1.1$. In this research, we continued running the MCMC simulations until these two criteria were met (and went beyond: $\hat{R}<1.05$ for all parameters in all models and that $\hat{n}_{eff}>750$ for all parameters in all models).
 
-### Results - Model Parameterization
+## Results - Model Parameterization
 
-We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section 'Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of HA-CVD-CeVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of HA-CVD-CeVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
+We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section 'Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of CVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of CVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
 
 ![Violin plots of the normalised $\beta$ parameters of the different models. ](./Plots/beta/Beta_parameter_normalised.png){#fig:betas}
 
-With respect to the time-independent Gompertz parameter, described using $B$ in this article, the results between all models that simulate HA-CVD-CeVD mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure \ref{fig:gompB}. The consistency appears across sex assigned at birth and race.
+With respect to the time-independent Gompertz parameter, described using $B$ in this article, the results between all models that simulate CVD mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure \ref{fig:gompB}. The consistency appears across sex assigned at birth and race.
 
 ![Violin plots of the normalised B parameter (from the Gompertz equation) of the different models.](./Plots/gompertz/B_parameter.png){#fig:gompB}
 
@@ -1636,23 +1808,102 @@ Figure \ref{fig:gompt} reflects the same level of consistency for the Gompertz p
 ![Violin plots of the normalised $\theta$ parameter (from the Gompertz equation) of the different models.](./Plots/gompertz/theta_parameter.png){#fig:gompt}
 
 
+```{r Mean-SD, echo=FALSE,message=FALSE,warning=FALSE}
+# Read the tables from Excel
+systolic_full <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "MeanValues", rows = 3:7)
+diastolic_full <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "MeanValues", rows = 9:13)[,-1]
+systolic_FRS <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "MeanValues", rows = 17:21)
+diastolic_FRS <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "MeanValues", rows = 23:27)[,-1]
+
+# Combine the data frames into one
+combined_data <- rbind(cbind(systolic_full, diastolic_full), cbind( systolic_FRS, diastolic_FRS) )
+
+# Create a single kable for the combined data
+kable_combined <- kable(combined_data, format = "latex", escape = FALSE, booktabs = TRUE, 
+                        caption = "Summary of the posterior estimate of the blood pressure distribution.")
+
+# Use pack_rows to add headers
+final_table <- kable_combined %>%
+  pack_rows("Full population", 1, nrow(systolic_full), bold = TRUE) %>%
+  pack_rows("FRS population", nrow(systolic_full) + 1, nrow(systolic_full) + nrow(systolic_FRS), bold = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) %>%
+  add_header_above(c(" " = 1, "Systolic" = 2, "Diastolic" = 2))
+
+
+# Print the table
+final_table
+```
+
 ```{r RL12, echo=FALSE,message=FALSE,warning=FALSE}
-kable(openxlsx::read.xlsx("./Results/AppendixTables.xlsx",sheet = "RL1-2",rows = 3:9),
-format="latex", escape = F,booktabs = T, caption = "Parameters for survival model for HA-CVD-CeVD and all-cause mortality, NHANES III, Full population, using the systolic and diastolic mean model.")
+# Read the tables from Excel
+all_cause_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL1-2", rows = 11:17)
+cvd_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL1-2", rows = 3:9)
+
+# Combine the data frames into one
+combined_data <- rbind(all_cause_mortality, cvd_mortality)
+
+# Create a single kable for the combined data
+kable_combined <- kable(combined_data, format = "latex", escape = FALSE, booktabs = TRUE, 
+                        caption = "Parameters for survival model, NHANES III, Full population, using the systolic and diastolic mean model.")
+
+# Use pack_rows to add headers
+final_table <- kable_combined %>%
+  pack_rows("All-Cause Mortality", 1, nrow(all_cause_mortality), bold = TRUE) %>%
+  pack_rows("CVD Mortality", nrow(all_cause_mortality) + 1, nrow(all_cause_mortality) + nrow(cvd_mortality), bold = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+# Output the final table
+final_table
 ```
 
 ```{r RL34, echo=FALSE,message=FALSE,warning=FALSE}
-kable(openxlsx::read.xlsx("./Results/AppendixTables.xlsx",sheet = "RL3-4",rows = 3:9),
-format="latex", escape = F,booktabs = T, caption = "Parameters for survival model for HA-CVD-CeVD and all-cause mortality, NHANES III, FRS-population only, using the systolic and diastolic mean model.")
+# Read the tables from Excel
+all_cause_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL3-4", rows = 11:17)
+cvd_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL3-4", rows = 3:9)
+
+# Combine the data frames into one
+combined_data <- rbind(all_cause_mortality, cvd_mortality)
+
+# Create a single kable for the combined data
+kable_combined <- kable(combined_data, format = "latex", escape = FALSE, booktabs = TRUE, 
+                        caption = "Parameters for survival model, NHANES III, FRS-population only, using the systolic and diastolic mean model.")
+
+# Use pack_rows to add headers
+final_table <- kable_combined %>%
+  pack_rows("All-Cause Mortality", 1, nrow(all_cause_mortality), bold = TRUE) %>%
+  pack_rows("CVD Mortality", nrow(all_cause_mortality) + 1, nrow(all_cause_mortality) + nrow(cvd_mortality), bold = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+# Output the final table
+final_table
+
 ```
 
 
 ```{r RL78, echo=FALSE,message=FALSE,warning=FALSE}
-kable(openxlsx::read.xlsx("./Results/AppendixTables.xlsx",sheet = "RL7-8",rows = 3:9),
-format="latex", escape = F,booktabs = T, caption = "Parameters for survival model for HA-CVD-CeVD and all-cause mortality, NHANES III, FRS-population only, using the 1998 FRS-based model.")
+# Read the tables from Excel
+all_cause_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL7-8", rows = 11:17)
+cvd_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL7-8", rows = 3:9)
+
+# Combine the data frames into one
+combined_data <- rbind(all_cause_mortality, cvd_mortality)
+
+# Create a single kable for the combined data
+kable_combined <- kable(combined_data, format = "latex", escape = FALSE, booktabs = TRUE, 
+                        caption = "Parameters for survival model, NHANES III, FRS-population only, using the 1998 FRS-based model.")
+
+# Use pack_rows to add headers
+final_table <- kable_combined %>%
+  pack_rows("All-Cause Mortality", 1, nrow(all_cause_mortality), bold = TRUE) %>%
+  pack_rows("CVD Mortality", nrow(all_cause_mortality) + 1, nrow(all_cause_mortality) + nrow(cvd_mortality), bold = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+# Output the final table
+final_table
 ```
 
-### Results - Model Performance
+
+## Results - Model Performance
 
 To measure the performance of the model to predict the survival outcome of individuals in the population, figure \ref{fig:cumpred} shows, ordered by individual age, the cumulative hazard $H(t)$ predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
 
@@ -1678,7 +1929,7 @@ Before presenting any ROC or AUC values, we first present the density distributi
 
 ![Density of the (median posterior) systolic $\Delta$ values, per demographic. ](./Rmarkdown_Plots/SysDelta_Densities_Demography.png){#fig:DeltaDens}
 
-Using Welch's ANOVA test, we calculated that $p<1\times 10^{-9}$ for all demographics, including when split between the male and female populations. Figures \ref{fig:ROC_MeanBP} and \ref{fig:ROC_FRS} show the ROC curves (including the AUC values) of the model, the former using the mean systolic and diastolic blood pressure as covariates in the linear predictor term (in the Cox's proportional hazards component) and the latter using the FRS value instead. By making predictions of the 5, 10 and 15 year survival between the middle aged and old aged sub-groups, for the three different mortality causes, we start to build a picture of the performance of the model. For figure \ref{fig:ROC_MeanBP}, we notice that the AUC value of the predictions for the middle aged compared to the older aged population is higher, independent of the survival year prediction or the different mortality causes. The highest AUC is for the 45-64 year old population with a focus on HA-CVD-CeVD and heart attack-related mortality, for all three survival year periods. We also note that the TPR seems to start increasing at a faster rate for the population aged 45-64 than the 65-84 group, implying that it is possible to choose a threshold level, $\epsilon$, for the survival predictions that could correctly identify people at risk without incorrectly predicting as many people to be at risk of mortality as for the group aged 65-84. The results also reflect that the influence of choosing a 5, 10 or 15 year prediction period does not seem to significantly influence the results. Figure \ref{fig:ROC_FRS} displays similar results to the mean systolic and diastolic model when using the FRS value instead, with the main difference that the predictions of the middle aged group for HA-CVD-CeVD and heart attack-related mortality for 5 year survival seems to be lower than the equivalent in the older group or as compared to the mean blood pressure model. This is caused by a reduced mortality before 5 years for the middle aged population that had their FRS value calculated, where 36, 83 and 213 HA-CVD-CeVD and heart attack-related deaths occurred before 5, 10 and 15 years in this sub-group, respectively. This can be compared to 141, 356 and 952 all-cause deaths in this same sub-group (red-curve in figure \ref{fig:ROC_FRS} and \ref{fig:ROC_MeanBP}). Alternatively, when compared to the full-population (not just those who had the FRS value), the HA-CVD-CeVD and heart attack-related deaths for the middle aged population are 55, 115 and 282 over the 5, 10 and 15 year range, respectively.
+Using Welch's ANOVA test, we calculated that $p<1\times 10^{-9}$ for all demographics, including when split between the male and female populations. Figures \ref{fig:ROC_MeanBP} and \ref{fig:ROC_FRS} show the ROC curves (including the AUC values) of the model, the former using the mean systolic and diastolic blood pressure as covariates in the linear predictor term (in the Cox's proportional hazards component) and the latter using the FRS value instead. By making predictions of the 5, 10 and 15 year survival between the middle aged and old aged sub-groups, for the three different mortality causes, we start to build a picture of the performance of the model. For figure \ref{fig:ROC_MeanBP}, we notice that the AUC value of the predictions for the middle aged compared to the older aged population is higher, independent of the survival year prediction or the different mortality causes. The highest AUC is for the 45-64 year old population with a focus on CVD and heart attack-related mortality, for all three survival year periods. We also note that the TPR seems to start increasing at a faster rate for the population aged 45-64 than the 65-84 group, implying that it is possible to choose a threshold level, $\epsilon$, for the survival predictions that could correctly identify people at risk without incorrectly predicting as many people to be at risk of mortality as for the group aged 65-84. The results also reflect that the influence of choosing a 5, 10 or 15 year prediction period does not seem to significantly influence the results. Figure \ref{fig:ROC_FRS} displays similar results to the mean systolic and diastolic model when using the FRS value instead, with the main difference that the predictions of the middle aged group for CVD and heart attack-related mortality for 5 year survival seems to be lower than the equivalent in the older group or as compared to the mean blood pressure model. This is caused by a reduced mortality before 5 years for the middle aged population that had their FRS value calculated, where 36, 83 and 213 CVD and heart attack-related deaths occurred before 5, 10 and 15 years in this sub-group, respectively. This can be compared to 141, 356 and 952 all-cause deaths in this same sub-group (red-curve in figure \ref{fig:ROC_FRS} and \ref{fig:ROC_MeanBP}). Alternatively, when compared to the full-population (not just those who had the FRS value), the CVD and heart attack-related deaths for the middle aged population are 55, 115 and 282 over the 5, 10 and 15 year range, respectively.
 
 ![ROC curves for the model that used mean systolic and diastolic blood pressure as covariates in the linear predictor, stratified by the event type (cause of mortality). The columns split two groups in the population: those who start the survey aged between 45 to 64 and 65-84 years old. The rows split the model predictions between 5, 10 and 2 year survival. ](./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png){#fig:ROC_MeanBP}
 
@@ -1690,33 +1941,38 @@ Comparison of the ROC curves and AUC values is also presented for the different 
 ![ROC curves stratified by the different demographic groups used in this research. The point and line colours represent the different event types that were used to predict on. ](./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png){#fig:ROC_Demog}
 
 ```{r DeathFreq1,echo=F,message=FALSE,warning=FALSE}
-deaths<-read_csv("./Results/Deaths_FreqTable.csv",show_col_types = FALSE)
+deaths<-read_csv("Results/Deaths_FreqTable.csv",show_col_types = FALSE)
 kable(deaths[deaths[,2]=="Age: 45-64",-2],
-format="latex", escape = F,booktabs = T, caption = "Frequency table of the population aged 45-64 for the N-year survival outcomes as separated by demographic group and mortality cause.")
+format="latex", escape = F,booktabs = T, linesep="",
+caption = "Frequency table of the population aged 45-64 for the N-year survival outcomes as separated by demographic group and mortality cause.") %>%   row_spec(c(12,24), extra_latex_after = "\\addlinespace") %>%
+          kable_styling(latex_options = c("hold_position","striped"))
+  
 ```
 
 
 ```{r DeathFreq2,echo=F,message=FALSE,warning=FALSE}
 kable(deaths[deaths[,2]=="Age: 65-84",-2],
-format="latex", escape = F,booktabs = T, caption = "Frequency table of the population aged 65-84 for the N-year survival outcomes as separated by demographic group and mortality cause.")
+format="latex", escape = F,booktabs = T, linesep="",
+caption = "Frequency table of the population aged 65-84 for the N-year survival outcomes as separated by demographic group and mortality cause.")%>%   row_spec(c(12,24), extra_latex_after = "\\addlinespace") %>%
+          kable_styling(latex_options = c("hold_position","striped"))
 ```
 
 
-To finalise the section on the performance of the models using ROC and AUC values, we present a series of figures that provide ROC curves and AUC values for different linear predictor (Cox's proportional hazards model) covariate configurations. By setting the covariate-specific $\beta$ parameter values to zero, we can measure the additional prediction performance that adding different covariates provides to the model. In figures \ref{fig:ROC_RL1} to \ref{fig:ROC_RL8oth}, we present three main formulations: using only the systolic and diastolic $\Delta$ terms, using the mean systolic and diastolic (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or the FRS value (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}) terms as well as the systolic and diastolic $\Delta$ terms (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL8oth}) and, finally, using the systolic mean (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or FRS value only (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}). Figures \ref{fig:ROC_RL1}, \ref{fig:ROC_RL2} and \ref{fig:ROC_RL2oth} apply to the full-population with the models trained on HA-CVD-CeVD and heart-attack related mortality, all-cause, and other mortality, respectively. Figures \ref{fig:ROC_RL7}, \ref{fig:ROC_RL8} and \ref{fig:ROC_RL8oth} apply to the population with an FRS value, with the models trained on HA-CVD-CeVD and heart-attack related mortality, all-cause, and other mortality, respectively. The first thing to note as a commonality between all these different figures is that the use of the long-term variability, $\Delta$, in the model has comparable performance with that of using the systolic mean or FRS values only. Additionally, where the number of deaths permits for prediction, the use of both the $\Delta$ and mean/FRS values results in higher AUC values than using models that use one or the other. Finally, the use of the FRS value consistently under-performs the mean diastolic and systolic blood pressure-based model.
+To finalise the section on the performance of the models using ROC and AUC values, we present a series of figures that provide ROC curves and AUC values for different linear predictor (Cox's proportional hazards model) covariate configurations. By setting the covariate-specific $\beta$ parameter values to zero, we can measure the additional prediction performance that adding different covariates provides to the model. In figures \ref{fig:ROC_RL1} to \ref{fig:ROC_RL8oth}, we present three main formulations: using only the systolic and diastolic $\Delta$ terms, using the mean systolic and diastolic (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or the FRS value (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}) terms as well as the systolic and diastolic $\Delta$ terms (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL8oth}) and, finally, using the systolic mean (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or FRS value only (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}). Figures \ref{fig:ROC_RL1}, \ref{fig:ROC_RL2} and \ref{fig:ROC_RL2oth} apply to the full-population with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. Figures \ref{fig:ROC_RL7}, \ref{fig:ROC_RL8} and \ref{fig:ROC_RL8oth} apply to the population with an FRS value, with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. The first thing to note as a commonality between all these different figures is that the use of the long-term variability, $\Delta$, in the model has comparable performance with that of using the systolic mean or FRS values only. Additionally, where the number of deaths permits for prediction, the use of both the $\Delta$ and mean/FRS values results in higher AUC values than using models that use one or the other. Finally, the use of the FRS value consistently under-performs the mean diastolic and systolic blood pressure-based model.
 
-![ROC curves for the mean systolic and diastolic model, looking specifically at HA-CVD-CeVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png){#fig:ROC_RL1}
+![ROC curves for the mean systolic and diastolic model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png){#fig:ROC_RL1}
 
 ![ROC curves for the mean systolic and diastolic model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png){#fig:ROC_RL2}
 
-![ROC curves for the mean systolic and diastolic model, looking non-HA-CVD-CeVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png){#fig:ROC_RL2oth}
+![ROC curves for the mean systolic and diastolic model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png){#fig:ROC_RL2oth}
 
-![ROC curves for for the FRS-based model, looking specifically at HA-CVD-CeVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png){#fig:ROC_RL7}
+![ROC curves for for the FRS-based model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png){#fig:ROC_RL7}
 
 ![ROC curves for for the FRS-based model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png){#fig:ROC_RL8}
 
-![ROC curves for for the FRS-based model, looking non-HA-CVD-CeVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8oth}
+![ROC curves for for the FRS-based model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8oth}
 
-### Results - Exploring $\Delta$ Directionality
+## Results - Exploring $\Delta$ Directionality
 
 This section of the appendix is to explore whether the directionality of the difference in clinic-home blood pressure (represented through the non-absolute value of the $\Delta$ covariate) may have an influence on the survival outcome in the population. In the work presented in this article, $\Delta$ is the absolute value of the differences in the means of the blood pressure measurements at the clinic and at home, respectively, for both diastolic and systolic blood pressure. By 'directionality', we refer to whether the difference between the clinic and home mean measurements are positive or negative. Figure \ref{fig:DeltaDensities} shows the clinic-home directionalities, split by demographic group, indicating no significant difference between the different demographic groups. There is a general trend that the directionality for systolic and diastolic blood pressure is more likely to be the same than opposite.
 
@@ -1735,28 +1991,28 @@ The 100(1-$\alpha$)\% confidence intervals of the Kaplan-Meier estimate are assu
 \hat{S}(t) \pm z_{1-\alpha/2}\hat{\sigma}(t).
 \end{equation}
 
-Figures \ref{fig:KM45tot} and \ref{fig:KM65tot} show the Kaplan-Meier estimates for the full NHANES population for HA-CVD-CeVD mortality, split by demographic group, for the age range 45-64 and 65-84, respectively. The survival probability of the older population decreases faster in time than the middle-aged (45-64) population.
+Figures \ref{fig:KM45tot} and \ref{fig:KM65tot} show the Kaplan-Meier estimates for the full NHANES population for CVD mortality, split by demographic group, for the age range 45-64 and 65-84, respectively. The survival probability of the older population decreases faster in time than the middle-aged (45-64) population.
 
-![Kaplan-Meier plots of the full-population for HA-CVD-CeVD mortality, for ages between 45-64, split by demographic group. ](./Rmarkdown_Plots/SurvProbKM_45-64.png){#fig:KM45tot}
+![Kaplan-Meier plots of the full-population for CVD mortality, for ages between 45-64, split by demographic group. ](./Rmarkdown_Plots/SurvProbKM_45-64.png){#fig:KM45tot}
 
-![Kaplan-Meier plots of the full-population for HA-CVD-CeVD mortality, for ages between 65-84, split by demographic group. ](./Rmarkdown_Plots/SurvProbKM_65-84.png){#fig:KM65tot}
+![Kaplan-Meier plots of the full-population for CVD mortality, for ages between 65-84, split by demographic group. ](./Rmarkdown_Plots/SurvProbKM_65-84.png){#fig:KM65tot}
 
-By splitting the populations into the respective regions of the $\Delta$ directionality, we can use the different Kaplan-Meier plots to try to identify differences in the survival outcomes. Figures \ref{fig:KM45_deltaregion} and \ref{fig:KM65_deltaregion} show the Kaplan-Meier estimates for the full NHANES population for HA-CVD-CeVD mortality, split by $\Delta$ directionality and demographic group, for the age range 45-64 and 65-84, respectively. With the broad confidence intervals, all of the different $\Delta$ directionality regions overlap, for all demographic groups and both age range groups (where $\hat{S}(t)\neq 1$).
+By splitting the populations into the respective regions of the $\Delta$ directionality, we can use the different Kaplan-Meier plots to try to identify differences in the survival outcomes. Figures \ref{fig:KM45_deltaregion} and \ref{fig:KM65_deltaregion} show the Kaplan-Meier estimates for the full NHANES population for CVD mortality, split by $\Delta$ directionality and demographic group, for the age range 45-64 and 65-84, respectively. With the broad confidence intervals, all of the different $\Delta$ directionality regions overlap, for all demographic groups and both age range groups (where $\hat{S}(t)\neq 1$).
 
-![Kaplan-Meier plots of the full-population for HA-CVD-CeVD mortality, for ages between 45-64, split by demographic group and region in systolic-diastolic $\Delta$ space. ](./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png){#fig:KM45_deltaregion}
+![Kaplan-Meier plots of the full-population for CVD mortality, for ages between 45-64, split by demographic group and region in systolic-diastolic $\Delta$ space. ](./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png){#fig:KM45_deltaregion}
 
-![Kaplan-Meier plots of the full-population for HA-CVD-CeVD mortality, for ages between 65-84, split by demographic group and region in systolic-diastolic $\Delta$ space. ](./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png){#fig:KM65_deltaregion}
+![Kaplan-Meier plots of the full-population for CVD mortality, for ages between 65-84, split by demographic group and region in systolic-diastolic $\Delta$ space. ](./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png){#fig:KM65_deltaregion}
 
 We further quantify this insignificant relationship between $\Delta$ directionality and survival outcome via the use of a Cox's Proportional Hazards (CPH) model. Via the use of the 'coxph' function in the 'survival' R package, we fit (using MLE) a CPH model. The covariates used in the model are $\Delta$ directionality region, gender, ethnicity and age. Table \ref{tab:DeltaDir} shows the summary of the model fit, which reflects that being in different $\Delta$ directionality regions has a non-statistically significant influence on survival outcomes. As shown in the remainder of this article, ethnicity, gender and age are shown to have statistically significant effects on survival outcome.
 
 ```{r DeltaDir,echo=F}
 DCox<-read_csv("./Results/DeltaPosTab.csv",show_col_types = FALSE)
-kable(DCox,
-format="latex", escape = F,booktabs = T, caption = "Parameters for distribution of blood pressure, for the full population")
+kable(DCox, linesep = "",
+format="latex", escape = F,booktabs = T, digits = 3, caption = "Parameters for distribution of blood pressure, for the full population")%>%  kable_styling(latex_options = c("hold_position","striped")) 
 ```
 
-Finally, we wish to confirm that the perfomance of the model does not depend on the directionality of $\Delta$. Figure \ref{fig:DeltaAUCs} plots the AUC values of 10-year HA-CVD-CeVD mortality for the all-covariate mean blood pressure-based model trained on the full NHANES population, split by the two age-ranges (45-64 and 65-84) and demographic groups. There is no clear trend between mode performance for the different regions of $\Delta$ directionality.
+Finally, we wish to confirm that the perfomance of the model does not depend on the directionality of $\Delta$. Figure \ref{fig:DeltaAUCs} plots the AUC values of 10-year CVD mortality for the all-covariate mean blood pressure-based model trained on the full NHANES population, split by the two age-ranges (45-64 and 65-84) and demographic groups. There is no clear trend between mode performance for the different regions of $\Delta$ directionality.
 
-![AUC values of the full-population, all covariate model with the mean blood pressure model, based on HA-CVD-CeVD 10-year mortality. ](./Rmarkdown_Plots/DeltaDirection_AUCs.png){#fig:DeltaAUCs}
+![AUC values of the full-population, all covariate model with the mean blood pressure model, based on CVD 10-year mortality. ](./Rmarkdown_Plots/DeltaDirection_AUCs.png){#fig:DeltaAUCs}
 
 # References
