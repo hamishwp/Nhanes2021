@@ -11,3 +11,5 @@ Appendix.log
 **.docx
 NHANES-BP-Appendix_cache/**
 NHANES-BP-Appendix_files/**
+Rmarkdown_Plots/**
+fig_test_cache**

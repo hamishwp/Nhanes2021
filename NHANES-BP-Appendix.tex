@@ -485,18 +485,18 @@ Note as well that the \(\Delta\) covariates, representing the medium-term variab
 
 For the parametrization of this model, we assume that the Gompertz parameters and the parameters in the linear predictor term have prior distributions as follows:
 \begin{equation}\label{priorsS}
-\begin{align*}
+\begin{split}
   \boldsymbol{B}&\sim\mathcal{N}(0,2),\\
   \boldsymbol{\theta}&\sim\mathcal{N}(0,2),\\
   \boldsymbol{\beta}&\sim \mathrm{Cauchy}(0,100).
-\end{align*}
+\end{split}
 \end{equation}
 
 The likelihood for this Gompertz proportional hazards model, over all individuals in the census, is as follows:
 \begin{equation}\label{likesurv}
 L_S(\boldsymbol{v},\boldsymbol{\delta})=\prod_i^N f(v_i,\delta_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}})=\prod_i^N h(v_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}})^{\delta_i} \exp{\left( -\sum_i^N H(v_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}}) \right)},
 \end{equation}
-with \(H(v)=\int_0^v h(w)dw\) the cumulative hazard.
+with \(H(v)=\int_0^v h(w) \mathrm{d}w\) the cumulative hazard.
 
 \hypertarget{longitudinal-modelling}{%
 \subsubsection{Longitudinal Modelling}\label{longitudinal-modelling}}
