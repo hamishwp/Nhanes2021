@@ -2,3 +2,12 @@
 .Rhistory
 .RData
 .Ruserdata
+Appendix_cache/**
+Samples/**
+Plots/**
+Plots_Save/**
+Appendix.log
+**.pdf
+**.docx
+NHANES-BP-Appendix_cache/**
+NHANES-BP-Appendix_files/**

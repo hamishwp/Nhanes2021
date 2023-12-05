@@ -5,11 +5,14 @@ library(dplyr)
 library(pracma)
 library(magrittr)
 library(ggpubr)
+library(survival)
 # devtools::install_github("ottlngr/LexisPlotR")
+# devtools::install_github("bhklab/survcomp")
 library(LexisPlotR)
+# library(survcomp)
 source("./Model/Functions.R")
 
-directory<-'~/Documents/BEAST/Coding/Oxford/Nhanes2021/'
+directory<-'~/Documents/Coding/Oxford/Nhanes2021/'
 
 saveresultslist<-function(resultslist,RL,link){
   
@@ -522,6 +525,633 @@ ggsave('xhat_conv.png', plot=p,path = paste0(directory,'Plots/xhat'),width = 10,
 rm(xhatS,xhatD,DF)
 
 ############################### ROC #################################'
+
+# For RL1, RL2, RL7, RL8, eventother-RL2 and eventother-RL8 do:
+# Vary the years - 5,10,15 and the ages - 45-65 & 65-85
+# Vary demography by all groups separately in one plot, for the most successful year
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%% DEMOGRAPHY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+nhanes<-DF_Nhanes(list_nhanesA)
+# Create the demog groups
+nhanes$Ethnicity<-factor(nhanes$black+2*nhanes$white+3*nhanes$other,
+                         levels = c(1,2,3),labels=c("Black","White","Other"))
+nhanes$Gender<-factor(nhanes$female,levels=c(0,1),labels=c("Female","Male"))
+
+deaths<-data.frame()
+for (Yr in c(5,10,15)){
+  for (ageB in c(45,65)){
+    for(Gen in c("Female","Male")) {
+      for(Eth in c("Black","White","Other")){
+        deaths%<>%rbind(data.frame(
+          Year=paste0(Yr,"-Year Mortality"),
+          AgeRange=paste0("Age: ",ageB,"-",ageB+19),EventType="HA-CVD-CeVD",
+          Ethnicity=Eth,Gender=Gen,
+          Deaths=sum(nhanes$eventCVDHrt[nhanes$age<ageB+19 & nhanes$age>=ageB & 
+                                          nhanes$T<Yr & nhanes$Ethnicity==Eth &
+                                          nhanes$Gender==Gen])))
+        deaths%<>%rbind(data.frame(
+          Year=paste0(Yr,"-Year Mortality"),
+          AgeRange=paste0("Age: ",ageB,"-",ageB+19),EventType="All Deaths",
+          Ethnicity=Eth,Gender=Gen,
+          Deaths=sum(nhanes$eventall[nhanes$age<ageB+19 & nhanes$age>=ageB & 
+                                       nhanes$T<Yr & nhanes$Ethnicity==Eth &
+                                       nhanes$Gender==Gen])))
+      }
+    }
+  }
+}
+
+write_csv(deaths,"./Results/Deaths_FreqTable.csv")
+
+Blood<-data.frame(Mean=c(mean(rowMeans(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC,
+                              list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome))),
+                  0.5*mean(abs(rowMeans(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC))-
+                                  rowMeans(cbind(list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome)))),
+                  mean(apply(cbind(list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome),1,sd)),
+                  mean(apply(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC),1,sd))),
+                  SD=c(sd(rowMeans(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC,
+                                            list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome))),
+                  0.5*sd(abs(rowMeans(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC))-
+                                           rowMeans(cbind(list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome)))),
+                  sd(apply(cbind(list_nhanesA$sys_home$systolicAhome,list_nhanesA$sys_home$systolicBhome,list_nhanesA$sys_home$systolicChome),1,sd)),
+                  sd(apply(cbind(list_nhanesA$sys$systolicA,list_nhanesA$sys$systolicB,list_nhanesA$sys$systolicC),1,sd))),
+                  Variable=c("Overall Mean","Delta", "Home SD", "Clinic SD"),
+                  BP="Systolic",Population="Full")
+
+Blood%<>%rbind(data.frame(Mean=c(mean(rowMeans(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC,
+                                                     list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome))),
+                                 0.5*mean(abs(rowMeans(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC))-
+                                                rowMeans(cbind(list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome)))),
+                                 mean(apply(cbind(list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome),1,sd)),
+                                 mean(apply(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC),1,sd))),
+                          SD=c(sd(rowMeans(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC,
+                                                 list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome))),
+                               0.5*sd(abs(rowMeans(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC))-
+                                            rowMeans(cbind(list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome)))),
+                               sd(apply(cbind(list_nhanesA$dias_home$diastolicAhome,list_nhanesA$dias_home$diastolicBhome,list_nhanesA$dias_home$diastolicChome),1,sd)),
+                               sd(apply(cbind(list_nhanesA$dias$diastolicA,list_nhanesA$dias$diastolicB,list_nhanesA$dias$diastolicC),1,sd))),
+                          Variable=c("Overall Mean","Delta", "Home SD", "Clinic SD"),
+                          BP="Diastolic",Population="Full"))
+
+Blood%<>%rbind(data.frame(Mean=c(mean(rowMeans(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC,
+                                             list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome))),
+                         0.5*mean(abs(rowMeans(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC))-
+                                        rowMeans(cbind(list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome)))),
+                         mean(apply(cbind(list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome),1,sd)),
+                         mean(apply(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC),1,sd))),
+                  SD=c(sd(rowMeans(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC,
+                                         list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome))),
+                       0.5*sd(abs(rowMeans(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC))-
+                                    rowMeans(cbind(list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome)))),
+                       sd(apply(cbind(list_nhanesFRS$sys_home$systolicAhome,list_nhanesFRS$sys_home$systolicBhome,list_nhanesFRS$sys_home$systolicChome),1,sd)),
+                       sd(apply(cbind(list_nhanesFRS$sys$systolicA,list_nhanesFRS$sys$systolicB,list_nhanesFRS$sys$systolicC),1,sd))),
+                  Variable=c("Overall Mean","Delta", "Home SD", "Clinic SD"),
+                  BP="Systolic",Population="FRS"))
+
+Blood%<>%rbind(data.frame(Mean=c(mean(rowMeans(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC,
+                                                     list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome))),
+                                 0.5*mean(abs(rowMeans(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC))-
+                                                rowMeans(cbind(list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome)))),
+                                 mean(apply(cbind(list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome),1,sd)),
+                                 mean(apply(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC),1,sd))),
+                          SD=c(sd(rowMeans(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC,
+                                                 list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome))),
+                               0.5*sd(abs(rowMeans(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC))-
+                                            rowMeans(cbind(list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome)))),
+                               sd(apply(cbind(list_nhanesFRS$dias_home$diastolicAhome,list_nhanesFRS$dias_home$diastolicBhome,list_nhanesFRS$dias_home$diastolicChome),1,sd)),
+                               sd(apply(cbind(list_nhanesFRS$dias$diastolicA,list_nhanesFRS$dias$diastolicB,list_nhanesFRS$dias$diastolicC),1,sd))),
+                          Variable=c("Overall Mean","Delta", "Home SD", "Clinic SD"),
+                          BP="Diastolic",Population="FRS"))
+
+Blood[,1:2]<-round(Blood[,1:2],2); Blood<-Blood[,c(5,4,3,1,2)]
+write_csv(Blood,"./Results/BloodVals.csv")
+
+# Parameter estimates now BP_parameters
+load("./Model/BP_parameters.RData") 
+Gammiez<-cbind(as.data.frame(unlist(BP_parameters$Systolic$Gamma$Clinic)),
+               as.data.frame(unlist(BP_parameters$Systolic$Gamma$Home)),
+               as.data.frame(unlist(BP_parameters$Diastolic$Gamma$Clinic)),
+               as.data.frame(unlist(BP_parameters$Diastolic$Gamma$Home)))
+row.names(Gammiez)[3:6]<-c("variance_11","variance_12","variance_21","variance_22")
+colnames(Gammiez)<-c("Systolic_Clinic","Systolic_Home","Diastolic_Clinic","Diastolic_Home")
+write_csv(Gammiez,"./Results/EmpBayesPriors_Gammas.csv")
+
+Normiez<-cbind(as.data.frame(unlist(BP_parameters$Systolic$Normal$M)),
+               as.data.frame(unlist(BP_parameters$Systolic$Normal$Delta)),
+               as.data.frame(unlist(BP_parameters$Diastolic$Normal$M)),
+               as.data.frame(unlist(BP_parameters$Diastolic$Normal$Delta)))
+row.names(Normiez)<-c("mean","mean.std.err","sigma_sq","sigma_sq.std.err")
+colnames(Normiez)<-c("Systolic_M","Systolic_Delta","Diastolic_M","Diastolic_Delta")
+write_csv(Normiez,"./Results/EmpBayesPriors_Normals.csv")
+
+# First check the stratification between deltas, per demography
+Delties<-data.frame(Delta=apply(RL1$D_i_S,2,median))
+Delties$Ethnicity<-nhanes$black+2*nhanes$white+3*nhanes$other
+Delties$Gender<-nhanes$female+10*nhanes$male
+Delties$Demography<-Delties$Ethnicity*Delties$Gender
+Delties$Demography<-factor(Delties$Demography,levels = c(1,2,3,10,20,30),
+                           labels =c("Black Female","White Female","Other Female","Black Male","White Male","Other Male"))
+Delties$Ethnicity<-factor(Delties$Ethnicity,levels = c(1,2,3),labels = c("Black","White","Other"))
+Delties$Gender<-factor(Delties$Gender,levels = c(1,10),labels = c("Female","Male"))
+
+p<-ggplot(Delties)+geom_density(aes(Delta,fill=Demography))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender))+
+  ggtitle("Systolic Delta Values - Median of Posterior")+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave("SysDelta_Densities_Demography.png",p,path = "./Plots/Survival/ROCs")  
+ggsave("SysDelta_Densities_Demography.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+oneway.test(Delta ~ Demography, data = Delties, var.equal = bartlett.test(Delta ~ Demography,data = Delties)$p.value<0.01)
+
+tmp<-Delties%>%filter(Gender=="Male")
+oneway.test(Delta ~ Demography, data = tmp, var.equal = bartlett.test(Delta ~ Demography,data = tmp)$p.value<0.01)
+
+tmp<-Delties%>%filter(Gender=="Female")
+oneway.test(Delta ~ Demography, data = tmp, var.equal = bartlett.test(Delta ~ Demography,data = tmp)$p.value<0.01)
+
+ROC<-data.frame()
+for (runnum in c("RL1","RL2","RL7","RL8","RL2oth","RL8oth")){
+  # Just in case we specifically want to look at the population that didn't die from CVD-Hrt 
+  if(grepl(pattern = "oth",runnum)) {
+    othDeaths<-T 
+    Runner<-unlist(str_split(runnum,"oth"))[1]
+  }else {
+    othDeaths<-F
+    Runner<-runnum
+  }
+  # Get the simulation object
+  RL<-get(Runner)
+  # Reason for death
+  if(RL$eventall){
+    if(othDeaths) eventer<-"Non-HA-CVD-CeVD" else  eventer<-"All Deaths"
+  } else eventer<-"HA-CVD-CeVD"
+  # Let's do this!
+  for(Yr in c(5,10,15)){
+    for(ageL in c(45,65)){
+     for(Gen in c("female","male")) {
+       for(Eth in c("black","white","other")){
+         Troc<-calc_Year_roc(RL,Year=Yr,ageBnds=c(ageL,ageL+20),Ethnicity = Eth,Gender = Gen, othDeaths=othDeaths)
+         ROC%<>%rbind(data.frame(RunNumber=runnum,Year=paste0(Yr,"-Year Mortality"),
+                                 AgeRange=paste0("Age: ",ageL,"-",ageL+19),EventType=eventer,
+                                 Ethnicity=stringr::str_to_title(Eth),
+                                 Gender=stringr::str_to_title(Gen),
+                                 TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+       }
+     }
+    }
+  }
+}
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(RunNumber %in% c("RL1","RL2","RL2oth") & Year=="10-Year Mortality" & AgeRange=="Age: 45-64")%>%
+  group_by(Gender,Ethnicity,EventType)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+AUROC$y[AUROC$EventType=="HA-CVD-CeVD"]<-0.35
+AUROC$y[AUROC$EventType=="Non-HA-CVD-CeVD"]<-0.3
+
+p<-ROC%>%filter(RunNumber %in% c("RL1","RL2","RL2oth") & Year=="10-Year Mortality" & AgeRange=="Age: 45-64")%>%
+  ggplot(aes(group=EventType))+
+  geom_point(aes(FPR,TPR-FPR,colour=EventType)) +
+  geom_line(aes(FPR,TPR-FPR,colour=EventType)) +
+  geom_text(data=AUROC,aes(x,y,label=label,colour=EventType)) +
+  geom_abline(slope = 0,intercept = 0) + ylim(0,0.4) +
+  xlab("False Positive Rate") + ylab("True Positive Rate - False Positive Rate") +
+  facet_grid(rows = vars(Ethnicity),cols = vars(Gender))+
+  ggtitle("Performance by Demographic")+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_CAx-EventType_Demog_10Yr_45-64.png"),p,path = "./Plots/Survival/ROCs")
+ggsave(paste0("ROC_CAx-EventType_Demog_10Yr_45-64.png"),p,path = "./Rmarkdown_Plots",width = 7,height = 7)
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%% DELTA DIRECTIONALITY %%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+xSC_NF<-list_nhanesA$sys
+xDC_NF<-list_nhanesA$dias
+xSH_NF<-list_nhanesA$sys_home
+xDH_NF<-list_nhanesA$dias_home
+
+Delta_av_NF <- cbind(rowMeans( (as.matrix(xSC_NF)-as.matrix(xSH_NF))/2 ),rowMeans( (as.matrix(xDC_NF)-as.matrix(xDH_NF))/2 ))
+delties<-data.frame(DeltaS=Delta_av_NF[,1],DeltaD=Delta_av_NF[,2], 
+                    age=list_nhanesA$age, Time=list_nhanesA$T)
+delties$Ethnicity<-factor(list_nhanesA$black+2*list_nhanesA$white+3*list_nhanesA$other,
+                          levels = c(1,2,3),labels=c("Black","White","Other"))
+delties$Gender<-factor(list_nhanesA$female,levels=c(0,1),labels=c("Female","Male"))
+delties$Mortality<-"Censored"
+delties$Mortality[list_nhanesA$eventCVDHrt==1]<-"HA-CVD-CeVD"
+delties$Mortality[list_nhanesA$eventall==1 & list_nhanesA$eventCVDHrt==0]<-"Other"
+
+p<-delties%>%ggplot(aes(DeltaS,DeltaD))+geom_point()+
+  stat_density_2d(aes(colour=..level..))+
+  xlab("Systolic Delta")+ylab("Diastolic Delta")+labs(colour="Density")+
+  geom_hline(colour="red",yintercept = 0)+geom_vline(colour="red",xintercept = 0)+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+
+ggsave("Delta_plusminus_Demography.png",p,path = "./Plots")  
+ggsave("Delta_plusminus_Demography.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+deltdeath<-delties
+deltdeath<-deltdeath[order(deltdeath$age+deltdeath$Time),]
+deltdeath$EventAge<-deltdeath$age+deltdeath$Time
+deltdeath$DeltaRegion <- NA
+deltdeath$DeltaRegion[deltdeath$DeltaS<0 & deltdeath$DeltaD<0]<-"Sys. -ve, Dys. -ve"
+deltdeath$DeltaRegion[deltdeath$DeltaS<0 & deltdeath$DeltaD>=0]<-"Sys. -ve, Dys. +ve"
+deltdeath$DeltaRegion[deltdeath$DeltaS>=0 & deltdeath$DeltaD>=0]<-"Sys. +ve, Dys. +ve"
+deltdeath$DeltaRegion[deltdeath$DeltaS>=0 & deltdeath$DeltaD<0]<-"Sys. +ve, Dys. -ve"
+
+deltdeath%<>%group_by(Ethnicity,Gender,DeltaRegion)%>%
+  mutate(cumDeaths=100*(length(Mortality)-cumsum(as.logical(Mortality=="HA-CVD-CeVD")))/length(Mortality))
+
+p<-deltdeath%>%ggplot(aes(EventAge,cumDeaths))+
+  geom_line(aes(colour=DeltaRegion))+xlim(c(30,100))+ylim(c(85,100))+
+  ylab("Survival Percent")+xlab("Age at Event/Censorship")+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("Delta_plusminus_cumDeaths.png",p,path = "./Plots")  
+ggsave("Delta_plusminus_cumDeaths.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+deltdeath$Mortality%<>%factor()
+deltdeath$Outcome<-0; deltdeath$Outcome[deltdeath$Mortality=="HA-CVD-CeVD"]<-1
+
+KMcurve<-data.frame()
+for (ageB in c(45,65)){
+  for(Gen in c("Female","Male")) {
+    for(Eth in c("Black","White","Other")){
+      fit<-deltdeath%>%filter(age<ageB+19 & age>=ageB & 
+                                Ethnicity==Eth &
+                                Gender==Gen)%>%
+        survfit(formula = Surv(Time, Outcome) ~ DeltaRegion)
+      tmp<-summary(fit,times = 1:40/2)
+      KMcurve%<>%rbind(data.frame(
+        time=tmp$time,
+        age=ageB,
+        pSurv=tmp$surv,
+        plow=tmp$lower,
+        pupp=tmp$upper,
+        DeltaRegion=tmp$strata,
+        Gender=Gen,
+        Ethnicity=Eth
+      ))
+      
+    }
+  }
+}
+
+p<-KMcurve%>%filter(age==45)%>%
+  ggplot(aes(time,pSurv,group=DeltaRegion))+geom_line(aes(colour=DeltaRegion))+
+  geom_ribbon(aes(ymin=plow,ymax=pupp,fill=DeltaRegion,colour=DeltaRegion), size=0.2,alpha = 0.1)+
+  ylab("Survival Probability")+xlab("Time Since Initial Survey")+
+  ggtitle("Age 45-64 Kaplan Meier Curve")+theme(plot.title = element_text(hjust = 0.5))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("SurvProbKM_Delta_45-65.png",p,path = "./Plots")  
+ggsave("SurvProbKM_Delta_45-65.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+p<-KMcurve%>%filter(age==65)%>%
+  ggplot(aes(time,pSurv,group=DeltaRegion))+geom_line(aes(colour=DeltaRegion))+
+  geom_ribbon(aes(ymin=plow,ymax=pupp,fill=DeltaRegion,colour=DeltaRegion), size=0.2,alpha = 0.1)+
+  ylab("Survival Probability")+xlab("Time Since Initial Survey")+
+  ggtitle("Age 65-84 Kaplan Meier Curve")+theme(plot.title = element_text(hjust = 0.5))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("SurvProbKM_Delta_65-85.png",p,path = "./Plots")  
+ggsave("SurvProbKM_Delta_65-85.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+totKMcurve<-data.frame()
+for (ageB in c(45,65)){
+  for(Gen in c("Female","Male")) {
+    for(Eth in c("Black","White","Other")){
+      fit<-deltdeath%>%filter(age<ageB+19 & age>=ageB & 
+                                Ethnicity==Eth &
+                                Gender==Gen)%>%
+        survfit(formula = Surv(Time, Outcome) ~ 1)
+      tmp<-summary(fit,times = 1:40/2)
+      totKMcurve%<>%rbind(data.frame(
+        time=tmp$time,
+        Age=ageB,
+        pSurv=tmp$surv,
+        plow=tmp$lower,
+        pupp=tmp$upper,
+        Gender=Gen,
+        Ethnicity=Eth
+      ))
+      
+    }
+  }
+}
+
+totKMcurve$Age%<>%factor(levels = c(45,65),labels = c("Age 45-64","Age 65-84"))
+p<-totKMcurve%>%filter(Age=="Age 45-64")%>%
+  ggplot(aes(time,pSurv))+geom_line()+
+  geom_ribbon(aes(ymin=plow,ymax=pupp), size=1,alpha = 0.3)+
+  ylab("Survival Probability")+xlab("Time Since Initial Survey")+
+  labs(alpha="Age")+
+  ggtitle("Kaplan Meier Curve - 45-64 Age")+theme(plot.title = element_text(hjust = 0.5))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("SurvProbKM_45-64.png",p,path = "./Plots")  
+ggsave("SurvProbKM_45-64.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+p<-totKMcurve%>%filter(Age=="Age 65-84")%>%
+  ggplot(aes(time,pSurv))+geom_line()+
+  geom_ribbon(aes(ymin=plow,ymax=pupp), size=1,alpha = 0.3)+
+  ylab("Survival Probability")+xlab("Time Since Initial Survey")+
+  labs(alpha="Age")+
+  ggtitle("Kaplan Meier Curve - 65-84 Age")+theme(plot.title = element_text(hjust = 0.5))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender));p
+ggsave("SurvProbKM_65-84.png",p,path = "./Plots")  
+ggsave("SurvProbKM_65-84.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7) 
+
+
+
+deltdeath$SysPos<-0
+deltdeath$SysPos[deltdeath$DeltaS>0]<-1
+deltdeath$DysPos<-0
+deltdeath$DysPos[deltdeath$DeltaD>0]<-1
+
+coxxie<-survival::coxph(formula = Surv(Time, Outcome) ~ DeltaRegion + Gender + Ethnicity + age, data=deltdeath)
+summary(coxxie)
+DeltaPosTab<-summary(coxxie)$coefficients
+DeltaPosTab<-cbind(data.frame(covariate=row.names(DeltaPosTab)),DeltaPosTab)
+write_csv(DeltaPosTab,"./Results/DeltaPosTab.csv")
+
+ROC<-data.frame()
+# Let's do this!
+for(Yr in c(5,10,15)){
+  for(ageL in c(45,65)){
+    for(Gen in c("female","male")) {
+      for(Eth in c("black","white","other")){
+        for(dr in c("Sys. -ve, Dys. -ve",
+                    "Sys. -ve, Dys. +ve",
+                    "Sys. +ve, Dys. +ve",
+                    "Sys. +ve, Dys. -ve")){
+          
+          Troc<-calc_Year_roc(RL1,Year=Yr,ageBnds=c(ageL,ageL+20),Gender = Gen, Ethnicity = Ethn, ind=(deltdeath$DeltaRegion==dr))
+          ROC%<>%rbind(data.frame(Year=paste0(Yr,"-Year Mortality"),
+                                  DeltaRegion=dr,
+                                  Ethnicity=stringr::str_to_title(Eth),
+                                  Gender=stringr::str_to_title(Gen),
+                                  AgeRange=paste0("Age: ",ageL,"-",ageL+19),
+                                  TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+        }
+      }
+    }
+  }
+}
+ROC$Year%<>%factor()
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(Year=="10-Year Mortality")%>%
+  group_by(AgeRange, DeltaRegion)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+
+p<-ROC%>%filter(Year=="10-Year Mortality")%>%
+  ggplot(aes(group=DeltaRegion))+
+  geom_point(aes(FPR,TPR-FPR,colour=DeltaRegion)) +
+  geom_line(aes(FPR,TPR-FPR,colour=DeltaRegion)) +
+  geom_text(data=AUROC,aes(x,y,label=label,colour=DeltaRegion)) +
+  geom_abline(slope = 0,intercept = 0) + 
+  xlab("False Positive Rate") + ylab("True Positive Rate - False Positive Rate") +
+  facet_grid(rows = vars(DeltaRegion),cols = vars(AgeRange))+
+  ggtitle("Performance by Delta Group")+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_CAx-DeltaRegion_10yr.png"),p,path = "./Plots/Survival/ROCs")
+ggsave(paste0("ROC_CAx-DeltaRegion_10yr.png"),p,path = "./Rmarkdown_Plots",width = 7,height = 7)
+
+ROC<-data.frame()
+# Let's do this!
+for(Yr in c(5,10,15)){
+  for(ageL in c(45,65)){
+    for(poss in c(0,1)){
+      
+      Troc<-calc_Year_roc(RL1,Year=Yr,ageBnds=c(ageL,ageL+20),ind=(deltdeath$SysPos==poss))
+      ROC%<>%rbind(data.frame(Year=paste0(Yr,"-Year Mortality"),
+                              DeltaRegion=ifelse(poss==0,"Positive","Negative"),
+                              BPType="Systolic",
+                              AgeRange=paste0("Age: ",ageL,"-",ageL+19),
+                              TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+      
+      Troc<-calc_Year_roc(RL1,Year=Yr,ageBnds=c(ageL,ageL+20),ind=(deltdeath$DysPos==poss))
+      ROC%<>%rbind(data.frame(Year=paste0(Yr,"-Year Mortality"),
+                              DeltaRegion=ifelse(poss==0,"Positive","Negative"),
+                              BPType="Diastolic",
+                              AgeRange=paste0("Age: ",ageL,"-",ageL+19),
+                              TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+      
+    }
+  }
+}
+ROC$Year%<>%factor()
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(Year=="10-Year Mortality")%>%
+  group_by(AgeRange, Year, DeltaRegion, BPType)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+AUROC$y[AUROC$DeltaRegion=="Positive"]<-0.35
+
+
+p<-ROC%>%filter(Year=="10-Year Mortality")%>%
+  ggplot(aes(group=DeltaRegion))+
+  geom_point(aes(FPR,TPR-FPR,colour=DeltaRegion)) +
+  geom_line(aes(FPR,TPR-FPR,colour=DeltaRegion)) +
+  geom_text(data=AUROC,aes(x,y,label=label,colour=DeltaRegion)) +
+  geom_abline(slope = 0,intercept = 0) + 
+  xlab("False Positive Rate") + ylab("True Positive Rate - False Positive Rate") +
+  facet_grid(rows = vars(BPType),cols = vars(AgeRange))+
+  ggtitle("Performance by Delta Group")+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_CAx-DeltaRegion_BPType.png"),p,path = "./Plots/Survival/ROCs")
+ggsave(paste0("ROC_CAx-DeltaRegion_BPType.png"),p,path = "./Rmarkdown_Plots",width = 7,height = 7)
+
+AUROC<-data.frame()
+# Let's do this!
+for(Yr in 1:20){
+  for(ageL in c(45,65)){
+    for(Gen in c("female","male")) {
+      for(Eth in c("black","white","other")){
+        for(dr in c("Sys. -ve, Dys. -ve",
+                    "Sys. -ve, Dys. +ve",
+                    "Sys. +ve, Dys. +ve",
+                    "Sys. +ve, Dys. -ve")){
+          
+          Troc<-calc_Year_roc(RL1,Year=Yr,ageBnds=c(ageL,ageL+20),Gender = Gen, Ethnicity = Eth, ind=(deltdeath$DeltaRegion==dr))
+          AUROC%<>%rbind(data.frame(Year=Yr,
+                                  DeltaRegion=dr,
+                                  Ethnicity=stringr::str_to_title(Eth),
+                                  Gender=stringr::str_to_title(Gen),
+                                  AgeRange=paste0("Age: ",ageL,"-",ageL+19),
+                                  AUC=unique(Troc$auroc)))
+        }
+      }
+    }
+  }
+}
+
+# Add the AUC values to the plot as well
+AUROC%>%filter(AgeRange=="Age: 45-64")%>%
+  ggplot(aes(Year,AUC))+geom_point(aes(colour=DeltaRegion))+
+  facet_grid(rows = vars(Ethnicity),cols = vars(Gender))
+
+AUROC%>%filter(AgeRange=="Age: 65-84")%>%
+  ggplot(aes(Year,AUC))+geom_point(aes(colour=DeltaRegion))+
+  facet_grid(rows = vars(Ethnicity),cols = vars(Gender))
+
+AUROC$Demog<-paste0(AUROC$Ethnicity," ",AUROC$Gender)
+
+AUROC%>%filter(Year==10)%>%
+  ggplot(aes(DeltaRegion,AUC))+geom_point(aes(colour=Demog,shape=AgeRange))
+
+AUROC%>%group_by(DeltaRegion)%>%summarise(meanAUC=mean(AUC,na.rm=T),sdAUC=sd(AUC,na.rm=T))
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%% MODEL COVARIATES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+ROC<-data.frame()
+for (runnum in c("RL1","RL2","RL7","RL8","RL2oth","RL8oth")){
+  # Just in case we specifically want to look at the population that didn't die from CVD-Hrt 
+  if(grepl(pattern = "oth",runnum)) {
+    othDeaths<-T 
+    Runner<-unlist(str_split(runnum,"oth"))[1]
+  }else {
+    othDeaths<-F
+    Runner<-runnum
+  }
+  # Get the simulation object
+  RL<-get(Runner)
+  # Reason for death
+  if(RL$eventall){
+    if(othDeaths) eventer<-"Non-HA-CVD-CeVD" else  eventer<-"All Deaths"
+  } else eventer<-"HA-CVD-CeVD"
+  # Let's do this!
+  for(Yr in c(5,10,15)){
+    for(ageL in c(45,65)){
+      Troc<-calc_Year_roc(RL,Year=Yr,ageBnds=c(ageL,ageL+20), othDeaths=othDeaths)
+      ROC%<>%rbind(data.frame(RunNumber=runnum,Year=paste0(Yr,"-Year Mortality"),
+                              AgeRange=paste0("Age: ",ageL,"-",ageL+19),EventType=eventer,
+                              Covariates="Means/FRS & Deltas",
+                              TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+      for(covvies in c("sysmean","deltas")) {
+          if(covvies=="sysmean") namer<-"Systolic Mean" else namer<-"Delta Terms"
+          Troc<-calc_Year_roc(RL,Year=Yr,ageBnds=c(ageL,ageL+20),RedCovars=covvies, othDeaths=othDeaths)
+          ROC%<>%rbind(data.frame(RunNumber=runnum,Year=paste0(Yr,"-Year Mortality"),
+                                  AgeRange=paste0("Age: ",ageL,"-",ageL+19),EventType=eventer,
+                                  Covariates=namer,
+                                  TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+      }
+    }
+  }
+}
+ROC$Year<-factor(ROC$Year,levels = c("5-Year Mortality","10-Year Mortality","15-Year Mortality"))
+
+for (runnum in c("RL1","RL2","RL7","RL8","RL2oth","RL8oth")){
+  # Add the AUC values to the plot as well
+  AUROC<-ROC%>%filter(RunNumber==runnum)%>%
+    group_by(Year,AgeRange,Covariates)%>%summarise(AUC=max(AUC),.groups = "keep")
+  AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+  AUROC$x<-0.75
+  AUROC$y<-0.4
+  AUROC$y[AUROC$Covariates=="Systolic Mean"]<-0.35
+  AUROC$y[AUROC$Covariates=="Delta Terms"]<-0.3
+  
+  p<-ROC%>%filter(RunNumber==runnum)%>%
+    ggplot(aes(group=Covariates))+
+    geom_point(aes(FPR,TPR-FPR,colour=Covariates)) +
+    geom_line(aes(FPR,TPR-FPR,colour=Covariates)) +
+    geom_abline(slope = 0,intercept = 0) + ylim(0,0.4) +
+    geom_text(data=AUROC,aes(x,y,label=label,colour=Covariates)) +
+    xlab("False Positive Rate") + ylab("True Positive Rate - False Positive Rate") +
+    facet_grid(rows = vars(Year),cols = vars(AgeRange))+
+    ggtitle(paste0("Model Number - ",runnum))+
+    theme(plot.title = element_text(hjust = 0.5));p
+  ggsave(paste0("ROC_CAx-Covariates_EventType_",runnum,".png"),p,path = "./Plots/Survival/ROCs")
+  ggsave(paste0("ROC_CAx-Covariates_EventType_",runnum,".png"),p,path = "./Rmarkdown_Plots",width = 7,height = 7)
+  
+}
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%% EVENT TYPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+ROC<-data.frame()
+for (runnum in c("RL1","RL2","RL7","RL8","RL2oth","RL8oth")){
+  # Just in case we specifically want to look at the population that didn't die from CVD-Hrt 
+  if(grepl(pattern = "oth",runnum)) {
+    othDeaths<-T 
+    Runner<-unlist(str_split(runnum,"oth"))[1]
+  }else {
+    othDeaths<-F
+    Runner<-runnum
+  }
+  # Get the simulation object
+  RL<-get(Runner)
+  # Reason for death
+  if(RL$eventall){
+    if(othDeaths) eventer<-"Non-HA-CVD-CeVD" else  eventer<-"All Deaths"
+  } else eventer<-"HA-CVD-CeVD"
+  # Let's do this!
+  for(Yr in c(5,10,15)){
+    for(ageL in c(45,65)){
+          Troc<-calc_Year_roc(RL,Year=Yr,ageBnds=c(ageL,ageL+20), othDeaths=othDeaths)
+          ROC%<>%rbind(data.frame(RunNumber=runnum,Year=paste0(Yr,"-Year Mortality"),
+                                  AgeRange=paste0("Age: ",ageL,"-",ageL+19),EventType=eventer,
+                                  TPR=Troc$tpr,FPR=Troc$fpr,AUC=Troc$auroc))
+    }
+  }
+}
+ROC$Year<-factor(ROC$Year,levels = c("5-Year Mortality","10-Year Mortality","15-Year Mortality"))
+
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(RunNumber %in% c("RL1","RL2","RL2oth"))%>%
+  group_by(Year,AgeRange,EventType)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+AUROC$y[AUROC$EventType=="HA-CVD-CeVD"]<-0.35
+AUROC$y[AUROC$EventType=="Non-HA-CVD-CeVD"]<-0.3
+
+p<-ROC%>%filter(RunNumber %in% c("RL1","RL2","RL2oth"))%>%ggplot(aes(group=EventType))+
+    geom_point(aes(FPR,TPR-FPR,colour=EventType)) +
+    geom_line(aes(FPR,TPR-FPR,colour=EventType)) +
+    geom_abline(slope = 0,intercept = 0) + ylim(0,0.4) +
+    geom_text(data=AUROC,aes(x,y,label=label,colour=EventType)) +
+    xlab("False Positive Rate") + ylab("True Positive Rate - False Positive Rate") +
+    facet_grid(rows = vars(Year),cols = vars(AgeRange))+
+    ggtitle("Mean Blood Pressure Model")+
+    theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_MeanBPModel_CAx-EventType.png"),p,path = "./Plots/Survival/ROCs")
+ggsave(paste0("ROC_MeanBPModel_CAx-EventType.png"),p,path = "./Rmarkdown_Plots",width = 7,height = 7)
+
+
+# Add the AUC values to the plot as well
+AUROC<-ROC%>%filter(RunNumber %in% c("RL7","RL8","RL8oth"))%>%
+  group_by(Year,AgeRange,EventType)%>%summarise(AUC=max(AUC),.groups = "keep")
+AUROC$label<-paste0("AUC=",round(AUROC$AUC,2))
+AUROC$x<-0.75
+AUROC$y<-0.4
+AUROC$y[AUROC$EventType=="HA-CVD-CeVD"]<-0.35
+AUROC$y[AUROC$EventType=="Non-HA-CVD-CeVD"]<-0.3
+
+p<-ROC%>%filter(RunNumber %in% c("RL7","RL8","RL8oth"))%>%ggplot(aes(group=EventType))+
+    geom_point(aes(FPR,TPR-FPR,colour=EventType)) +
+    geom_line(aes(FPR,TPR-FPR,colour=EventType)) +
+    geom_abline(slope = 0,intercept = 0) + ylim(0,0.4) +
+    geom_text(data=AUROC,aes(x,y,label=label,colour=EventType)) +
+    xlab("False Positive Rate") + ylab("True Positive Rate - False Positive Rate") +
+    facet_grid(rows = vars(Year),cols = vars(AgeRange))+
+    ggtitle("Framingham Risk Score Model")+
+    theme(plot.title = element_text(hjust = 0.5));p
+ggsave(paste0("ROC_FRSModel_CAx-EventType.png"),p,path = "./Plots/Survival/ROCs")
+ggsave(paste0("ROC_FRSModel_CAx-EventType.png"),p,path = "./Rmarkdown_Plots/",width = 7,height = 7)
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
 survy<-GetSurvival(RL = RL,roc = F,Gender="female",usexhat=TRUE)
  
@@ -1068,12 +1698,12 @@ survFrame$Plot<-as.character(survFrame$Plot)
 
 p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=Plot,shape=Event),size=1)+
   scale_color_discrete(labels=TeX(unique(survFrame$Plot))) + geom_abline(slope = 1,intercept = 0) +
-  xlab("False Positive Ratio") + ylab("True Positive Ratio") +
+  xlab("False Positive Rate") + ylab("True Positive Rate") +
   facet_wrap(~RL,labeller = as_labeller(TeX,default = label_parsed),nrow = 2);p
 ggsave("ROCSurvival_RL.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
 
 p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=RL,shape=Event),size=1)+
-  xlab("False Positive Ratio") + ylab("True Positive Ratio") + geom_abline(slope = 1,intercept = 0) +
+  xlab("False Positive Rate") + ylab("True Positive Rate") + geom_abline(slope = 1,intercept = 0) +
   # ggtitle(label = c("Delta Terms","All","FRS and Delta","FRS Only","Gompertz Only","Mean and Delta","Systolic Mean Only")) +
   facet_wrap(~Plot,nrow = 2);p
 ggsave("ROCSurvival_Plot.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
@@ -1095,7 +1725,7 @@ AUROC$y[AUROC$FRS]<-0.3
 
 p<-survFrame%>%filter(RL%in%c("RL1","RL2","RL5","RL6"))%>%ggplot()+geom_line(aes(fpr,tpr,colour=FRS,linetype=FRS),size=1)+
   geom_abline(slope = 1,intercept = 0) + geom_text(data=AUROC,aes(x,y,label=label,colour=FRS))+
-  xlab("False Positive Ratio") + ylab("True Positive Ratio") +
+  xlab("False Positive Rate") + ylab("True Positive Rate") +
   facet_wrap(Event~Model,nrow = 2);p
 ggsave("ROCSurvival_Model.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
 
@@ -1204,6 +1834,22 @@ ggsave("LexisDelta.png", plot=p,path = paste0(directory,'Plots/Survival'),width 
 p<-plot_discrete_cbar(unique((hist(output$Delta,breaks = 10,plot = F))$breaks), 
                       spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
 ggsave("LexisDelta_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # BEST SURVIVAL PREDICTION
 # survy<-GetSurvival(RL5)
