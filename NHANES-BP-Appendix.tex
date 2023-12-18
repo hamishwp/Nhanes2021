@@ -421,7 +421,7 @@ As the irregularities are not very large, we will proceed with the analysis with
 \hypertarget{sec:BPrange}{%
 \subsubsection{Missing or implausible measurements}\label{sec:BPrange}}
 
-Some of the reported measures were extremely implausible, particularly for diastolic BP. NAsubjects had at least one diastolic BP measure recorded as 0, in addition to the 3916 subjects who were missing at least one measurement. We excluded all of these subjects, and indeed any subject who had at least one measurement recorded outside the ranges (40,140) for diastolic and (60,250) for systolic BP, as recommended by the CDC.
+Some of the reported measures were extremely implausible, particularly for diastolic BP. NAsubjects had at least one diastolic BP measure recorded as 0, in addition to the 3916 subjects who were missing at least one measurement. We excluded all of these subjects, and indeed any subject who had at least one measurement recorded outside the ranges (40,140) for diastolic and (60,250) for systolic BP, as recommended by the CDC (Littman et al. 2012).
 There was just one subject with systolic BP measures that were too low, but NA subjects with low diastolic BP (in addition to those with measures recorded as 0).
 One subject was excluded for diastolic BP 156, and three were excluded for systolic BP that was too high, with the maximum being 264.
 
@@ -595,13 +595,13 @@ The distribution of the blood pressure parameters in the population are derived 
 }
 \end{figure}
 
-\hypertarget{methodology}{%
-\subsection{Methodology}\label{methodology}}
+\hypertarget{computational-methodology}{%
+\subsection{Computational methodology}\label{computational-methodology}}
 
 The methodology for this research can be split into three main sections: 1) calculating the empirical Bayes' parameters, 2) parameterizing the model using Hamiltonian Monte Carlo (HMC) and 3) re-centering the variables in the linear predictor equation. By applying empirical Bayes', Maximum Likelihood Estimates (MLEs) of some of the parameter distributions are provided. Note that the parameters estimated here are only the prior distribution of the global (not individual) blood pressure means and the variances, for both systolic and diastolic and home and clinic measurements. These estimates are then provided as prior distributions for the Stan MCMC simulations using HMC, where estimates can be made for all the parameter distributions of the model, given the specific centering applied. Finally, section (3) recalculates the centering values based on the previous MCMC iteration, and sets of the next iteration, while simultaneously checking for convergence in both the MCMC simulations and the centering values.
 
 \hypertarget{empirical-bayes-parameters}{%
-\subsubsection{Empirical Bayes Parameters}\label{empirical-bayes-parameters}}
+\subsection{Empirical Bayes Parameters}\label{empirical-bayes-parameters}}
 
 First, we extract the intervals for the digits in the blood pressure measurement recordings. Suppose the fractions of digits 0,2,4,6,8 are \(b_0,b_2,b_4,b_6,b_8\).
 Letting \(B_0=0\) and \(B_k=10\sum_{j=0}^{k-1}b_{2j}\) for \(k=1,\dots,5\),
@@ -719,7 +719,7 @@ so the standard errors for \(\hat\sigma_M^2\) and \(\hat\sigma_\Delta^2\) are ap
 
 \begin{table}[!h]
 
-\caption{\label{tab:testparameters}Results of estimating parameters from simulated data. 
+\caption{\label{tab:testparameters}Results of estimating parameters from simulated data from the whole population. 
     First column on top is the average parameter estimate from the simulations, second is the true parameter from which the simulations were made, third is the relative error.
     On bottom are the standard errors for the parameters: True is the theoretically computed standard error, SimAverage is the SD of the simulated parameter estimates, and RelError is the relative error.}
 \centering
@@ -731,24 +731,24 @@ so the standard errors for \(\hat\sigma_M^2\) and \(\hat\sigma_\Delta^2\) are ap
 \midrule
 \addlinespace[0.3em]
 \multicolumn{7}{l}{\textbf{Parameter estimates}}\\
-\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{123.3} & \cellcolor{gray!6}{123.3} & \cellcolor{gray!6}{-0.000751} & \cellcolor{gray!6}{72.32} & \cellcolor{gray!6}{72.31} & \cellcolor{gray!6}{0.0001158}\\
-\hspace{1em}$m_\Delta$ & 1.351 & 1.349 & 0.001757 & 1.071 & 1.1 & -0.02555\\
-\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{375.3} & \cellcolor{gray!6}{376.8} & \cellcolor{gray!6}{-0.003896} & \cellcolor{gray!6}{104.4} & \cellcolor{gray!6}{104} & \cellcolor{gray!6}{0.00422}\\
-\hspace{1em}$\sigma^2_\Delta$ & 46.38 & 46.42 & -0.0009418 & 21.86 & 21.9 & -0.001618\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{2.164} & \cellcolor{gray!6}{2.158} & \cellcolor{gray!6}{0.00286} & \cellcolor{gray!6}{2.352} & \cellcolor{gray!6}{2.322} & \cellcolor{gray!6}{0.0129}\\
-\hspace{1em}$\theta_H$ & 0.1505 & 0.1496 & 0.006078 & 0.194 & 0.1945 & -0.002305\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{2.595} & \cellcolor{gray!6}{2.569} & \cellcolor{gray!6}{0.0101} & \cellcolor{gray!6}{2.725} & \cellcolor{gray!6}{2.756} & \cellcolor{gray!6}{-0.01128}\\
-\hspace{1em}$\theta_C$ & 0.07497 & 0.07515 & -0.002329 & 0.1096 & 0.1093 & 0.002625\\
+\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{123.3} & \cellcolor{gray!6}{123.3} & \cellcolor{gray!6}{2.24e-05} & \cellcolor{gray!6}{72.33} & \cellcolor{gray!6}{72.31} & \cellcolor{gray!6}{0.0002955}\\
+\hspace{1em}$m_\Delta$ & 1.332 & 1.349 & -0.01244 & 1.114 & 1.1 & 0.01326\\
+\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{376} & \cellcolor{gray!6}{376.8} & \cellcolor{gray!6}{-0.002022} & \cellcolor{gray!6}{104.1} & \cellcolor{gray!6}{104} & \cellcolor{gray!6}{0.001289}\\
+\hspace{1em}$\sigma^2_\Delta$ & 46.36 & 46.42 & -0.001326 & 21.92 & 21.9 & 0.000857\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{2.146} & \cellcolor{gray!6}{2.158} & \cellcolor{gray!6}{-0.005432} & \cellcolor{gray!6}{2.365} & \cellcolor{gray!6}{2.322} & \cellcolor{gray!6}{0.01864}\\
+\hspace{1em}$\theta_H$ & 0.1501 & 0.1496 & 0.003854 & 0.1933 & 0.1945 & -0.005856\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{2.576} & \cellcolor{gray!6}{2.569} & \cellcolor{gray!6}{0.002662} & \cellcolor{gray!6}{2.727} & \cellcolor{gray!6}{2.756} & \cellcolor{gray!6}{-0.01057}\\
+\hspace{1em}$\theta_C$ & 0.07507 & 0.07515 & -0.001023 & 0.1097 & 0.1093 & 0.003751\\
 \addlinespace[0.3em]
 \multicolumn{7}{l}{\textbf{Parameter SE estimates}}\\
-\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{0.1606} & \cellcolor{gray!6}{0.1697} & \cellcolor{gray!6}{-0.05365} & \cellcolor{gray!6}{0.08519} & \cellcolor{gray!6}{0.1054} & \cellcolor{gray!6}{-0.1915}\\
-\hspace{1em}$m_\Delta$ & 0.05795 & 0.05891 & -0.01625 & 0.04031 & 0.04129 & -0.02371\\
-\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{4.386} & \cellcolor{gray!6}{3.829} & \cellcolor{gray!6}{0.1453} & \cellcolor{gray!6}{1.222} & \cellcolor{gray!6}{1.322} & \cellcolor{gray!6}{-0.0756}\\
-\hspace{1em}$\sigma^2_\Delta$ & 0.5511 & 0.4685 & 0.1763 & 0.2645 & 0.1426 & 0.8542\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{0.05635} & \cellcolor{gray!6}{0.06761} & \cellcolor{gray!6}{-0.1666} & \cellcolor{gray!6}{0.06522} & \cellcolor{gray!6}{0.07412} & \cellcolor{gray!6}{-0.1201}\\
-\hspace{1em}$\theta_H$ & 0.00212 & 0.00261 & -0.1879 & 0.002708 & 0.001919 & 0.4109\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{0.07702} & \cellcolor{gray!6}{0.08305} & \cellcolor{gray!6}{-0.07266} & \cellcolor{gray!6}{0.08383} & \cellcolor{gray!6}{0.08793} & \cellcolor{gray!6}{-0.04669}\\
-\hspace{1em}$\theta_C$ & 0.00103 & 0.00117 & -0.1197 & 0.001496 & 0.001578 & -0.05155\\
+\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{0.1608} & \cellcolor{gray!6}{0.1425} & \cellcolor{gray!6}{0.1282} & \cellcolor{gray!6}{0.08507} & \cellcolor{gray!6}{0.1073} & \cellcolor{gray!6}{-0.2073}\\
+\hspace{1em}$m_\Delta$ & 0.05795 & 0.06752 & -0.1417 & 0.04036 & 0.03555 & 0.1353\\
+\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{4.394} & \cellcolor{gray!6}{4.34} & \cellcolor{gray!6}{0.0125} & \cellcolor{gray!6}{1.218} & \cellcolor{gray!6}{1.511} & \cellcolor{gray!6}{-0.1937}\\
+\hspace{1em}$\sigma^2_\Delta$ & 0.551 & 0.6702 & -0.1778 & 0.2651 & 0.2495 & 0.06249\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{0.05593} & \cellcolor{gray!6}{0.0723} & \cellcolor{gray!6}{-0.2264} & \cellcolor{gray!6}{0.06586} & \cellcolor{gray!6}{0.0524} & \cellcolor{gray!6}{0.257}\\
+\hspace{1em}$\theta_H$ & 0.002128 & 0.002877 & -0.2605 & 0.002697 & 0.001951 & 0.3823\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{0.07608} & \cellcolor{gray!6}{0.04467} & \cellcolor{gray!6}{0.7034} & \cellcolor{gray!6}{0.08412} & \cellcolor{gray!6}{0.07422} & \cellcolor{gray!6}{0.1334}\\
+\hspace{1em}$\theta_C$ & 0.001033 & 0.001119 & -0.07645 & 0.0015 & 0.001246 & 0.2041\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -764,6 +764,9 @@ We can estimate the first term by averaging the estimated variance (from Fisher 
 We estimate the second term by the variance of the \(\alpha\) estimates over imputations. Note that this is not quite right, since what we really
 want the variance of is \(\alpha_0(I)\) --- effectively, the ``true'' parameter consistent with the imputation. This is a plug-in estimate,
 as is the Fisher Information estimate of the variance.
+
+\hypertarget{estimates-for-whole-population}{%
+\subsubsection{Estimates for whole population}\label{estimates-for-whole-population}}
 
 The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled ``True'' in Table \ref{tab:testparameters}.
 
@@ -808,7 +811,7 @@ Note that the errors for the estimates are consistent with the stated standard e
 \end{figure}
 
 \hypertarget{hamiltonian-monte-carlo-hmc}{%
-\subsubsection{Hamiltonian Monte Carlo (HMC)}\label{hamiltonian-monte-carlo-hmc}}
+\subsection{Hamiltonian Monte Carlo (HMC)}\label{hamiltonian-monte-carlo-hmc}}
 
 The model, as described in the article, is a Bayesian hierarchical model. In order to parameterize such an intricate model, traditional Maximum Likelihood Estimation methods can no longer be applied. Therefore, we apply the Hamiltonian Monte Carlo (HMC) method. HMC is a form of Markov Chain Monte Carlo methods, which samples potential parameter space values of the model, then calculates directly the likelihood function based on that choice of parameters. The derivative of the likelihood function, \(\phi\), guides parameter space exploration in \(\theta\) towards the modal value of the joint posterior distribution. This method is ideal for complicated, non-Gaussian distribution forms. The three steps of HMC are:
 
@@ -837,90 +840,12 @@ The tuning parameters \(\epsilon\) and L should be chosen according to a desired
 
 During the MCMC simulations, the centering values play a non-negligible role in shaping the model parameterization. If the centering parameters are held constant throughout all of the MCMC simulations, then the equation \(\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0\) is no longer guaranteed. However, automatically defining the centering values based on the model parameters sampled at the current MCMC iteration is not advisable as it can lead to poor parameter convergence. This is because it modifies the likelihood function at every MCMC iteration. Therefore, we iterate the MCMC algorithm multiple times. At every iteration, we recalculate the centering parameters to satisfy the requirement that the average of the linear predictor term going to zero, based on the posterior distributions of the previous MCMC simulation. This iteration is carried out until the centering parameters converge. Convergence is defined by optimising on two factors. The first is that the sum of the linear predictor term across all MCMC samples needs to tend to negligible values (we define this as the average difference being less than \(10^{-7}\)), see figure \ref{fig:linpred_conv}. The second convergence criteria is that the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations needs to also decrease towards zero, see figure \ref{fig:linpred_conv} (top). For the second criteria, we stopped the simulations when either the difference in the RMSE stopped decreasing (below a threshold of \(1\%\)), or the RMSE value was less than 20, see figure \ref{fig:linpred_conv} (bottom). Illustration of the convergence is shown in figure \ref{fig:linpred_conv}.
 
+\newpage
+
 \hypertarget{code-description}{%
 \subsection{Code Description}\label{code-description}}
 
-The code can be found at \url{https://github.com/hamishwp/NHANES_HPOX}. The numerical code has been built in multiple stages. Below, we explain the principal files required to replicate the entire analysis presented in the article. There are 5 main groups for the code:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  Data cleaning scripts
-\item
-  Main file
-\item
-  Stan files for HMC
-\item
-  Centering recalculation scripts
-\item
-  Post-processing analysis
-\end{enumerate}
-
-We provide a brief description of each of these below.
-
-\hypertarget{data-cleaning}{%
-\subsubsection{Data Cleaning}\label{data-cleaning}}
-
-This is found in the file \texttt{Dataclean2021.R}. Provided the raw NHANES dataset (in CSV format), it extracts all the data required for the simulations, and stores it in a structure that can be directly read in to the main file (\texttt{MCMC\_DiasSyst\_v3.R}) of this research.
-
-\hypertarget{main}{%
-\subsubsection{Main}\label{main}}
-
-The main file is \texttt{MCMC\_DiasSyst\_v3.R}. It reads in the cleaned NHANES data, the specific choice of simulation parameters (for example, whether to use the FRS number or mean systolic \& diastolic blood pressure), and runs the correct RStan scripts for that specific selection of simulation parameters. This script is intended for use on computing clusters.
-
-\hypertarget{stan}{%
-\subsubsection{Stan}\label{stan}}
-
-There are eight Stan files:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \texttt{mystanmodel\_DS\_sigma\_v2\_autopred.stan}
-\item
-  \texttt{mystanmodel\_DS\_tau\_v2\_autopred.stan}
-\item
-  \texttt{mystanmodelFRS\_DS\_sigma\_v2\_autopred.stan}
-\item
-  \texttt{mystanmodelFRS\_DS\_tau\_v2\_autopred.stan}
-\item
-  \texttt{mystanmodel\_DS\_sigma\_v2.stan}
-\item
-  \texttt{mystanmodel\_DS\_tau\_v2.stan}
-\item
-  \texttt{mystanmodelFRS\_DS\_sigma\_v2.stan}
-\item
-  \texttt{mystanmodelFRS\_DS\_tau\_v2.stan}
-\end{enumerate}
-
-These correspond to the following alternative simulation parameters:
-
-\begin{itemize}
-\tightlist
-\item
-  For the blood-pressure variability, choosing to use the standard-deviation \(\sigma\) or the precision \(\tau=1/\sigma\){]}\}
-\item
-  Using the FRS score or the mean diastolic and systolic blood pressure as a covariate in the analysis
-\item
-  Whether the centering parameters, \(\hat{X}\), in the linear predictor term are automatically calculated to satisfy \(\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0\) for every MCMC iteration, or whether the centering is held constant across all iterations
-\end{itemize}
-
-\hypertarget{centering}{%
-\subsubsection{Centering}\label{centering}}
-
-The centering of the linear predictors, which is required as input to every MCMC simulation iteration, is recalculated in the files \texttt{AutoPred\_Recalc.R} and \texttt{ManPred\_Recalc.R}. This is then provided to the Main script, \texttt{MCMC\_DiasSyst\_v3.R}, which provides these centering values to the Stan code for the MCMC simulations.
-
-\hypertarget{empirical-bayes-estimation}{%
-\subsubsection{Empirical Bayes Estimation}\label{empirical-bayes-estimation}}
-
-The file \texttt{gamma\_fits.Rmd} contains all the necessary routines in order to replicate the calculation of the empirical Bayes' priors for the hyperparameters of the model.
-
-\hypertarget{post-processing}{%
-\subsubsection{Post-processing}\label{post-processing}}
-
-The post-processing script is called \texttt{PostProcessing.R}, which heavily relies on the \texttt{Functions.R} script which contains all the necessary functions to analyse the data. The post-processing script generates many useful plots of the MCMC posterior distribution for the user, including Bayes' factors, violin plots of the normalised beta and gompertz posteriors, and more.
+The code will be made available, but detailed references have been removed to preserve anonymity for the review process.
 
 \newpage
 
@@ -1001,7 +926,7 @@ We remind the reader of the list of numbers of the different models explored in 
 }
 \end{figure}
 
-With respect to the time-independent Gompertz parameter, described using \(B\) in this article, the results between all models that simulate CVD mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure \ref{fig:gompB}. The consistency appears across sex assigned at birth and race.
+With respect to the time-independent Gompertz parameter, denoted \(B\) in this article, the results between all models that simulate CVD mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure \ref{fig:gompB}. The consistency appears across sex assigned at birth and race.
 
 \begin{figure}
 \hypertarget{fig:gompB}{%
@@ -1025,21 +950,19 @@ Figure \ref{fig:gompt} reflects the same level of consistency for the Gompertz p
 
 \caption{\label{tab:Mean-SD}Summary of the posterior estimate of the blood pressure distribution.}
 \centering
-\begin{tabular}[t]{lrrrr}
+\begin{tabular}[t]{lllll}
 \toprule
 \multicolumn{1}{c}{ } & \multicolumn{2}{c}{Systolic} & \multicolumn{2}{c}{Diastolic} \\
 \cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5}
-Covariate & Mean & SD & Mean & SD\\
-\midrule
 \addlinespace[0.3em]
 \multicolumn{5}{l}{\textbf{Full population}}\\
-\cellcolor{gray!6}{\hspace{1em}Overall Mean} & \cellcolor{gray!6}{125.40} & \cellcolor{gray!6}{19.50} & \cellcolor{gray!6}{74.30} & \cellcolor{gray!6}{10.30}\\
+\cellcolor{gray!6}{\hspace{1em}Overall Mean} & \cellcolor{gray!6}{125.4} & \cellcolor{gray!6}{19.5} & \cellcolor{gray!6}{74.3} & \cellcolor{gray!6}{10.3}\\
 \hspace{1em}$|\Delta|=|\mathrm{Home}-\mathrm{Clinic}|/2$ & 5.24 & 4.83 & 3.90 & 3.14\\
 \cellcolor{gray!6}{\hspace{1em}Home Stand Dev} & \cellcolor{gray!6}{2.74} & \cellcolor{gray!6}{2.05} & \cellcolor{gray!6}{2.34} & \cellcolor{gray!6}{1.75}\\
 \hspace{1em}Clinic Stand Dev & 3.78 & 2.61 & 3.08 & 2.08\\
 \addlinespace[0.3em]
 \multicolumn{5}{l}{\textbf{FRS population}}\\
-\cellcolor{gray!6}{\hspace{1em}Overall Mean} & \cellcolor{gray!6}{125.90} & \cellcolor{gray!6}{18.30} & \cellcolor{gray!6}{76.40} & \cellcolor{gray!6}{10.00}\\
+\cellcolor{gray!6}{\hspace{1em}Overall Mean} & \cellcolor{gray!6}{125.9} & \cellcolor{gray!6}{18.3} & \cellcolor{gray!6}{76.4} & \cellcolor{gray!6}{10.0}\\
 \hspace{1em}$|\Delta|=|\mathrm{Home}-\mathrm{Clinic}|/2$ & 5.23 & 4.71 & 3.84 & 3.10\\
 \cellcolor{gray!6}{\hspace{1em}Home Stand Dev} & \cellcolor{gray!6}{2.78} & \cellcolor{gray!6}{2.06} & \cellcolor{gray!6}{2.28} & \cellcolor{gray!6}{1.71}\\
 \hspace{1em}Clinic Stand Dev & 3.78 & 2.52 & 2.92 & 1.97\\
@@ -1449,6 +1372,9 @@ Finally, we wish to confirm that the perfomance of the model does not depend on 
 \begin{CSLReferences}{1}{0}
 \leavevmode\vadjust pre{\hypertarget{ref-NUTS}{}}%
 Hoffman, Matthew D, Andrew Gelman, et al. 2014. {``The No-u-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.''} \emph{J. Mach. Learn. Res.} 15 (1): 1593--623.
+
+\leavevmode\vadjust pre{\hypertarget{ref-CDCBP}{}}%
+Littman, Alyson J., Edward J. Boyko, Mary B. McDonell, and Stephan D. Fihn. 2012. {``Evaluation of a Weight Management Program for Veterans.''} \emph{Preventing Chronic Disease} 9. \url{https://doi.org/10.5888/pcd9.110267}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-ostchega2003national}{}}%
 Ostchega, Yechiam, Ronald J Prineas, Ryne Paulose-Ram, Carlene M Grim, Grace Willard, and Doreen Collins. 2003. {``National Health and Nutrition Examination Survey 1999-2000: Effect of Observer Training and Protocol Standardization on Reducing Blood Pressure Measurement Error.''} \emph{Journal of Clinical Epidemiology} 56 (8): 768--74.

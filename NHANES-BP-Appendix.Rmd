@@ -743,7 +743,7 @@ As the irregularities are not very large, we will proceed with the analysis with
 
 ### Missing or implausible measurements {#sec:BPrange}
 
-Some of the reported measures were extremely implausible, particularly for diastolic BP. `r sum(dias0)`subjects had at least one diastolic BP measure recorded as 0, in addition to the `r sum(!nhanesna)` subjects who were missing at least one measurement. We excluded all of these subjects, and indeed any subject who had at least one measurement recorded outside the ranges (40,140) for diastolic and (60,250) for systolic BP, as recommended by the CDC. 
+Some of the reported measures were extremely implausible, particularly for diastolic BP. `r sum(dias0)`subjects had at least one diastolic BP measure recorded as 0, in addition to the `r sum(!nhanesna)` subjects who were missing at least one measurement. We excluded all of these subjects, and indeed any subject who had at least one measurement recorded outside the ranges (40,140) for diastolic and (60,250) for systolic BP, as recommended by the CDC [@CDCBP]. 
 There was just one subject with systolic BP measures that were too low, but `r sum(nhanesdiasrange)` subjects with low diastolic BP (in addition to those with measures recorded as 0). 
 One subject was excluded for diastolic BP 156, and three were excluded for systolic BP that was too high, with the maximum being 264. 
 
@@ -949,11 +949,11 @@ format="latex", escape = F,booktabs = T, caption = "Parameters for distribution 
 -->
 
 
-## Methodology
+## Computational methodology
 
 The methodology for this research can be split into three main sections: 1) calculating the empirical Bayes' parameters, 2) parameterizing the model using Hamiltonian Monte Carlo (HMC) and 3) re-centering the variables in the linear predictor equation. By applying empirical Bayes', Maximum Likelihood Estimates (MLEs) of some of the parameter distributions are provided. Note that the parameters estimated here are only the prior distribution of the global (not individual) blood pressure means and the variances, for both systolic and diastolic and home and clinic measurements. These estimates are then provided as prior distributions for the Stan MCMC simulations using HMC, where estimates can be made for all the parameter distributions of the model, given the specific centering applied. Finally, section (3) recalculates the centering values based on the previous MCMC iteration, and sets of the next iteration, while simultaneously checking for convergence in both the MCMC simulations and the centering values.
 
-### Empirical Bayes Parameters
+## Empirical Bayes Parameters
 
 First, we extract the intervals for the digits in the blood pressure measurement recordings. Suppose the fractions of digits 0,2,4,6,8 are $b_0,b_2,b_4,b_6,b_8$.
 Letting $B_0=0$ and $B_k=10\sum_{j=0}^{k-1}b_{2j}$ for $k=1,\dots,5$,
@@ -1326,7 +1326,7 @@ combined_data <- cbind(output_tables[[1]], output_tables[[2]])
 # Create a single kable for the combined data
 kable_combined <- kable(combined_data, format = "latex", escape = FALSE, 
                         booktabs = TRUE, linesep = rep(c(rep("",4),"\\addlinespace"),4), 
-                        caption = "Results of estimating parameters from simulated data. 
+                        caption = "Results of estimating parameters from simulated data from the whole population. 
     First column on top is the average parameter estimate from the simulations, second is the true parameter from which the simulations were made, third is the relative error.
     On bottom are the standard errors for the parameters: True is the theoretically computed standard error, SimAverage is the SD of the simulated parameter estimates, and RelError is the relative error.")
 
@@ -1405,6 +1405,7 @@ We estimate the second term by the variance of the $\alpha$ estimates over imput
 want the variance of is $\alpha_0(I)$ --- effectively, the "true" parameter consistent with the imputation. This is a plug-in estimate,
 as is the Fisher Information estimate of the variance.  
 
+### Estimates for whole population
 The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled "True" in Table \ref{tab:testparameters}.
 
 <!--
@@ -1526,31 +1527,9 @@ p <- ggplot(plot_data, aes(x = s2k)) +
         axis.title = element_text(size = 12),
         legend.position = "none") 
 
-suppressWarnings(print(p))
+print(p)
 
-# G <- lapply(1:2,function(w) vector(mode='list', length=2L) %>% setNames(BP_place_names)) %>% setNames(BP_type_names)
-# for(which_bp in BP_type_names){
-# #    s2k <- apply(bp_sim[[which_bp]])
-#     for(i in seq_len(oversample)){
-#       allBP_imp <- lapply(allBP, function(BPtype) lapply(BPtype,function(BPplace) imputeBP(BPplace)))
-#     for ( where_bp in BP_place_names){
-# 
-#       s2k <- apply(allBP_imp[[which_bp]][[where_bp]]$BP,1,var) /
-#                         params$Gamma[[which_bp]]['beta',where_bp]
-#       s2k_sim <- apply(bp_sim[[i]][[which_bp]][[where_bp]]$BP,1,var) /
-#                          params$Gamma[[which_bp]]['beta',where_bp]
-#       all_s2k %<>% c(sort(s2k))
-#       all_s2k_sim %<>% c(sort(s2k_sim)[seq(from = ceiling(oversample/2), by = oversample, length.out = N)])
-#       all_SD %<>% c(rep(which_bp,length(s2k)))
-#       all_HC %<>% c(rep(where_bp,length(s2k)))
-# }
-#     G[[which_bp]][[where_bp]] <- ggplot(tibble(Variance = s2k[s2k<3]), aes(x=Variance)) +
-#       geom_histogram(alpha=0.2, position="identity", aes(y = ..density..), binwidth = .04) +
-#       labs(title =  paste(which_bp,where_bp, ': Histogram of Variances/beta' )) +
-#       stat_function(fun = function(xx) dbetaprime(xx,A =1,
-#                           B = params$Gamma[[which_bp]]['alpha',where_bp]))
-#   }
-# }
+
 
 
 
@@ -1571,10 +1550,6 @@ s2k.plot <- ggplot(plot_data%>% group_by(Type, Place) %>% filter(pmax(s2k,s2k_si
 
 print(s2k.plot)
 
-
-s2k.plot <- ggplot(plot_data%>% filter(Type=='Systolic' & Place=='Home') %>% filter(pmax(s2k,s2k_sim)<plot_limit), aes(x=s2k, y=s2k_sim,color=interaction(Type,Place), group=interaction(Type,Place))) +
-  geom_point() + geom_line() +  geom_abline(intercept=0,slope = 1, color = 'black' ) + labs( colour = 'BP type', title = '') +
-  scale_color_brewer(palette="Dark2") + xlim(0,10) + ylim(0,10)+ labs(x='Observed variances', y='Simulated variances')
 # # Function to calculate quantiles
 # calculate_qq <- function(df) {
 #   n <- min(length(df$s2k), length(df$s2k_sim))
@@ -1664,9 +1639,104 @@ outEmpP%>%filter(BPtype=="Diastolic")%>%as.data.frame()%>%
 
 
 ```
+
+### Estimates for the FRS population
+The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled "True" in Table \ref{tab:testparameters}.
+
+
+```{r VarianceTestFRS,echo=FALSE,message=FALSE, warning=FALSE}
+# Compare to beta-prime distribution
+params <- convert_param1(BP_parameters)
+dbetaprime <- function(x, A=1, B= BP_parameters$Systolic$Gamma$Clinic$alpha)
+  {
+    x^(A-1)*(1+x)^(-A-B)/ beta(A,B)
+}
+
+all_s2k <- NULL
+all_s2k_sim <- NULL
+all_s2k_sim_noimp <- NULL
+all_SD <-NULL
+all_HC <- NULL
+
+oversample <- 10
+
+bp_sim <- BP_simulation2(params$Normal,params$Gamma,
+                      num_indiv= N*2*oversample, num_sim = 1)[[1]] # Get oversample sets of simulations; 
+
+# Compute individual variances for imputed data, and normalise based on appropriate beta prime distribution
+s2k <- lapply(BP_type_names,function(BPtype) lapply(BP_place_names,function(BPplace) sort(apply(allBP_imp[[BPtype]][[BPplace]]$BP,1,var) /
+                        params$Gamma[[BPtype]]['beta',BPplace])) %>% setNames(BP_place_names) ) %>% setNames(BP_type_names)
+
+# Do the same for data simulated from the fitted model
+#   We have oversample times as many simulations as we need, so we can take 1/oversample of them
+s2k_sim <- mclapply(BP_type_names,function(BPtype) mclapply(BP_place_names,function(BPplace) sort(apply(bp_sim[[BPtype]][[BPplace]]$BP,1,var) /
+params$Gamma[[BPtype]]['beta',BPplace])[seq(from=oversample,by = 2*oversample,length.out=N)]) %>% setNames(BP_place_names) ) %>% setNames(BP_type_names)
+
+# Convert lists into a data frame suitable for plotting
+plot_data <- expand.grid( s2k = seq(N),Type=BP_type_names, Place = BP_place_names) # Empty data frame of appropriate structure
+plot_data$s2k <- unlist(lapply(s2k, unlist))
+plot_data$s2k_sim <- unlist(lapply(s2k_sim, unlist))
+plot_data %<>% mutate(dbetaprime_val = dbetaprime(s2k, A=1, B = rep(c(sapply(params$Gamma,function(x) x['alpha',])), rep(N,4)) ))
+```
+
+Finally, we check the variance distribution empirically, to check whether the continuous distribution we have fit for individual variances describes the true distribution of variances in the population reasonably well.
+The first thing we do is to compare the empirical
+variances (with fractional parts imputed according to the observed proportions for the unequal digit preference, as discussed in section \ref{sec:lastdigit}) to the theoretical beta-prime distribution.
+To match the standard distribution, the variances are normalized by being divided by the factor $\alpha/\theta$.
+We show histograms of these "unrounded" empirical variances and the theoretical beta-prime distribution in Figure \ref{fig:histograms}.
+Note that the distribution has a very long tail, and we have truncated about 2\% of the data to make the figures more readable.
+
+In Figure \ref{fig:QQplots} we show essentially the same data in the form of Q--Q plots.
+Here we have extended the plot far out into the tails of the distribution, including values in the range $[0,10]$, covering around `r round(100*mean(plot_data$s2k<10),1)`\% of the data.
+We generate data from the inferred model that mimic the true data, with three systolic and three diastolic BP measures per person.
+As before, we impute the fractional parts to the real data.
+This gives us a set of true variances and a set of simulated variances, which we hope will have approximately the same distribution.
+We see some deviation here, but it is slight, and quite deep into the tails.
+Furthermore, the deviation is in the direction of the simulated data having slightly fatter tails than the true data, which is the direction we would wish to err in for the sake of making conservative inferences.
+
+The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled "True" in Table \ref{tab:testparameters}.
+These parameters (and SEs) are accompanied by the results of `r num_reps` estimates of data simulated from the model with the parameters inferred from the data, and then fitted by the same procedure.
+Note that the errors for the estimates are consistent with the stated standard errors ($\pm \sqrt{\operatorname{SE}}$), and the relative errors for the SE are small, confirming that the estimation procedure is reliable.
+
+\begin{landscape}
+```{r histogramsFRS,echo=FALSE,message=FALSE, warning=FALSE, fig.align='center',fig.show='hold',fig.width=12,fig.height=8, fig.cap='Comparison of the distribution of empirical variances, normalized by dividing by $\\beta=\\alpha/\\theta$, to the fitted beta-prime distribution.'}
+p <- ggplot(plot_data, aes(x = s2k)) +
+  geom_histogram(aes(y = ..density..), binwidth = 0.04, fill = "grey", color = NA, alpha=.6)+
+  geom_line(aes(y = dbetaprime_val), color = "blue", size = 1) + xlim(0,4)+
+  facet_grid(Type ~ Place) + labs(x = "Normalized Variance", y = "Density") +
+  theme_bw() +
+  theme(strip.background = element_blank(),
+        strip.text = element_text(face = "bold", size = 12),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12),
+        legend.position = "none") 
+
+print(p)
+
+
+
+
+
+```
+
+\end{landscape}
+
+
+```{r QQplotsFRS,echo=FALSE,message=FALSE, warning=FALSE, fig.align='center', fig.cap="Q--Q plots of the variances of the observed data with imputed fractional parts (x-axis) against the variances of the simulated data (y-axis)."}
+# Add the simulated data to the plot_data data frame
+
+plot_limit <- 10
+# Note: s2k and s2k_sim are already sorted
+
+s2k.plot <- ggplot(plot_data%>% group_by(Type, Place) %>% filter(pmax(s2k,s2k_sim)<plot_limit), aes(x=s2k, y=s2k_sim,color=interaction(Type,Place), group=interaction(Type,Place))) +
+  geom_point() + geom_line() +  geom_abline(intercept=0,slope = 1, color = 'black' ) + labs( colour = 'BP type', title = '') +
+  scale_color_brewer(palette="Dark2") + xlim(0,10) + ylim(0,10)+ labs(x='Observed variances', y='Simulated variances')
+
+print(s2k.plot)
+```
 -->
 
-### Hamiltonian Monte Carlo (HMC)
+## Hamiltonian Monte Carlo (HMC)
 
 The model, as described in the article, is a Bayesian hierarchical model. In order to parameterize such an intricate model, traditional Maximum Likelihood Estimation methods can no longer be applied. Therefore, we apply the Hamiltonian Monte Carlo (HMC) method. HMC is a form of Markov Chain Monte Carlo methods, which samples potential parameter space values of the model, then calculates directly the likelihood function based on that choice of parameters. The derivative of the likelihood function, $\phi$, guides parameter space exploration in $\theta$ towards the modal value of the joint posterior distribution. This method is ideal for complicated, non-Gaussian distribution forms. The three steps of HMC are:
 \begin{enumerate}
@@ -1692,9 +1762,13 @@ The tuning parameters $\epsilon$ and L should be chosen according to a desired a
 
 During the MCMC simulations, the centering values play a non-negligible role in shaping the model parameterization. If the centering parameters are held constant throughout all of the MCMC simulations, then the equation $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0$ is no longer guaranteed. However, automatically defining the centering values based on the model parameters sampled at the current MCMC iteration is not advisable as it can lead to poor parameter convergence. This is because it modifies the likelihood function at every MCMC iteration. Therefore, we iterate the MCMC algorithm multiple times. At every iteration, we recalculate the centering parameters to satisfy the requirement that the average of the linear predictor term going to zero, based on the posterior distributions of the previous MCMC simulation. This iteration is carried out until the centering parameters converge. Convergence is defined by optimising on two factors. The first is that the sum of the linear predictor term across all MCMC samples needs to tend to negligible values (we define this as the average difference being less than $10^{-7}$), see figure \ref{fig:linpred_conv}. The second convergence criteria is that the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations needs to also decrease towards zero, see figure \ref{fig:linpred_conv} (top). For the second criteria, we stopped the simulations when either the difference in the RMSE stopped decreasing (below a threshold of $1\%$), or the RMSE value was less than 20, see figure \ref{fig:linpred_conv} (bottom). Illustration of the convergence is shown in figure \ref{fig:linpred_conv}.
 
+\newpage
 ## Code Description
+The code will be made available, but detailed references have been removed to preserve anonymity for the review process.
 
-The code can be found at [https://github.com/hamishwp/NHANES_HPOX](https://github.com/hamishwp/NHANES_HPOX). The numerical code has been built in multiple stages. Below, we explain the principal files required to replicate the entire analysis presented in the article. There are 5 main groups for the code:
+<!--
+The code can be found at [https://github.com/hamishwp/NHANES_HPOX](https://github.com/hamishwp/NHANES_HPOX).
+The numerical code has been built in multiple stages. Below, we explain the principal files required to replicate the entire analysis presented in the article. There are 5 main groups for the code:
 
 1. Data cleaning scripts
 2. Main file
@@ -1732,11 +1806,11 @@ These correspond to the following alternative simulation parameters:
 ### Centering
 The centering of the linear predictors, which is required as input to every MCMC simulation iteration, is recalculated in the files `AutoPred_Recalc.R` and `ManPred_Recalc.R`. This is then provided to the Main script, `MCMC_DiasSyst_v3.R`, which provides these centering values to the Stan code for the MCMC simulations.
 
-### Empirical Bayes Estimation
-The file `gamma_fits.Rmd` contains all the necessary routines in order to replicate the calculation of the empirical Bayes' priors for the hyperparameters of the model.
 
 ### Post-processing
 The post-processing script is called `PostProcessing.R`, which heavily relies on the `Functions.R` script which contains all the necessary functions to analyse the data. The post-processing script generates many useful plots of the MCMC posterior distribution for the user, including Bayes' factors, violin plots of the normalised beta and gompertz posteriors, and more.
+-->
+
 
 \newpage
 # Appendix C -- Further Results
@@ -1799,7 +1873,7 @@ We remind the reader of the list of numbers of the different models explored in 
 
 ![Violin plots of the normalised $\beta$ parameters of the different models. ](./Plots/beta/Beta_parameter_normalised.png){#fig:betas}
 
-With respect to the time-independent Gompertz parameter, described using $B$ in this article, the results between all models that simulate CVD mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure \ref{fig:gompB}. The consistency appears across sex assigned at birth and race.
+With respect to the time-independent Gompertz parameter, denoted $B$ in this article, the results between all models that simulate CVD mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure \ref{fig:gompB}. The consistency appears across sex assigned at birth and race.
 
 ![Violin plots of the normalised B parameter (from the Gompertz equation) of the different models.](./Plots/gompertz/B_parameter.png){#fig:gompB}
 
@@ -1815,8 +1889,15 @@ diastolic_full <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "
 systolic_FRS <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "MeanValues", rows = 17:21)
 diastolic_FRS <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "MeanValues", rows = 23:27)[,-1]
 
+format_rows <- function(df,n_digits){ #n_digits must have the same length as the number of rows of df
+  df <- cbind(df[,1],t(sapply(1:nrow(df), function(x) sprintf(paste0("%.", n_digits[x], "f"), df[x,-1]))))
+  # First column is character, the rest are numeric
+  #Note: apply function returns columns as rows, so we transpose the result
+  return(df)
+}
+
 # Combine the data frames into one
-combined_data <- rbind(cbind(systolic_full, diastolic_full), cbind( systolic_FRS, diastolic_FRS) )
+combined_data <- rbind(format_rows(cbind(systolic_full, diastolic_full),c(1,2,2,2)), format_rows(cbind( systolic_FRS, diastolic_FRS),c(1,2,2,2)) )
 
 # Create a single kable for the combined data
 kable_combined <- kable(combined_data, format = "latex", escape = FALSE, booktabs = TRUE, 
