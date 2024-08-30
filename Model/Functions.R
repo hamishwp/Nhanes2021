@@ -374,11 +374,12 @@ GetSurvival<-function(RL,roc=F,Ethnicity=NULL,Gender=NULL,ageBnds=NULL,Year=20,u
 }
 
 # Normalise the beta values
-ConvertBeta<-function(RL,FRS=NULL){
+ConvertBeta<-function(RL,FRS=NULL,quarty=F){
   
   N<-nrow(RL$beta)
   out<-data.frame()
-  if(is.null(FRS)){
+  if(!quarty){
+    if(is.null(FRS)){
     out%<>%rbind(data.frame(variable=rep("M_i_S",N),value=RL$beta[,1],normalised=RL$beta[,1]*apply(RL$M_i_S,1,sd)))
     out%<>%rbind(data.frame(variable=rep("D_i_S",N),value=RL$beta[,2],normalised=RL$beta[,2]*apply(RL$D_i_S,1,sd)))
     out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_C_S"),N),value=RL$beta[,3],normalised=RL$beta[,3]*apply(RL[[paste0(variancer,"_C_S")]],1,sd)))
@@ -399,6 +400,30 @@ ConvertBeta<-function(RL,FRS=NULL){
     out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_C_D"),N),value=RL$beta[,6],normalised=RL$beta[,6]*apply(RL[[paste0(variancer,"_C_D")]],1,sd)))
     out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_H_D"),N),value=RL$beta[,7],normalised=RL$beta[,7]*apply(RL[[paste0(variancer,"_H_D")]],1,sd)))
     
+  }
+  } else {
+    if(is.null(FRS)){
+      out%<>%rbind(data.frame(variable=rep("M_i_S",N),value=RL$beta[,1],normalised=RL$beta[,1]*abs(apply(RL$M_i_S,1,quantile,probs=0.75)-apply(RL$M_i_S,1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep("D_i_S",N),value=RL$beta[,2],normalised=RL$beta[,2]*abs(apply(RL$D_i_S,1,quantile,probs=0.75)-apply(RL$D_i_S,1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_C_S"),N),value=RL$beta[,3],normalised=RL$beta[,3]*abs(apply(RL[[paste0(variancer,"_C_S")]],1,quantile,probs=0.75)-apply(RL[[paste0(variancer,"_C_S")]],1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_H_S"),N),value=RL$beta[,4],normalised=RL$beta[,4]*abs(apply(RL[[paste0(variancer,"_H_S")]],1,quantile,probs=0.75)-apply(RL[[paste0(variancer,"_H_S")]],1,quantile,probs=0.5))))
+      
+      out%<>%rbind(data.frame(variable=rep("M_i_D",N),value=RL$beta[,5],normalised=RL$beta[,5]*abs(apply(RL$M_i_D,1,quantile,probs=0.75)-apply(RL$M_i_D,1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep("D_i_D",N),value=RL$beta[,6],normalised=RL$beta[,6]*abs(apply(RL$D_i_D,1,quantile,probs=0.75)-apply(RL$D_i_D,1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_C_D"),N),value=RL$beta[,7],normalised=RL$beta[,7]*abs(apply(RL[[paste0(variancer,"_C_D")]],1,quantile,probs=0.75)-apply(RL[[paste0(variancer,"_C_D")]],1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_H_D"),N),value=RL$beta[,8],normalised=RL$beta[,8]*abs(apply(RL[[paste0(variancer,"_H_D")]],1,quantile,probs=0.75)-apply(RL[[paste0(variancer,"_H_D")]],1,quantile,probs=0.5))))
+      
+    } else {
+      out%<>%rbind(data.frame(variable=rep("FRS",N),value=RL$beta[,1],normalised=RL$beta[,1]*abs(quantile(FRS,probs=0.75)-quantile(FRS,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep("D_i_S",N),value=RL$beta[,2],normalised=RL$beta[,2]*abs(apply(RL$D_i_S,1,quantile,probs=0.75)-apply(RL$D_i_S,1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_C_S"),N),value=RL$beta[,3],normalised=RL$beta[,3]*abs(apply(RL[[paste0(variancer,"_C_S")]],1,quantile,probs=0.75)-apply(RL[[paste0(variancer,"_C_S")]],1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_H_S"),N),value=RL$beta[,4],normalised=RL$beta[,4]*abs(apply(RL[[paste0(variancer,"_H_S")]],1,quantile,probs=0.75)-apply(RL[[paste0(variancer,"_H_S")]],1,quantile,probs=0.5))))
+      
+      out%<>%rbind(data.frame(variable=rep("D_i_D",N),value=RL$beta[,5],normalised=RL$beta[,5]*abs(apply(RL$D_i_D,1,quantile,probs=0.75)-apply(RL$D_i_D,1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_C_D"),N),value=RL$beta[,6],normalised=RL$beta[,6]*abs(apply(RL[[paste0(variancer,"_C_D")]],1,quantile,probs=0.75)-apply(RL[[paste0(variancer,"_C_D")]],1,quantile,probs=0.5))))
+      out%<>%rbind(data.frame(variable=rep(paste0(variancer,"_H_D"),N),value=RL$beta[,7],normalised=RL$beta[,7]*abs(apply(RL[[paste0(variancer,"_H_D")]],1,quantile,probs=0.75)-apply(RL[[paste0(variancer,"_H_D")]],1,quantile,probs=0.5))))
+      
+    }
   }
   
   return(out)

@@ -12,7 +12,7 @@ library(LexisPlotR)
 # library(survcomp)
 source("./Model/Functions.R")
 
-directory<-'~/Documents/Coding/Oxford/Nhanes2021/'
+directory<-'~/Documents/BEAST/Coding/Oxford/Nhanes2021/'
 
 saveresultslist<-function(resultslist,RL,link){
   
@@ -296,13 +296,14 @@ if(sigma){
 #%%% COMPARE DIFFERENT SIMULATIONS (DIFFERENT INPUT DATA) USING PLOTS %%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 ############### BETA PLOTS ###############
+quarty<-T
 
 beta<-data.frame()
 for(i in 1:8){
   RL<-get(paste0("RL",i))
-  if(is.na(RL$FRSt)) btmp<-ConvertBeta(RL) else {
+  if(is.na(RL$FRSt)) btmp<-ConvertBeta(RL,quarty) else {
     if(RL$FRSt=="ATP") FRS<-list_nhanesFRS$FRS.ATP else FRS<-list_nhanesFRS$FRS.1998
-    btmp<-ConvertBeta(RL,FRS=FRS)
+    btmp<-ConvertBeta(RL,FRS=FRS,quarty)
   }
   beta%<>%rbind(cbind(btmp,data.frame(runnum=rep(i,nrow(btmp)))))
 }
@@ -319,7 +320,16 @@ beta_sum<-beta%>%group_by(runnum,variable)%>%summarise(nmean=mean(normalised),
                                              vhp05=quantile(value,0.05))
 
 names(beta_sum)<-c("Run Number","Variable","Mean (Normalised)","SD (Normalised)","HP95 (Normalised)","HP05 (Normalised)","Mean","SD","HP95","HP05")
-write_csv(beta_sum,file="Results/beta_all.csv")
+write_csv(beta_sum,file="Results/beta_all",".csv")
+
+beta_stat<-beta%>%group_by(runnum,variable)%>%summarise(nmean=mean(normalised),
+                                                       nsd=sd(normalised))%>%
+  as.data.frame()%>%filter(!is.na(nmean) | !is.na(nsd))%>%
+  mutate(beta=signif(nmean,digits = 2),
+         Range = paste0("\\(", signif(nmean-nsd,2), ",", signif(nmean+nsd,2), "\\)"))%>%dplyr::select(-nmean,-nsd)
+
+beta_stat$variable<-gsub("_"," ",beta_stat$variable)
+write_csv(beta_stat,file="Results/beta_all_IQRnorm.csv")
 
 p<-ggplot(data=beta,aes(x=runnum,y=normalised,fill=variable))+geom_violin()+geom_abline(slope=0,intercept = 0) +#+ggtitle()
   theme(plot.title = element_text(hjust = 0.5))+ylab(TeX("$\\beta$ Linear Predictor Parameter")) +
@@ -468,6 +478,34 @@ sds4 <- max(apply(xDH_F, 1, sd))
 tauis_av_F <- c(mean(1/sds1^2) , mean(1/sds2^2), mean(1/sds3^2), mean(1/sds4^2))
 tauis_F <- c(1/sds1^2 , 1/sds2^2, 1/sds3^2, 1/sds4^2)
 rm(sds1,sds2,sds3,sds4)
+### Create datafranes from full data for K-M and Cox-PH models later
+list_nhanesA$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_NF)+as.matrix(xDH_NF)) ))
+list_nhanesA$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_NF)+as.matrix(xSH_NF)) ))
+list_nhanesA$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_NF)-as.matrix(xDH_NF))/2)))
+list_nhanesA$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_NF)-as.matrix(xSH_NF))/2)))
+list_nhanesA$sigma_C_S<-unname(apply(xSC_NF, 1, sd))
+list_nhanesA$sigma_H_S<-unname(apply(xSH_NF, 1, sd))
+list_nhanesA$sigma_C_D<-unname(apply(xDC_NF, 1, sd))
+list_nhanesA$sigma_H_D<-unname(apply(xDH_NF, 1, sd))
+# FRS
+list_nhanesFRS$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_F)+as.matrix(xDH_F)) ))
+list_nhanesFRS$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_F)+as.matrix(xSH_F)) ))
+list_nhanesFRS$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_F)-as.matrix(xDH_F))/2)))
+list_nhanesFRS$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_F)-as.matrix(xSH_F))/2)))
+list_nhanesFRS$sigma_C_S<-unname(apply(xSC_F, 1, sd))
+list_nhanesFRS$sigma_H_S<-unname(apply(xSH_F, 1, sd))
+list_nhanesFRS$sigma_C_D<-unname(apply(xDC_F, 1, sd))
+list_nhanesFRS$sigma_H_D<-unname(apply(xDH_F, 1, sd))
+# Remove all the zero values from standard deviation
+is.zero<-function(x) x==0
+DF_nhanesA <- list_nhanesA[-c(1:4)] %>% as.data.frame() %>%
+  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
+DF_nhanesFRS <- list_nhanesFRS[-c(1:4)] %>% as.data.frame() %>%
+  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
+colnames(DF_nhanesA)[1]<-"Time"
+colnames(DF_nhanesFRS)[1]<-"Time"
+
+saveRDS(list(DF_nhanesA=DF_nhanesA,DF_nhanesFRS=DF_nhanesFRS),"./Data_cleaned/nhanes_DF.RData")
 ###################################################################
 
 Nits<-5
@@ -1714,6 +1752,8 @@ survFrame$Model<-survFrame$Plot
 survFrame$Model[survFrame$Plot%in%c("FRS and Delta","Mean and Delta")]<-"FRS/Mean + Delta"
 survFrame$Model[survFrame$Plot%in%c("FRS Only","Systolic Mean Only")]<-"FRS/Sys-Mean Only"
 
+survFrame$Event<-survFrame$Plot
+
 survFrame$Event[survFrame$Event=="All"]<-"All Deaths"
 survFrame$Event[survFrame$Event=="CVDHrt"]<-"CVD & Hrt Only"
 
@@ -1727,6 +1767,7 @@ p<-survFrame%>%filter(RL%in%c("RL1","RL2","RL5","RL6"))%>%ggplot()+geom_line(aes
   geom_abline(slope = 1,intercept = 0) + geom_text(data=AUROC,aes(x,y,label=label,colour=FRS))+
   xlab("False Positive Rate") + ylab("True Positive Rate") +
   facet_wrap(Event~Model,nrow = 2);p
+ggsave("ROCSurvival_Model.eps",p,path=paste0(directory,'Plots/Survival'),width=12,height=6.,device = grDevices::cairo_ps)  
 ggsave("ROCSurvival_Model.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
 
 # He wanted plots with FRS-population for FRS against Mean, then including other terms
@@ -1837,7 +1878,13 @@ ggsave("LexisDelta_col.png", plot=p,path = paste0(directory,'Plots/Survival'),wi
 
 
 
+#@@@@@@@@@@@@@@@@@@@@@@ COMPARISON WITH FREQUENTIST COX-PH MODEL @@@@@@@@@@@@@@@@@@@@@@#
 
+survival::coxph(survival::Surv(Time, eventCVDHrt) ~ age + female + black + other + 
+        M_D_NF + M_S_NF + Delta_D_NF + Delta_S_NF + 
+        tauis_SC_NF + tauis_SH_NF + tauis_DC_NF + tauis_DH_NF, 
+      data = DF_nhanesA) %>% 
+  summary()
 
 
 
