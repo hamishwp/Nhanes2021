@@ -1,0 +1,17 @@
+﻿"FRS-population, using the FRS in the survival model",,,,,
+CVD and heart attack-related mortality,,,,,
+Sex,Race/Ethnicity,B–Mean,B–SD,$\theta$-Mean,$\theta$–SD
+Female,Black,0.0000262,0.0000182,0.0843,0.00859
+Female,White,0.00000371,0.00000267,0.103,0.00861
+Female,Other,0.000102,0.0000746,0.0641,0.00896
+Male,Black,0.000214,0.000134,0.0608,0.00793
+Male,White,0.0000222,0.0000146,0.0859,0.00778
+Male,Other,0.000558,0.000325,0.0461,0.0072
+All-cause mortality,,,,,
+Sex,Race/Ethnicity,B–Mean,B–SD,$\theta$-Mean,$\theta$–SD
+Female,Black,0.000234,0.0000708,0.0684,0.00404
+Female,White,0.0000366,0.0000116,0.0897,0.00392
+Female,Other,0.000188,0.0000625,0.0694,0.00442
+Male,Black,0.000494,0.000142,0.064,0.00384
+Male,White,0.0000501,0.0000146,0.0903,0.00365
+Male,Other,0.0006,0.000174,0.058,0.00391

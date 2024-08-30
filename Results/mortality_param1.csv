@@ -1,0 +1,17 @@
+﻿"Full population, using the mean systolic and diastolic blood pressure in the survival model",,,,,
+CVD and heart attack-related mortality,,,,,
+Sex,Race/Ethnicity,B–Mean,B–SD,$\theta$-Mean,$\theta$–SD
+Female,Black,0.0000136,0.00000566,0.0883,0.00534
+Female,White,0.00000216,0.00000092,0.108,0.00488
+Female,Other,0.0000244,0.0000107,0.0775,0.00565
+Male,Black,0.000072,0.0000249,0.0712,0.00459
+Male,White,0.00000868,0.00000337,0.0973,0.00466
+Male,Other,0.0000817,0.00003,0.0678,0.00498
+All-cause mortality,,,,,
+Sex,Race/Ethnicity,B–Mean,B–SD,$\theta$-Mean,$\theta$–SD
+Female,Black,0.000162,0.0000314,0.072,0.00264
+Female,White,0.0000312,0.00000616,0.0906,0.00238
+Female,Other,0.000266,0.0000545,0.0625,0.00279
+Male,Black,0.000429,0.0000754,0.0641,0.00243
+Male,White,0.0000508,0.00000967,0.09,0.00236
+Male,Other,0.000527,0.0000888,0.059,0.00245

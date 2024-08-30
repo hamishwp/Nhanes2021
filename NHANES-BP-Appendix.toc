@@ -1,0 +1,26 @@
+\contentsline {section}{\numberline {1}Appendix A -- The data}{1}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Exclusions}{1}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Exploratory data analysis}{2}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Correlations between measurements}{2}{subsubsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.3}Errors in blood pressure measurement or recording}{4}{subsection.1.3}%
+\contentsline {subsubsection}{\numberline {1.3.1}Last-digit preference}{5}{subsubsection.1.3.1}%
+\contentsline {subsubsection}{\numberline {1.3.2}Dependent replicates}{5}{subsubsection.1.3.2}%
+\contentsline {subsubsection}{\numberline {1.3.3}Missing or implausible measurements}{11}{subsubsection.1.3.3}%
+\contentsline {section}{\numberline {2}Appendix B -- Model details}{12}{section.2}%
+\contentsline {subsection}{\numberline {2.1}The Statistical Model}{12}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}Survival Analysis (Time-to-Event)}{12}{subsubsection.2.1.1}%
+\contentsline {subsubsection}{\numberline {2.1.2}Longitudinal Modelling}{13}{subsubsection.2.1.2}%
+\contentsline {subsubsection}{\numberline {2.1.3}Combined Hierarchical Model}{14}{subsubsection.2.1.3}%
+\contentsline {subsubsection}{\numberline {2.1.4}The modelling variants}{14}{subsubsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.2}Computational methodology}{16}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Empirical Bayes Parameters}{16}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Estimates for whole population}{19}{subsubsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.4}Hamiltonian Monte Carlo (HMC)}{22}{subsection.2.4}%
+\contentsline {subsubsection}{\numberline {2.4.1}Centering the Linear Predictor}{23}{subsubsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.5}Code Description}{24}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Appendix C -- Further Results}{25}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Convergence of Simulations}{25}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Results - Model Parameterization}{27}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Results - Model Performance}{28}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Results - Exploring \(\mitDelta \) Directionality}{34}{subsection.3.4}%
+\contentsline {section}{References}{47}{section*.2}%

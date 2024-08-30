@@ -1,0 +1,27 @@
+﻿Full Population,,
+Systolic Blood Pressure,,
+Covariate,Mean,SD
+Overall Mean ,125.4,19.5
+Δ |Clinic-Home|/2 ,5.24,4.83
+Home Stand Dev ,2.74,2.05
+Clinic Stand Dev ,3.78,2.61
+Diastolic Blood Pressure,,
+Covariate,Mean,SD
+Overall Mean,74.3,10.3
+Δ |Clinic-Home|/2 ,3.9,3.14
+Home Stand Dev,2.34,1.75
+Clinic Stand Dev ,3.08,2.08
+,,
+Framingham Risk Score Population,,
+Systolic Blood Pressure,,
+Covariate,Mean,SD
+Overall Mean ,125.9,18.3
+Δ |Clinic-Home|/2 ,5.23,4.71
+Home Stand Dev ,2.78,2.06
+Clinic Stand Dev ,3.78,2.52
+Diastolic Blood Pressure,,
+Covariate,Mean,SD
+Overall Mean,76.4,10
+Δ |Clinic-Home|/2 ,3.84,3.1
+Home Stand Dev,2.28,1.71
+Clinic Stand Dev ,2.92,1.97
