@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2023.5.31)  15 NOV 2023 09:33
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2023.5.31)  30 AUG 2024 16:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -949,7 +949,17 @@ File: bkm-pdftex.def 2016/05/17 v1.26 bookmark driver for pdfTeX (HO)
 \BKM@id=\count139
 )) (/usr/share/texlive/texmf-dist/tex/latex/xurl/xurl.sty
 Package: xurl 2018/01/09 v 0.03 modify URL breaks
-) (./NHANES-BP-Appendix.aux)
+) (./NHANES-BP-Appendix.aux
+
+LaTeX Warning: Label `tab:iqrnormbeta' multiply defined.
+
+
+LaTeX Warning: Label `tab:iqrnormbeta' multiply defined.
+
+
+LaTeX Warning: Label `tab:iqrnormbeta' multiply defined.
+
+)
 \openout1 = `NHANES-BP-Appendix.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 117.
@@ -1114,7 +1124,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 \tf@toc=\write3
 \openout3 = `NHANES-BP-Appendix.toc'.
 
-<NHANES-BP-Appendix_files/figure-latex/Venn1-1.pdf, id=34, 289.08pt x 289.08pt>
+<NHANES-BP-Appendix_files/figure-latex/Venn1-1.pdf, id=36, 289.08pt x 289.08pt>
 
 File: NHANES-BP-Appendix_files/figure-latex/Venn1-1.pdf Graphic file (type pdf)
 
@@ -1126,8 +1136,8 @@ d on input line 129.
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2 <./NHANES-BP-Appendix_f
 iles/figure-latex/Venn1-1.pdf>]
-<NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.pdf, id=98, 469.755pt x 3
-25.215pt>
+<NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.pdf, id=102, 469.755pt x 
+325.215pt>
 File: NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.pdf Graphic file (ty
 pe pdf)
 <use NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.pdf>
@@ -1135,7 +1145,7 @@ Package pdftex.def Info: NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.p
 df  used on input line 218.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [3]
-<NHANES-BP-Appendix_files/figure-latex/examinerPlot3-1.pdf, id=109, 469.755pt x
+<NHANES-BP-Appendix_files/figure-latex/examinerPlot3-1.pdf, id=113, 469.755pt x
  325.215pt>
 File: NHANES-BP-Appendix_files/figure-latex/examinerPlot3-1.pdf Graphic file (t
 ype pdf)
@@ -1148,7 +1158,7 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [4 <./NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.pdf>] [5 <./NHANES-B
 P-Appendix_files/figure-latex/examinerPlot3-1.pdf>]
-<NHANES-BP-Appendix_files/figure-latex/proportionChisq3-1.pdf, id=133, 469.755p
+<NHANES-BP-Appendix_files/figure-latex/proportionChisq3-1.pdf, id=137, 469.755p
 t x 505.89pt>
 File: NHANES-BP-Appendix_files/figure-latex/proportionChisq3-1.pdf Graphic file
  (type pdf)
@@ -1156,7 +1166,7 @@ File: NHANES-BP-Appendix_files/figure-latex/proportionChisq3-1.pdf Graphic file
 Package pdftex.def Info: NHANES-BP-Appendix_files/figure-latex/proportionChisq3
 -1.pdf  used on input line 266.
 (pdftex.def)             Requested size: 469.75386pt x 505.88875pt.
-<NHANES-BP-Appendix_files/figure-latex/ternaryPlot-1.pdf, id=135, 578.16pt x 57
+<NHANES-BP-Appendix_files/figure-latex/ternaryPlot-1.pdf, id=139, 578.16pt x 57
 8.16pt>
 File: NHANES-BP-Appendix_files/figure-latex/ternaryPlot-1.pdf Graphic file (typ
 e pdf)
@@ -1166,27 +1176,29 @@ f  used on input line 292.
 (pdftex.def)             Requested size: 469.75385pt x 469.75385pt.
 [6] [7 <./NHANES-BP-Appendix_files/figure-latex/proportionChisq3-1.pdf>] [8 <./
 NHANES-BP-Appendix_files/figure-latex/ternaryPlot-1.pdf>]
-<NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf, id=171, 469.755pt x 325.2
-15pt>
+<NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf, id=175, 578.16pt x 433.62
+pt>
 File: NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf Graphic file (type pd
 f)
 <use NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf>
 Package pdftex.def Info: NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf  u
 sed on input line 361.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[9] [10 <./NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf>] [11] [12] [13]
-<./DAG_Mean.png, id=231, 1895.08pt x 1244.65pt>
+(pdftex.def)             Requested size: 469.75385pt x 352.31538pt.
+[9] [10 <./NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf>] [11
+
+] [12] [13]
+<./DAG_Mean.png, id=232, 1895.08pt x 1244.65pt>
 File: ./DAG_Mean.png Graphic file (type png)
 <use ./DAG_Mean.png>
-Package pdftex.def Info: ./DAG_Mean.png  used on input line 522.
+Package pdftex.def Info: ./DAG_Mean.png  used on input line 521.
 (pdftex.def)             Requested size: 469.74944pt x 308.52187pt.
-<./DAG_FRS.png, id=232, 1899.095pt x 1244.65pt>
+<./DAG_FRS.png, id=233, 1899.095pt x 1244.65pt>
 File: ./DAG_FRS.png Graphic file (type png)
 <use ./DAG_FRS.png>
-Package pdftex.def Info: ./DAG_FRS.png  used on input line 530.
+Package pdftex.def Info: ./DAG_FRS.png  used on input line 529.
 (pdftex.def)             Requested size: 469.75943pt x 307.87614pt.
 [14] [15 <./DAG_Mean.png>] [16 <./DAG_FRS.png>] [17]
-Overfull \hbox (2.19429pt too wide) detected at line 637
+Overfull \hbox (2.19429pt too wide) detected at line 636
 \OML/lmm/m/it/10 `[]\OT1/lmr/m/n/10 (\OML/lmm/m/it/10 ; ^^R\OT1/lmr/m/n/10 ; \
 OML/lmm/m/it/10 s[]\OT1/lmr/m/n/10 ) = \OML/lmm/m/it/10 n [] [] \OT1/lmr/m/n/1
 0 + \OML/lmm/m/it/10 n [] \OT1/lmr/m/n/10 ^^@ [] \OMS/lmsy/m/n/10 ^^@ \OML/lmm/
@@ -1197,7 +1209,7 @@ m/it/10 n [] \OT1/lmr/m/n/10 ^^@(\OML/lmm/m/it/10 \OT1/lmr/m/n/10 ) + [] [] []
 [18]
 
 LaTeX Warning: File `NHANES-BP-Appendix_files/figure-latex/Variance test-1.pdf'
- not found on input line 726.
+ not found on input line 725.
 
 <NHANES-BP-Appendix_files/figure-latex/Variance test-1.pdf, id=272, 469.755pt x
  325.215pt>
@@ -1205,11 +1217,11 @@ File: NHANES-BP-Appendix_files/figure-latex/Variance test-1.pdf Graphic file (t
 ype pdf)
 <use NHANES-BP-Appendix_files/figure-latex/Variance test-1.pdf>
 Package pdftex.def Info: NHANES-BP-Appendix_files/figure-latex/Variance test-1.
-pdf  used on input line 726.
+pdf  used on input line 725.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
 LaTeX Warning: File `NHANES-BP-Appendix_files/figure-latex/Variance test-2.pdf'
- not found on input line 726.
+ not found on input line 725.
 
 <NHANES-BP-Appendix_files/figure-latex/Variance test-2.pdf, id=273, 469.755pt x
  325.215pt>
@@ -1217,7 +1229,7 @@ File: NHANES-BP-Appendix_files/figure-latex/Variance test-2.pdf Graphic file (t
 ype pdf)
 <use NHANES-BP-Appendix_files/figure-latex/Variance test-2.pdf>
 Package pdftex.def Info: NHANES-BP-Appendix_files/figure-latex/Variance test-2.
-pdf  used on input line 726.
+pdf  used on input line 725.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 <NHANES-BP-Appendix_files/figure-latex/Compare_variances-1.pdf, id=274, 469.755
 pt x 325.215pt>
@@ -1225,230 +1237,241 @@ File: NHANES-BP-Appendix_files/figure-latex/Compare_variances-1.pdf Graphic fil
 e (type pdf)
 <use NHANES-BP-Appendix_files/figure-latex/Compare_variances-1.pdf>
 Package pdftex.def Info: NHANES-BP-Appendix_files/figure-latex/Compare_variance
-s-1.pdf  used on input line 731.
+s-1.pdf  used on input line 730.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Underfull \hbox (badness 1460) in paragraph at lines 721--732
+Underfull \hbox (badness 1460) in paragraph at lines 720--731
 []\T1/lmr/m/n/10 (+20) Finally, we check the vari-ance dis-tri-bu-tion em-pir-i
 -cally, to check whether the con-tin-u-ous dis-tri-
  []
 
 
-Underfull \hbox (badness 1642) in paragraph at lines 721--732
+Underfull \hbox (badness 1642) in paragraph at lines 720--731
 \T1/lmr/m/n/10 (+20) bu-tion we have fit for in-di-vid-ual vari-ances de-scribe
 s the true dis-tri-bu-tion of vari-ances in the
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 721--732
+Underfull \hbox (badness 10000) in paragraph at lines 720--731
 []
  []
 
 
-Overfull \hbox (43.11453pt too wide) in paragraph at lines 721--732
+Overfull \hbox (43.11453pt too wide) in paragraph at lines 720--731
 \T1/lmr/m/n/10 (-20) test-2.pdf []
  []
 
 [19] [20 <./NHANES-BP-Appendix_files/figure-latex/Variance test-1.pdf>] [21 <./
 NHANES-BP-Appendix_files/figure-latex/Variance test-2.pdf>] [22 <./NHANES-BP-Ap
 pendix_files/figure-latex/Compare_variances-1.pdf>] [23]
-LaTeX Font Info:    Try loading font information for T1+lmtt on input line 833.
+LaTeX Font Info:    Try loading font information for T1+lmtt on input line 832.
 
 (/usr/share/texmf/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Try loading font information for TS1+lmr on input line 871.
+LaTeX Font Info:    Try loading font information for TS1+lmr on input line 870.
 
 (/usr/share/texmf/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [24] [25]
-<./Rmarkdown_Plots/RMSE-Linpred_Convergence.png, id=372, 512.66531pt x 532.9912
+<./Rmarkdown_Plots/RMSE-Linpred_Convergence.png, id=373, 512.66531pt x 532.9912
 6pt>
 File: ./Rmarkdown_Plots/RMSE-Linpred_Convergence.png Graphic file (type png)
 <use ./Rmarkdown_Plots/RMSE-Linpred_Convergence.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/RMSE-Linpred_Convergence.png  used o
-n input line 910.
+n input line 909.
 (pdftex.def)             Requested size: 469.7569pt x 488.38165pt.
-[26] [27 <./Rmarkdown_Plots/RMSE-Linpred_Convergence.png (PNG copy)>]
-<./Plots/beta/Beta_parameter_normalised.png, id=392, 1084.05pt x 650.43pt>
+[26
+
+] [27 <./Rmarkdown_Plots/RMSE-Linpred_Convergence.png (PNG copy)>]
+<./Plots/beta/Beta_parameter_normalised.png, id=393, 1084.05pt x 650.43pt>
 File: ./Plots/beta/Beta_parameter_normalised.png Graphic file (type png)
 <use ./Plots/beta/Beta_parameter_normalised.png>
 Package pdftex.def Info: ./Plots/beta/Beta_parameter_normalised.png  used on in
-put line 969.
+put line 1044.
 (pdftex.def)             Requested size: 469.75496pt x 281.85297pt.
-<./Plots/gompertz/B_parameter.png, id=394, 939.51pt x 650.43pt>
+<./Plots/gompertz/B_parameter.png, id=395, 939.51pt x 650.43pt>
 File: ./Plots/gompertz/B_parameter.png Graphic file (type png)
 <use ./Plots/gompertz/B_parameter.png>
-Package pdftex.def Info: ./Plots/gompertz/B_parameter.png  used on input line 9
-79.
+Package pdftex.def Info: ./Plots/gompertz/B_parameter.png  used on input line 1
+054.
 (pdftex.def)             Requested size: 469.75385pt x 325.2142pt.
-[28]
-<./Plots/gompertz/theta_parameter.png, id=412, 939.51pt x 650.43pt>
+[28] [29]
+<./Plots/gompertz/theta_parameter.png, id=421, 939.51pt x 650.43pt>
 File: ./Plots/gompertz/theta_parameter.png Graphic file (type png)
 <use ./Plots/gompertz/theta_parameter.png>
 Package pdftex.def Info: ./Plots/gompertz/theta_parameter.png  used on input li
-ne 989.
+ne 1064.
 (pdftex.def)             Requested size: 469.75385pt x 325.2142pt.
-<./Plots/Survival/redlinpred_Cumulative_haz-death_age.png, id=414, 722.7pt x 36
+<./Plots/Survival/redlinpred_Cumulative_haz-death_age.png, id=423, 722.7pt x 36
 1.35pt>
 File: ./Plots/Survival/redlinpred_Cumulative_haz-death_age.png Graphic file (ty
 pe png)
 <use ./Plots/Survival/redlinpred_Cumulative_haz-death_age.png>
 Package pdftex.def Info: ./Plots/Survival/redlinpred_Cumulative_haz-death_age.p
-ng  used on input line 1059.
+ng  used on input line 1134.
 (pdftex.def)             Requested size: 469.76045pt x 234.88023pt.
-[29 <./Plots/beta/Beta_parameter_normalised.png (PNG copy)>] [30 <./Plots/gompe
-rtz/B_parameter.png (PNG copy)>] [31 <./Plots/gompertz/theta_parameter.png (PNG
- copy)>]
-<./Rmarkdown_Plots/SysDelta_Densities_Demography.png, id=438, 505.89pt x 505.89
+[30 <./Plots/beta/Beta_parameter_normalised.png>] [31 <./Plots/gompertz/B_param
+eter.png>] [32 <./Plots/gompertz/theta_parameter.png>]
+<./Rmarkdown_Plots/SysDelta_Densities_Demography.png, id=447, 505.89pt x 505.89
 pt>
 File: ./Rmarkdown_Plots/SysDelta_Densities_Demography.png Graphic file (type pn
 g)
 <use ./Rmarkdown_Plots/SysDelta_Densities_Demography.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/SysDelta_Densities_Demography.png  u
-sed on input line 1085.
+sed on input line 1160.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-[32 <./Plots/Survival/redlinpred_Cumulative_haz-death_age.png>] [33 <./Rmarkdow
+[33 <./Plots/Survival/redlinpred_Cumulative_haz-death_age.png>] [34 <./Rmarkdow
 n_Plots/SysDelta_Densities_Demography.png (PNG copy)>]
-<./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png, id=461, 505.89pt x 505.89
+<./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png, id=470, 505.89pt x 505.89
 pt>
 File: ./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png Graphic file (type pn
 g)
 <use ./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png  u
-sed on input line 1095.
+sed on input line 1170.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png, id=462, 505.89pt x 505.89pt>
+<./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png, id=471, 505.89pt x 505.89pt>
 
 File: ./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png Graphic file (type png)
 <use ./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png  used
- on input line 1103.
+ on input line 1178.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png, id=466, 505.89pt x 5
+<./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png, id=475, 505.89pt x 5
 05.89pt>
 File: ./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png Graphic file (ty
 pe png)
 <use ./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.p
-ng  used on input line 1113.
+ng  used on input line 1188.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png, id=485, 505.89pt x 505
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png, id=494, 505.89pt x 505
 .89pt>
 File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png Graphic file (type
  png)
 <use ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png
-  used on input line 1233.
+  used on input line 1308.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png, id=486, 505.89pt x 505
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png, id=495, 505.89pt x 505
 .89pt>
 File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png Graphic file (type
  png)
 <use ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png
-  used on input line 1241.
+  used on input line 1316.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png, id=487, 505.89pt x 
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png, id=496, 505.89pt x 
 505.89pt>
 File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png Graphic file (t
 ype png)
 <use ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.
-png  used on input line 1249.
+png  used on input line 1324.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png, id=488, 505.89pt x 505
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png, id=497, 505.89pt x 505
 .89pt>
 File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png Graphic file (type
  png)
 <use ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png
-  used on input line 1257.
+  used on input line 1332.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png, id=489, 505.89pt x 505
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png, id=498, 505.89pt x 505
 .89pt>
 File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png Graphic file (type
  png)
 <use ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png
-  used on input line 1265.
+  used on input line 1340.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png, id=490, 505.89pt x 
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png, id=499, 505.89pt x 
 505.89pt>
 File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png Graphic file (t
 ype png)
 <use ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.
-png  used on input line 1273.
+png  used on input line 1348.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-[34] [35 <./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png (PNG copy)>] [36 
-<./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png (PNG copy)>] [37 <./Rmarkdown
-_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png (PNG copy)>] [38] [39] [40 <./Rma
-rkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png (PNG copy)>] [41 <./Rmarkdown
-_Plots/ROC_CAx-Covariates_EventType_RL2.png (PNG copy)>] [42 <./Rmarkdown_Plots
-/ROC_CAx-Covariates_EventType_RL2oth.png (PNG copy)>] [43 <./Rmarkdown_Plots/RO
-C_CAx-Covariates_EventType_RL7.png (PNG copy)>] [44 <./Rmarkdown_Plots/ROC_CAx-
-Covariates_EventType_RL8.png (PNG copy)>] [45 <./Rmarkdown_Plots/ROC_CAx-Covari
+[35] [36 <./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png (PNG copy)>] [37 
+<./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png (PNG copy)>] [38 <./Rmarkdown
+_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png (PNG copy)>] [39] [40] [41 <./Rma
+rkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png (PNG copy)>] [42 <./Rmarkdown
+_Plots/ROC_CAx-Covariates_EventType_RL2.png (PNG copy)>] [43 <./Rmarkdown_Plots
+/ROC_CAx-Covariates_EventType_RL2oth.png (PNG copy)>] [44 <./Rmarkdown_Plots/RO
+C_CAx-Covariates_EventType_RL7.png (PNG copy)>] [45 <./Rmarkdown_Plots/ROC_CAx-
+Covariates_EventType_RL8.png (PNG copy)>] [46 <./Rmarkdown_Plots/ROC_CAx-Covari
 ates_EventType_RL8oth.png (PNG copy)>]
-<./Rmarkdown_Plots/Delta_plusminus_Demography.png, id=564, 505.89pt x 505.89pt>
+<./Rmarkdown_Plots/Excluded_SurvProbKM.png, id=573, 505.89pt x 505.89pt>
+File: ./Rmarkdown_Plots/Excluded_SurvProbKM.png Graphic file (type png)
+<use ./Rmarkdown_Plots/Excluded_SurvProbKM.png>
+Package pdftex.def Info: ./Rmarkdown_Plots/Excluded_SurvProbKM.png  used on inp
+ut line 1361.
+(pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
+[47 <./Rmarkdown_Plots/Excluded_SurvProbKM.png (PNG copy)>]
+<./Rmarkdown_Plots/Delta_plusminus_Demography.png, id=584, 505.89pt x 505.89pt>
 
 File: ./Rmarkdown_Plots/Delta_plusminus_Demography.png Graphic file (type png)
 <use ./Rmarkdown_Plots/Delta_plusminus_Demography.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/Delta_plusminus_Demography.png  used
- on input line 1286.
+ on input line 1475.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/SurvProbKM_45-64.png, id=567, 505.89pt x 505.89pt>
+[48] [49] [50 <./Rmarkdown_Plots/Delta_plusminus_Demography.png>]
+<./Rmarkdown_Plots/SurvProbKM_45-64.png, id=608, 505.89pt x 505.89pt>
 File: ./Rmarkdown_Plots/SurvProbKM_45-64.png Graphic file (type png)
 <use ./Rmarkdown_Plots/SurvProbKM_45-64.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/SurvProbKM_45-64.png  used on input 
-line 1309.
+line 1498.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/SurvProbKM_65-84.png, id=568, 505.89pt x 505.89pt>
+<./Rmarkdown_Plots/SurvProbKM_65-84.png, id=609, 505.89pt x 505.89pt>
 File: ./Rmarkdown_Plots/SurvProbKM_65-84.png Graphic file (type png)
 <use ./Rmarkdown_Plots/SurvProbKM_65-84.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/SurvProbKM_65-84.png  used on input 
-line 1317.
+line 1506.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png, id=571, 505.89pt x 505.89pt>
+<./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png, id=612, 505.89pt x 505.89pt>
 File: ./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png Graphic file (type png)
 <use ./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png  used on 
-input line 1327.
+input line 1516.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png, id=572, 505.89pt x 505.89pt>
+<./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png, id=613, 505.89pt x 505.89pt>
 File: ./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png Graphic file (type png)
 <use ./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png  used on 
-input line 1335.
+input line 1524.
 (pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-<./Rmarkdown_Plots/DeltaDirection_AUCs.png, id=575, 532.23843pt x 281.55188pt>
+<./Rmarkdown_Plots/DeltaDirection_AUCs.png, id=616, 532.23843pt x 281.55188pt>
 File: ./Rmarkdown_Plots/DeltaDirection_AUCs.png Graphic file (type png)
 <use ./Rmarkdown_Plots/DeltaDirection_AUCs.png>
 Package pdftex.def Info: ./Rmarkdown_Plots/DeltaDirection_AUCs.png  used on inp
-ut line 1367.
+ut line 1556.
 (pdftex.def)             Requested size: 469.76813pt x 248.50534pt.
-[46] [47 <./Rmarkdown_Plots/Delta_plusminus_Demography.png>] [48 <./Rmarkdown_P
-lots/SurvProbKM_45-64.png>] [49 <./Rmarkdown_Plots/SurvProbKM_65-84.png>] [50 <
-./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png>] [51 <./Rmarkdown_Plots/SurvProbK
-M_Delta_65-85.png>] [52 <./Rmarkdown_Plots/DeltaDirection_AUCs.png (PNG copy)>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1381.
-[53]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1381.
+[51] [52 <./Rmarkdown_Plots/SurvProbKM_45-64.png>] [53 <./Rmarkdown_Plots/SurvP
+robKM_65-84.png>] [54 <./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png>] [55 <./Rm
+arkdown_Plots/SurvProbKM_Delta_65-85.png>]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1570.
+[56 <./Rmarkdown_Plots/DeltaDirection_AUCs.png (PNG copy)>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1570.
 (./NHANES-BP-Appendix.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1381.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 1381.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1570.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 1570.
+
+LaTeX Warning: There were multiply-defined labels.
+
  ) 
 Here is how much of TeX's memory you used:
- 15498 strings out of 494847
- 225948 string characters out of 6179080
- 372267 words of memory out of 5000000
- 18137 multiletter control sequences out of 15000+600000
- 77106 words of font info for 133 fonts, out of 8000000 for 9000
+ 15539 strings out of 494847
+ 226629 string characters out of 6179080
+ 372151 words of memory out of 5000000
+ 18157 multiletter control sequences out of 15000+600000
+ 85934 words of font info for 136 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
  34i,20n,38p,2623b,412s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/en
-c/dvips/lm/lm-ts1.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc}{/usr/shar
-e/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ma
+{/usr/share/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dv
+ips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/shar
+e/texmf/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ma
 thit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathex.enc}</usr/share/texmf/f
 onts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx12.
 pfb></usr/share/texmf/fonts/type1/public/lm/lmex10.pfb></usr/share/texmf/fonts/
@@ -1463,10 +1486,10 @@ type1/public/lm/lmsy5.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb></u
 sr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texlive/texmf-dist/f
 onts/type1/public/amsfonts/symbols/msbm7.pfb>
-Output written on NHANES-BP-Appendix.pdf (53 pages, 11288215 bytes).
+Output written on NHANES-BP-Appendix.pdf (56 pages, 9475986 bytes).
 PDF statistics:
- 844 PDF objects out of 1000 (max. 8388607)
- 720 compressed objects within 8 object streams
- 238 named destinations out of 1000 (max. 500000)
- 12689 words of extra memory for PDF output out of 14400 (max. 10000000)
+ 886 PDF objects out of 1000 (max. 8388607)
+ 757 compressed objects within 8 object streams
+ 255 named destinations out of 1000 (max. 500000)
+ 12710 words of extra memory for PDF output out of 14400 (max. 10000000)
 

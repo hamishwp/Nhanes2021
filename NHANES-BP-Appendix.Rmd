@@ -8,6 +8,7 @@ output:
     toc: true
     toc_depth: 3
     number_sections: true
+    table_caption: true
 bibliography: nhanesBP.bib
 ---
 
@@ -634,21 +635,26 @@ The average difference is about `r sprintf('%.1f',mean(diasH)-mean(dias))` for d
 ### Correlations between measurements {#sec:correlations}
 We see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
 
-```{r SD-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
-# Scatterplot of mean BP against SD of BP from bp.data
-    ggplot(bp.data, aes(x = Mean, y = SD)) +
-    geom_point(alpha=.03, color = 'navyblue' ) +
-    labs(title = "Scatterplot of Mean against SD",
-         x = "Mean",y = "SD") + ylim(0,15)+
-      geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
-    facet_grid(BPtype ~ BPplace, scales = 'free_x') +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlation), x = Inf, y = Inf), 
-                 vjust = "top", hjust = "right", inherit.aes = FALSE)
+```{r SD-mean, dpi = 1,fig.pos='H', fig.width=8,fig.height=6, fig.cap='2D density plot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# 2D density plot of mean BP against SD of BP from bp.data
+ggplot(bp.data, aes(x = Mean, y = SD)) +
+  geom_bin2d() +
+  labs(title = "2D Density Plot of Mean against SD",
+       x = "Mean",y = "SD") + ylim(0,15)+
+  scale_fill_continuous(type = "viridis") +
+  theme_bw()+
+geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
+  facet_grid(BPtype ~ BPplace, scales = 'free_x') +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlation), x = Inf, y = Inf), 
+            vjust = "top", hjust = "right", inherit.aes = FALSE)
 
 ```
 
-\newpage
+
+
+\clearpage
+
 # Appendix B -- Model details
 This appendix aims to add more detail about the numerical modelling than was provided in the article. This is to ensure that the research methods are transparent and entirely reproducible. The numerical modelling presented in this paper was performed using R combined with Rstan. More detail will be provided here about the model, about the specific methodology used to parameterize the model, and more results are provided that were not included in the main text.
 
@@ -733,12 +739,11 @@ Note as well that the $\Delta$ covariates, representing the medium-term variabil
 For the parametrization of this model, we assume that the Gompertz parameters and the parameters in the linear predictor term are distributed as follows:
 \begin{equation}\label{priorsS}
 \begin{aligned}
-  \boldsymbol{B}\sim\mathbb{C}(\mu_B,\sigma_B),\\
+  \boldsymbol{B}\sim\mathcal{N}(\mu_B,\sigma_B),\\
   \boldsymbol{\theta}\sim\mathcal{N}(\mu_\theta,\sigma_\theta),\\
   \boldsymbol{\beta}\sim \mathcal{N}(\mu_\beta,\sigma_\beta),
 \end{aligned}
 \end{equation}
-noting that $\mathbb{C}(\mu,\sigma)$ is the Cauchy distribution. 
 
 The likelihood for this Gompertz proportional hazards model, over all individuals in the census, is as follows:
 \begin{equation}\label{likesurv}
@@ -1521,12 +1526,12 @@ The file `gamma_fits.Rmd` contains all the necessary routines in order to replic
 ### Post-processing
 The post-processing script is called `PostProcessing.R`, which heavily relies on the `Functions.R` script which contains all the necessary functions to analyse the data. The post-processing script generates many useful plots of the MCMC posterior distribution for the user, including Bayes' factors, violin plots of the normalised beta and gompertz posteriors, and more.
 
-\newpage
+\clearpage
 # Appendix C -- Further Results
 
 In this section, we add some additional detail to the results section covered in the article. Extra information is given to explain how convergence of the simulations was ensured, and to also include more visualisations of the converged model parameterizations. The authors feel that this is particularly useful to provide confidence in the model parameterization and the predictions.
 
-### Convergence of Simulations
+## Convergence of Simulations
 
 Convergence of the simulations required to parameterize the model presented in this work is required for the MCMC simulations performed by Stan, as well as convergence in the centering values that requires repeating the Stan calculations several times. Convergence of the latter is shown in figure \ref{fig:linpred_conv}. The upper plot in figure \ref{fig:linpred_conv} illustrates convergence in the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations. The lower plot in figure \ref{fig:linpred_conv} illustrates convergence in the average sum of the linear predictor terms over all MCMC chain iterations.
 
@@ -1576,9 +1581,37 @@ This comes from the expectation of the variance $E[(\psi_i-\psi_{i-t})^2]=2(1-\r
 \end{equation}
 Where T is the index at which the sum of the autocorrelation estimates $\hat{\rho}_{t'}+\hat{\rho}_{t'+1}$ is negative. As a general guide, we should have $\hat{n}_{eff}\sim 10N/k$ effective independent marker draws and that $\hat{R}\to 1\sim 1.1$. In this research, we continued running the MCMC simulations until these two criteria were met (and went beyond: $\hat{R}<1.05$ for all parameters in all models and that $\hat{n}_{eff}>750$ for all parameters in all models).
 
-### Results - Model Parameterization
+## Results - Model Parameterization
 
-We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section 'Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of HA-CVD-CeVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of HA-CVD-CeVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
+We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section 'Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of HA-CVD-CeVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of HA-CVD-CeVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term. 
+
+```{r iqrnormbeta_RL1, echo=F}
+kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%filter(runnum==1)%>%dplyr::select(-runnum)%>%setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+format="latex", escape = F,booktabs = T, label = "iqrnormbeta",
+caption = "Beta parameters for all-cause mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.")
+
+```
+
+```{r iqrnormbeta_RL2, echo=F}
+kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%filter(runnum==2)%>%dplyr::select(-runnum)%>%setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+format="latex", escape = F,booktabs = T, label = "iqrnormbeta",
+caption = "Beta parameters for cardiovascular mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.")
+
+```
+
+```{r iqrnormbeta_RL3, echo=F}
+kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%filter(runnum==3)%>%dplyr::select(-runnum)%>%setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+format="latex", escape = F,booktabs = T, label = "iqrnormbeta",
+caption = "Beta parameters for all-cause mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.")
+
+```
+
+```{r iqrnormbeta_RL4, echo=F}
+kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%filter(runnum==4)%>%dplyr::select(-runnum)%>%setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+format="latex", escape = F,booktabs = T, label = "iqrnormbeta",
+caption = "Beta parameters for cardiovascular mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.")
+
+```
 
 ![Violin plots of the normalised $\beta$ parameters of the different models. ](./Plots/beta/Beta_parameter_normalised.png){#fig:betas}
 
@@ -1607,7 +1640,7 @@ kable(openxlsx::read.xlsx("./Results/AppendixTables.xlsx",sheet = "RL7-8",rows =
 format="latex", escape = F,booktabs = T, caption = "Parameters for survival model for HA-CVD-CeVD and all-cause mortality, NHANES III, FRS-population only, using the 1998 FRS-based model.")
 ```
 
-### Results - Model Performance
+## Results - Model Performance
 
 To measure the performance of the model to predict the survival outcome of individuals in the population, figure \ref{fig:cumpred} shows, ordered by individual age, the cumulative hazard $H(t)$ predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
 
@@ -1635,7 +1668,7 @@ Before presenting any ROC or AUC values, we first present the density distributi
 
 Using Welch's ANOVA test, we calculated that $p<1\times 10^{-9}$ for all demographics, including when split between the male and female populations. Figures \ref{fig:ROC_MeanBP} and \ref{fig:ROC_FRS} show the ROC curves (including the AUC values) of the model, the former using the mean systolic and diastolic blood pressure as covariates in the linear predictor term (in the Cox's proportional hazards component) and the latter using the FRS value instead. By making predictions of the 5, 10 and 15 year survival between the middle aged and old aged sub-groups, for the three different mortality causes, we start to build a picture of the performance of the model. For figure \ref{fig:ROC_MeanBP}, we notice that the AUC value of the predictions for the middle aged compared to the older aged population is higher, independent of the survival year prediction or the different mortality causes. The highest AUC is for the 45-64 year old population with a focus on HA-CVD-CeVD and heart attack-related mortality, for all three survival year periods. We also note that the TPR seems to start increasing at a faster rate for the population aged 45-64 than the 65-84 group, implying that it is possible to choose a threshold level, $\epsilon$, for the survival predictions that could correctly identify people at risk without incorrectly predicting as many people to be at risk of mortality as for the group aged 65-84. The results also reflect that the influence of choosing a 5, 10 or 15 year prediction period does not seem to significantly influence the results. Figure \ref{fig:ROC_FRS} displays similar results to the mean systolic and diastolic model when using the FRS value instead, with the main difference that the predictions of the middle aged group for HA-CVD-CeVD and heart attack-related mortality for 5 year survival seems to be lower than the equivalent in the older group or as compared to the mean blood pressure model. This is caused by a reduced mortality before 5 years for the middle aged population that had their FRS value calculated, where 36, 83 and 213 HA-CVD-CeVD and heart attack-related deaths occurred before 5, 10 and 15 years in this sub-group, respectively. This can be compared to 141, 356 and 952 all-cause deaths in this same sub-group (red-curve in figure \ref{fig:ROC_FRS} and \ref{fig:ROC_MeanBP}). Alternatively, when compared to the full-population (not just those who had the FRS value), the HA-CVD-CeVD and heart attack-related deaths for the middle aged population are 55, 115 and 282 over the 5, 10 and 15 year range, respectively.
 
-![ROC curves for the model that used mean systolic and diastolic blood pressure as covariates in the linear predictor, stratified by the event type (cause of mortality). The columns split two groups in the population: those who start the survey aged between 45 to 64 and 65-84 years old. The rows split the model predictions between 5, 10 and 2 year survival. ](./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png){#fig:ROC_MeanBP}
+![ROC curves for the model that used mean systolic and diastolic blood pressure as covariates in the linear predictor, stratified by the event type (cause of mortality). The columns split two groups in the population: those who start the survey aged between 45 to 64 and 65-84 years old. The rows split the model predictions between 5, 10 and 15 year survival. ](./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png){#fig:ROC_MeanBP}
 
 ![ROC curves for the model that used the FRS value as covariates in the linear predictor, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. ](./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png){#fig:ROC_FRS}
 
@@ -1671,7 +1704,202 @@ To finalise the section on the performance of the models using ROC and AUC value
 
 ![ROC curves for for the FRS-based model, looking non-HA-CVD-CeVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8oth}
 
-### Results - Exploring $\Delta$ Directionality
+## Results - Excluded Population
+
+As there were 3,916 individuals that were excluded from the research, it is important to verify that there is no bias in the survival outcomes linked to each of the demographic groups for the included and excluded populations. This section demonstrates this by considering differences in the Kaplan-Meier curves, shown in figure \ref{fig:excpop}. No significant difference in survival outcomes is observed between the different demographic groups for the excluded and included populations. However, it is important to note that bias has been introduced by the fact that the 751 individuals that were included in the 'other' ethnicity will therefore not be represented in this research.
+
+```{r excpop,include=FALSE,message=FALSE,warning=FALSE,echo=F}
+
+nhanes$excluded<-!nhanesgood
+nhanes%<>%dplyr::select(age,yrsfu,eventhrt,dead,excluded,type)
+
+totKMcurve<-data.frame()
+for (ageB in c(45)){
+  for (ty in unique(nhanes$type)){
+      fit<-nhanes%>%filter(age<ageB+19 & age>=ageB & 
+                                type==ty)%>%
+        survival::survfit(formula = survival::Surv(yrsfu, eventhrt) ~ excluded)
+      tmp<-summary(fit,times = 1:40/2)
+      totKMcurve%<>%rbind(data.frame(
+        excluded=tmp$strata,
+        time=tmp$time,
+        Age=ageB,
+        pSurv=tmp$surv,
+        plow=tmp$lower,
+        pupp=tmp$upper,
+        Gender=str_split(ty,", ",simplify = T)[1],
+        Ethnicity=str_split(ty,", ",simplify = T)[2]
+      ))
+  }
+}
+
+totKMcurve$Ethnicity[totKMcurve$Ethnicity=="Mex"]<-"other"
+totKMcurve$excluded<-gsub("excluded=","",as.character(totKMcurve$excluded))
+
+p<-totKMcurve%>%
+  ggplot(aes(time,pSurv))+geom_line(aes(colour=excluded))+
+  geom_ribbon(aes(ymin=plow,ymax=pupp,fill=excluded), size=1,alpha = 0.3)+
+  ylab("Survival Probability")+xlab("Time Since Initial Survey")+
+  ggtitle("Kaplan Meier Curve")+theme(plot.title = element_text(hjust = 0.5))+
+  facet_grid(row=vars(Ethnicity),cols = vars(Gender))
+ggsave("Excluded_SurvProbKM.png",p,path = "./Rmarkdown_Plots",width = 7,height = 7)  
+
+```
+![Kaplan-Meier plots of the full-population for all-cause mortality, split by demographic group and whether the individual was included in this research. ](./Rmarkdown_Plots/Excluded_SurvProbKM.png){#fig:excpop}
+
+## Results - Frequentist Comparison
+
+A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes. Note that, due to many individuals having less than one distinct blood pressure measurement, the sample size for the frequentist models is 7,633 and 12,458 for the FRS- and full-population, respectively.
+
+```{r frequentist, include=FALSE, message=FALSE, warning=FALSE, echo=F}
+tmp<-readRDS("./Data_cleaned/nhanes_DF.RData")
+DF_nhanesA<-tmp$DF_nhanesA
+DF_nhanesFRS<-tmp$DF_nhanesFRS
+DF_nhanesA%<>%mutate(race=case_when(black==1 ~ 2, white==1 ~ 1, T ~ 0))
+DF_nhanesFRS%<>%mutate(race=case_when(black==1 ~ 2, white==1 ~ 1, T ~ 0))
+rm(tmp)
+SD_nA <- suppressWarnings(DF_nhanesA %>%
+  select(M_i_D, M_i_S, D_i_D, D_i_S, sigma_C_S, sigma_H_S, sigma_C_D, sigma_H_D) %>%
+  summarise(across(everything(), function(x) sd(x, na.rm=T)))%>%reshape2::melt()%>%
+  setNames(c("term","std")))%>%rbind(data.frame(term=c("race","female"),std=c(1,1)))
+SD_nFRS <- suppressWarnings(DF_nhanesFRS %>%
+  select(FRS.1998, D_i_D, D_i_S, sigma_C_S, sigma_H_S, sigma_C_D, sigma_H_D) %>%
+  summarise(across(everything(), function(x) sd(x, na.rm=T)))%>%reshape2::melt()%>%
+  setNames(c("term","std")))%>%rbind(data.frame(term=c("race","female"),std=c(1,1)))
+```
+
+
+```{r freqCVDF, echo=F}
+# survival::coxph(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
+#         M_i_D + M_i_S + D_i_D + D_i_S + 
+#         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
+#       data = DF_nhanesA)
+# flexsurv::flexsurvreg(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
+#                               data = DF_nhanesA, dist = "gompertz") %>% 
+survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ FRS.1998 +
+                     D_i_S + D_i_D + sigma_C_S + sigma_H_S +
+                     sigma_C_D + sigma_H_D +
+                  survival::strata(race) + survival::strata(female), data = DF_nhanesFRS) %>%
+  broom::tidy(conf.int = TRUE) %>%    # Include confidence intervals
+  mutate_if(is.numeric, signif, digits = 2) %>%
+  mutate_at(vars(matches("_i_")), scale, scale=F) %>%
+  mutate_at(vars(matches("FRS")), scale, scale=F) %>%
+  mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)))%>%
+  left_join(SD_nFRS,by="term")%>%
+  mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
+  mutate(estimate=estimate*std)%>%
+  dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+  setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
+  mutate(Covariate=gsub("_"," ",Covariate))%>%
+  kableExtra::kable(format = "latex", booktabs = TRUE, label = "freqCVDF",
+                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.")
+  # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
+# coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
+#                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
+#                      sigma_C_D + sigma_H_D, data = DF_nhanesA)
+
+```
+
+
+```{r freqALLF, echo=F}
+# survival::coxph(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
+#         M_i_D + M_i_S + D_i_D + D_i_S + 
+#         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
+#       data = DF_nhanesA)
+# flexsurv::flexsurvreg(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
+#                               data = DF_nhanesA, dist = "gompertz") %>% 
+survival::coxph(survival::Surv(age, Time+age, eventall) ~ FRS.1998 +
+                     D_i_S + D_i_D + sigma_C_S + sigma_H_S +
+                     sigma_C_D + sigma_H_D +
+                  survival::strata(race) + survival::strata(female), data = DF_nhanesFRS) %>%
+  broom::tidy(conf.int = TRUE) %>%    # Include confidence intervals
+  mutate_if(is.numeric, signif, digits = 2) %>%
+  mutate_at(vars(matches("_i_")), scale, scale=F) %>%
+  mutate_at(vars(matches("FRS")), scale, scale=F) %>%
+  mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)))%>%
+  left_join(SD_nFRS,by="term")%>%
+  mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
+  mutate(estimate=estimate*std)%>%
+  dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+  setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
+  mutate(Covariate=gsub("_"," ",Covariate))%>%
+  kableExtra::kable(format = "latex", booktabs = TRUE, label = "freqALLF",
+                    caption="Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.")
+  # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
+# coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
+#                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
+#                      sigma_C_D + sigma_H_D, data = DF_nhanesA)
+
+```
+
+
+```{r freqCVDNF, echo=F}
+# survival::coxph(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
+#         M_i_D + M_i_S + D_i_D + D_i_S + 
+#         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
+#       data = DF_nhanesA)
+# flexsurv::flexsurvreg(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
+#                               data = DF_nhanesA, dist = "gompertz") %>% 
+survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ M_i_S + M_i_D +
+                     D_i_S + D_i_D + sigma_C_S + sigma_H_S +
+                     sigma_C_D + sigma_H_D +
+                  survival::strata(race) + survival::strata(female), data = DF_nhanesA) %>%
+  broom::tidy(conf.int = TRUE) %>%    # Include confidence intervals
+  mutate_if(is.numeric, signif, digits = 2) %>%
+  # mutate_at(vars(matches("_i_")), scale, scale=F) %>%
+  # mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)))%>%
+  left_join(SD_nA,by="term")%>%
+  mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
+  mutate(estimate=estimate*std)%>%
+  dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+  setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
+  mutate(Covariate=gsub("_"," ",Covariate))%>%
+  kableExtra::kable(format = "latex", booktabs = TRUE, label = "freqCVDNF",
+                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, Full population.")
+  # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
+# coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
+#                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
+#                      sigma_C_D + sigma_H_D, data = DF_nhanesA)
+
+```
+
+```{r freqALLNF, echo=F}
+# survival::coxph(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
+#         M_i_D + M_i_S + D_i_D + D_i_S + 
+#         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
+#       data = DF_nhanesA)
+# flexsurv::flexsurvreg(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
+#                               data = DF_nhanesA, dist = "gompertz") %>% 
+survival::coxph(survival::Surv(age, Time+age, eventall) ~ M_i_S + M_i_D +
+                     D_i_S + D_i_D + sigma_C_S + sigma_H_S +
+                     sigma_C_D + sigma_H_D +
+                  survival::strata(race) + survival::strata(female), data = DF_nhanesA) %>%
+  broom::tidy(conf.int = TRUE) %>%    # Include confidence intervals
+  mutate_if(is.numeric, signif, digits = 2) %>%
+  mutate_at(vars(matches("_i_")), scale, scale=F) %>%
+  mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)))%>%
+  left_join(SD_nA,by="term")%>%
+  mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
+  mutate(estimate=estimate*std)%>%
+  dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+  setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
+  mutate(Covariate=gsub("_"," ",Covariate))%>%
+  kableExtra::kable(format = "latex", booktabs = TRUE, label = "freqALLNF",
+                    caption="Cox-PH parameter estimates for all-cause mortality, NHANES III, Full population.")
+  # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
+# coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
+#                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
+#                      sigma_C_D + sigma_H_D, data = DF_nhanesA)
+
+```
+
+
+
+## Results - Exploring $\Delta$ Directionality
 
 This section of the appendix is to explore whether the directionality of the difference in clinic-home blood pressure (represented through the non-absolute value of the $\Delta$ covariate) may have an influence on the survival outcome in the population. In the work presented in this article, $\Delta$ is the absolute value of the differences in the means of the blood pressure measurements at the clinic and at home, respectively, for both diastolic and systolic blood pressure. By 'directionality', we refer to whether the difference between the clinic and home mean measurements are positive or negative. Figure \ref{fig:DeltaDensities} shows the clinic-home directionalities, split by demographic group, indicating no significant difference between the different demographic groups. There is a general trend that the directionality for systolic and diastolic blood pressure is more likely to be the same than opposite.
 
