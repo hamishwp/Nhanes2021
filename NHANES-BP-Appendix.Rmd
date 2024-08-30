@@ -750,41 +750,41 @@ One subject was excluded for diastolic BP 156, and three were excluded for systo
 
 \newpage
 
-## Exploratory data analysis
-The empirical means of the home and clinic measures in population B are tabulated in Table 1. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female. 
-The average difference is about `r sprintf('%.1f',mean(diasH)-mean(dias))` for diastolic and `r sprintf('%.1f', mean(sysH) - mean(sys))` for systolic, which is small compared with the general range of the differences, which have SD of 
-`r sprintf('%.1f (diastolic) and %.1f (systolic)', sd(diasH-dias),sd(sysH-sys))`.
+<!-- ## Exploratory data analysis -->
+<!-- The empirical means of the home and clinic measures in population B are tabulated in Table 1. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female.  -->
+<!-- The average difference is about `r sprintf('%.1f',mean(diasH)-mean(dias))` for diastolic and `r sprintf('%.1f', mean(sysH) - mean(sys))` for systolic, which is small compared with the general range of the differences, which have SD of  -->
+<!-- `r sprintf('%.1f (diastolic) and %.1f (systolic)', sd(diasH-dias),sd(sysH-sys))`. -->
 
-```{r summaries, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
-# Printing the table using kable
-    cat(kable(mean_sd_summary,format="latex", escape = F,booktabs = T, digits=1,
-              linesep = rep(c(rep("",5),"\\addlinespace"),4),
-                  col.names=c("Sys/Dias", "Place","Sex", "Ethnicity", 'Mean', 'SD'),caption = 'Summary data for blood pressure') %>%  kable_styling(latex_options = "hold_position") )
-    cat('\n')
-```
+<!-- ```{r summaries, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE} -->
+<!-- # Printing the table using kable -->
+<!--     cat(kable(mean_sd_summary,format="latex", escape = F,booktabs = T, digits=1, -->
+<!--               linesep = rep(c(rep("",5),"\\addlinespace"),4), -->
+<!--                   col.names=c("Sys/Dias", "Place","Sex", "Ethnicity", 'Mean', 'SD'),caption = 'Summary data for blood pressure') %>%  kable_styling(latex_options = "hold_position") ) -->
+<!--     cat('\n') -->
+<!-- ``` -->
 
-### Correlations between measurements {#sec:correlations}
-We see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
+<!-- ### Correlations between measurements {#sec:correlations} -->
+<!-- We see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model. -->
 
-```{r SD-mean, dpi = 1,fig.pos='H', fig.width=8,fig.height=6, fig.cap='2D density plot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
-# 2D density plot of mean BP against SD of BP from bp.data
-ggplot(bp.data, aes(x = Mean, y = SD)) +
-  geom_bin2d() +
-  labs(title = "2D Density Plot of Mean against SD",
-       x = "Mean",y = "SD") + ylim(0,15)+
-  scale_fill_continuous(type = "viridis") +
-  theme_bw()+
-geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
-  facet_grid(BPtype ~ BPplace, scales = 'free_x') +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlation), x = Inf, y = Inf), 
-            vjust = "top", hjust = "right", inherit.aes = FALSE)
+<!-- ```{r SD-mean, dpi = 1,fig.pos='H', fig.width=8,fig.height=6, fig.cap='2D density plot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE} -->
+<!-- # 2D density plot of mean BP against SD of BP from bp.data -->
+<!-- ggplot(bp.data, aes(x = Mean, y = SD)) + -->
+<!--   geom_bin2d() + -->
+<!--   labs(title = "2D Density Plot of Mean against SD", -->
+<!--        x = "Mean",y = "SD") + ylim(0,15)+ -->
+<!--   scale_fill_continuous(type = "viridis") + -->
+<!--   theme_bw()+ -->
+<!-- geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line -->
+<!--   facet_grid(BPtype ~ BPplace, scales = 'free_x') + -->
+<!--   theme(plot.title = element_text(hjust = 0.5)) + -->
+<!--   geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlation), x = Inf, y = Inf),  -->
+<!--             vjust = "top", hjust = "right", inherit.aes = FALSE) -->
 
-```
+<!-- ``` -->
 
 
 
-\clearpage
+
 
 # Appendix B -- Model details
 This appendix aims to add more detail about the numerical modelling than was provided in the article. This is to ensure that the research methods are transparent and entirely reproducible. The numerical modelling presented in this paper was performed using R combined with Rstan. More detail will be provided here about the model, about the specific methodology used to parameterize the model, and more results are provided that were not included in the main text.
@@ -1848,7 +1848,7 @@ The centering of the linear predictors, which is required as input to every MCMC
 The post-processing script is called `PostProcessing.R`, which heavily relies on the `Functions.R` script which contains all the necessary functions to analyse the data. The post-processing script generates many useful plots of the MCMC posterior distribution for the user, including Bayes' factors, violin plots of the normalised beta and gompertz posteriors, and more.
 -->
 
-\clearpage
+
 # Appendix C -- Further Results
 
 In this section, we add some additional detail to the results section covered in the article. Extra information is given to explain how convergence of the simulations was ensured, and to also include more visualisations of the converged model parameterizations. The authors feel that this is particularly useful to provide confidence in the model parameterization and the predictions.
@@ -2049,8 +2049,6 @@ final_table
 
 ## Results - Model Performance
 
-## Results - Model Performance
-
 To measure the performance of the model to predict the survival outcome of individuals in the population, figure \ref{fig:cumpred} shows, ordered by individual age, the cumulative hazard $H(t)$ predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
 
 ![Predicted cumulative hazard against cumulative number of deaths in the population, ordered by the age of the individual. ](./Plots/Survival/redlinpred_Cumulative_haz-death_age.png){#fig:cumpred}
@@ -2118,7 +2116,6 @@ To finalise the section on the performance of the models using ROC and AUC value
 
 ![ROC curves for for the FRS-based model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8oth}
 
-## Results - Exploring $\Delta$ Directionality
 ## Results - Excluded Population
 
 As there were 3,916 individuals that were excluded from the research, it is important to verify that there is no bias in the survival outcomes linked to each of the demographic groups for the included and excluded populations. This section demonstrates this by considering differences in the Kaplan-Meier curves, shown in figure \ref{fig:excpop}. No significant difference in survival outcomes is observed between the different demographic groups for the excluded and included populations. However, it is important to note that bias has been introduced by the fact that the 751 individuals that were included in the 'other' ethnicity will therefore not be represented in this research.
@@ -2164,7 +2161,7 @@ ggsave("Excluded_SurvProbKM.png",p,path = "./Rmarkdown_Plots",width = 7,height =
 
 ## Results - Frequentist Comparison
 
-A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes. Note that, due to many individuals having less than one distinct blood pressure measurement, the sample size for the frequentist models is 7,633 and 12,458 for the FRS- and full-population, respectively.
+A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes. Note that, due to many individuals having less than one distinct blood pressure measurement, the sample size for the frequentist models is 7,633 and 12,458 for the FRS- and full-population, respectively. Please note that 'race=1' refers to the white, 'race=2' the black and the baseline as the mexican population.
 
 ```{r frequentist, include=FALSE, message=FALSE, warning=FALSE, echo=F}
 tmp<-readRDS("./Data_cleaned/nhanes_DF.RData")
@@ -2176,11 +2173,11 @@ rm(tmp)
 SD_nA <- suppressWarnings(DF_nhanesA %>%
   select(M_i_D, M_i_S, D_i_D, D_i_S, sigma_C_S, sigma_H_S, sigma_C_D, sigma_H_D) %>%
   summarise(across(everything(), function(x) sd(x, na.rm=T)))%>%reshape2::melt()%>%
-  setNames(c("term","std")))%>%rbind(data.frame(term=c("race","female"),std=c(1,1)))
+  setNames(c("term","std"))%>%rbind(data.frame(term=c("race=1","race=2","female=1"),std=c(1,1,1))))
 SD_nFRS <- suppressWarnings(DF_nhanesFRS %>%
   select(FRS.1998, D_i_D, D_i_S, sigma_C_S, sigma_H_S, sigma_C_D, sigma_H_D) %>%
   summarise(across(everything(), function(x) sd(x, na.rm=T)))%>%reshape2::melt()%>%
-  setNames(c("term","std")))%>%rbind(data.frame(term=c("race","female"),std=c(1,1)))
+  setNames(c("term","std"))%>%rbind(data.frame(term=c("race=1","race=2","female=1"),std=c(1,1,1))))
 ```
 
 
@@ -2200,7 +2197,8 @@ survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ FRS.1998 +
   mutate_at(vars(matches("_i_")), scale, scale=F) %>%
   mutate_at(vars(matches("FRS")), scale, scale=F) %>%
   mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
-  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)))%>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)),
+         term=gsub("survival::strata\\(female\\)","",gsub("survival::strata\\(race\\)","",term)))%>%
   left_join(SD_nFRS,by="term")%>%
   mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
   mutate(estimate=estimate*std)%>%
@@ -2233,7 +2231,8 @@ survival::coxph(survival::Surv(age, Time+age, eventall) ~ FRS.1998 +
   mutate_at(vars(matches("_i_")), scale, scale=F) %>%
   mutate_at(vars(matches("FRS")), scale, scale=F) %>%
   mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
-  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)))%>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)),
+         term=gsub("survival::strata\\(female\\)","",gsub("survival::strata\\(race\\)","",term)))%>%
   left_join(SD_nFRS,by="term")%>%
   mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
   mutate(estimate=estimate*std)%>%
@@ -2265,7 +2264,8 @@ survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ M_i_S + M_i_D +
   mutate_if(is.numeric, signif, digits = 2) %>%
   # mutate_at(vars(matches("_i_")), scale, scale=F) %>%
   # mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
-  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)))%>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)),
+         term=gsub("survival::strata\\(female\\)","",gsub("survival::strata\\(race\\)","",term)))%>%
   left_join(SD_nA,by="term")%>%
   mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
   mutate(estimate=estimate*std)%>%
@@ -2296,7 +2296,8 @@ survival::coxph(survival::Surv(age, Time+age, eventall) ~ M_i_S + M_i_D +
   mutate_if(is.numeric, signif, digits = 2) %>%
   mutate_at(vars(matches("_i_")), scale, scale=F) %>%
   mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
-  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)))%>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)),
+         term=gsub("survival::strata\\(female\\)","",gsub("survival::strata\\(race\\)","",term)))%>%
   left_join(SD_nA,by="term")%>%
   mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
   mutate(estimate=estimate*std)%>%

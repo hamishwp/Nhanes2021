@@ -5,19 +5,16 @@
 \documentclass[
 ]{article}
 \usepackage{amsmath,amssymb}
+\usepackage{lmodern}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math} % this also loads fontspec
+  \usepackage{unicode-math}
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-\usepackage{lmodern}
-\ifPDFTeX\else
-  % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -107,7 +104,7 @@
 \fi
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same}
+\urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
   pdftitle={NHANES Blood Pressure-Based Mortality Risk - Appendix},
   pdfauthor={Rscripts by Hamish Patten, DW Bester and David Steinsaltz},
@@ -425,64 +422,7 @@ Some of the reported measures were extremely implausible, particularly for diast
 There was just one subject with systolic BP measures that were too low, but NA subjects with low diastolic BP (in addition to those with measures recorded as 0).
 One subject was excluded for diastolic BP 156, and three were excluded for systolic BP that was too high, with the maximum being 264.
 
-\hypertarget{exploratory-data-analysis}{%
-\subsection{Exploratory data analysis}\label{exploratory-data-analysis}}
-
-The empirical means of the home and clinic measures in population B are tabulated in Table 1. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female.
-The average difference is about 2.2 for diastolic and 2.7 for systolic, which is small compared with the general range of the differences, which have SD of
-10.5 (diastolic) and 14.8 (systolic).
-
-\begin{table}[!h]
-
-\caption{\label{tab:summaries}Summary data for blood pressure}
-\centering
-\begin{tabular}[t]{llllrr}
-\toprule
-Sys/Dias & Place & Sex & Ethnicity & Mean & SD\\
-\midrule
-Home & Systolic & Male & Black & 128.8 & 2.7\\
-Home & Systolic & Male & White & 131.2 & 2.8\\
-Home & Systolic & Male & Mexican & 127.1 & 2.5\\
-Home & Systolic & Female & Black & 123.2 & 2.7\\
-Home & Systolic & Female & White & 127.2 & 2.9\\
-Home & Systolic & Female & Mexican & 121.2 & 2.7\\
-\addlinespace
-Home & Diastolic & Male & Black & 78.7 & 2.4\\
-Home & Diastolic & Male & White & 77.1 & 2.3\\
-Home & Diastolic & Male & Mexican & 76.8 & 2.4\\
-Home & Diastolic & Female & Black & 75.0 & 2.4\\
-Home & Diastolic & Female & White & 73.7 & 2.3\\
-Home & Diastolic & Female & Mexican & 72.0 & 2.4\\
-\addlinespace
-Clinic & Systolic & Male & Black & 127.7 & 3.5\\
-Clinic & Systolic & Male & White & 128.0 & 4.2\\
-Clinic & Systolic & Male & Mexican & 123.5 & 3.5\\
-Clinic & Systolic & Female & Black & 122.4 & 3.6\\
-Clinic & Systolic & Female & White & 123.5 & 4.1\\
-Clinic & Systolic & Female & Mexican & 117.8 & 3.4\\
-\addlinespace
-Clinic & Diastolic & Male & Black & 77.8 & 3.1\\
-Clinic & Diastolic & Male & White & 75.4 & 3.1\\
-Clinic & Diastolic & Male & Mexican & 74.9 & 3.2\\
-Clinic & Diastolic & Female & Black & 72.4 & 3.0\\
-Clinic & Diastolic & Female & White & 70.5 & 3.0\\
-Clinic & Diastolic & Female & Mexican & 69.2 & 3.0\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\hypertarget{sec:correlations}{%
-\subsubsection{Correlations between measurements}\label{sec:correlations}}
-
-We see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
-
-\begin{figure}
-\centering
-\includegraphics{NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf}
-\caption{\label{fig:SD-mean}2D density plot of individual mean BP against individual SD of BP}
-\end{figure}
-
-\clearpage
+\newpage
 
 \hypertarget{appendix-b-model-details}{%
 \section{Appendix B -- Model details}\label{appendix-b-model-details}}
@@ -788,24 +728,24 @@ so the standard errors for \(\hat\sigma_M^2\) and \(\hat\sigma_\Delta^2\) are ap
 \midrule
 \addlinespace[0.3em]
 \multicolumn{7}{l}{\textbf{Parameter estimates}}\\
-\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{123.3} & \cellcolor{gray!6}{123.3} & \cellcolor{gray!6}{2.24e-05} & \cellcolor{gray!6}{72.33} & \cellcolor{gray!6}{72.31} & \cellcolor{gray!6}{0.0002955}\\
-\hspace{1em}$m_\Delta$ & 1.332 & 1.349 & -0.01244 & 1.114 & 1.1 & 0.01326\\
-\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{376} & \cellcolor{gray!6}{376.8} & \cellcolor{gray!6}{-0.002022} & \cellcolor{gray!6}{104.1} & \cellcolor{gray!6}{104} & \cellcolor{gray!6}{0.001289}\\
-\hspace{1em}$\sigma^2_\Delta$ & 46.36 & 46.42 & -0.001326 & 21.92 & 21.9 & 0.000857\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{2.146} & \cellcolor{gray!6}{2.158} & \cellcolor{gray!6}{-0.005432} & \cellcolor{gray!6}{2.365} & \cellcolor{gray!6}{2.322} & \cellcolor{gray!6}{0.01864}\\
-\hspace{1em}$\theta_H$ & 0.1501 & 0.1496 & 0.003854 & 0.1933 & 0.1945 & -0.005856\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{2.576} & \cellcolor{gray!6}{2.569} & \cellcolor{gray!6}{0.002662} & \cellcolor{gray!6}{2.727} & \cellcolor{gray!6}{2.756} & \cellcolor{gray!6}{-0.01057}\\
-\hspace{1em}$\theta_C$ & 0.07507 & 0.07515 & -0.001023 & 0.1097 & 0.1093 & 0.003751\\
+\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{123.4} & \cellcolor{gray!6}{123.3} & \cellcolor{gray!6}{0.0001757} & \cellcolor{gray!6}{72.29} & \cellcolor{gray!6}{72.31} & \cellcolor{gray!6}{-0.0003104}\\
+\hspace{1em}$m_\Delta$ & 1.363 & 1.351 & 0.008801 & 1.101 & 1.096 & 0.00499\\
+\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{376.7} & \cellcolor{gray!6}{376.7} & \cellcolor{gray!6}{8.636e-06} & \cellcolor{gray!6}{104.7} & \cellcolor{gray!6}{104} & \cellcolor{gray!6}{0.007564}\\
+\hspace{1em}$\sigma^2_\Delta$ & 46.54 & 46.46 & 0.001874 & 21.98 & 21.93 & 0.00197\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{2.181} & \cellcolor{gray!6}{2.179} & \cellcolor{gray!6}{0.000885} & \cellcolor{gray!6}{2.324} & \cellcolor{gray!6}{2.331} & \cellcolor{gray!6}{-0.003183}\\
+\hspace{1em}$\theta_H$ & 0.1493 & 0.1491 & 0.00132 & 0.1952 & 0.1956 & -0.001773\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{2.53} & \cellcolor{gray!6}{2.565} & \cellcolor{gray!6}{-0.01371} & \cellcolor{gray!6}{2.799} & \cellcolor{gray!6}{2.763} & \cellcolor{gray!6}{0.01292}\\
+\hspace{1em}$\theta_C$ & 0.07558 & 0.07507 & 0.006866 & 0.1085 & 0.1086 & -0.0002892\\
 \addlinespace[0.3em]
 \multicolumn{7}{l}{\textbf{Parameter SE estimates}}\\
-\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{0.1608} & \cellcolor{gray!6}{0.1425} & \cellcolor{gray!6}{0.1282} & \cellcolor{gray!6}{0.08507} & \cellcolor{gray!6}{0.1073} & \cellcolor{gray!6}{-0.2073}\\
-\hspace{1em}$m_\Delta$ & 0.05795 & 0.06752 & -0.1417 & 0.04036 & 0.03555 & 0.1353\\
-\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{4.394} & \cellcolor{gray!6}{4.34} & \cellcolor{gray!6}{0.0125} & \cellcolor{gray!6}{1.218} & \cellcolor{gray!6}{1.511} & \cellcolor{gray!6}{-0.1937}\\
-\hspace{1em}$\sigma^2_\Delta$ & 0.551 & 0.6702 & -0.1778 & 0.2651 & 0.2495 & 0.06249\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{0.05593} & \cellcolor{gray!6}{0.0723} & \cellcolor{gray!6}{-0.2264} & \cellcolor{gray!6}{0.06586} & \cellcolor{gray!6}{0.0524} & \cellcolor{gray!6}{0.257}\\
-\hspace{1em}$\theta_H$ & 0.002128 & 0.002877 & -0.2605 & 0.002697 & 0.001951 & 0.3823\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{0.07608} & \cellcolor{gray!6}{0.04467} & \cellcolor{gray!6}{0.7034} & \cellcolor{gray!6}{0.08412} & \cellcolor{gray!6}{0.07422} & \cellcolor{gray!6}{0.1334}\\
-\hspace{1em}$\theta_C$ & 0.001033 & 0.001119 & -0.07645 & 0.0015 & 0.001246 & 0.2041\\
+\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{0.1609} & \cellcolor{gray!6}{0.129} & \cellcolor{gray!6}{0.2474} & \cellcolor{gray!6}{0.08533} & \cellcolor{gray!6}{0.07883} & \cellcolor{gray!6}{0.08236}\\
+\hspace{1em}$m_\Delta$ & 0.05806 & 0.06699 & -0.1333 & 0.0404 & 0.02261 & 0.7869\\
+\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{4.402} & \cellcolor{gray!6}{5.165} & \cellcolor{gray!6}{-0.1477} & \cellcolor{gray!6}{1.226} & \cellcolor{gray!6}{0.8555} & \cellcolor{gray!6}{0.4327}\\
+\hspace{1em}$\sigma^2_\Delta$ & 0.5531 & 0.3522 & 0.5704 & 0.2657 & 0.3146 & -0.1552\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{0.05747} & \cellcolor{gray!6}{0.05527} & \cellcolor{gray!6}{0.03985} & \cellcolor{gray!6}{0.06399} & \cellcolor{gray!6}{0.06849} & \cellcolor{gray!6}{-0.06576}\\
+\hspace{1em}$\theta_H$ & 0.00211 & 0.001707 & 0.2362 & 0.002733 & 0.003431 & -0.2035\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{0.07382} & \cellcolor{gray!6}{0.06675} & \cellcolor{gray!6}{0.1058} & \cellcolor{gray!6}{0.08768} & \cellcolor{gray!6}{0.08917} & \cellcolor{gray!6}{-0.01674}\\
+\hspace{1em}$\theta_C$ & 0.001043 & 0.0009402 & 0.1098 & 0.001475 & 0.001715 & -0.14\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -904,88 +844,6 @@ During the MCMC simulations, the centering values play a non-negligible role in 
 
 The code will be made available, but detailed references have been removed to preserve anonymity for the review process.
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  Data cleaning scripts
-\item
-  Main file
-\item
-  Stan files for HMC
-\item
-  Centering recalculation scripts
-\item
-  Post-processing analysis
-\end{enumerate}
-
-We provide a brief description of each of these below.
-
-\hypertarget{data-cleaning}{%
-\subsubsection{Data Cleaning}\label{data-cleaning}}
-
-This is found in the file \texttt{Dataclean2021.R}. Provided the raw NHANES dataset (in CSV format), it extracts all the data required for the simulations, and stores it in a structure that can be directly read in to the main file (\texttt{MCMC\_DiasSyst\_v3.R}) of this research.
-
-\hypertarget{main}{%
-\subsubsection{Main}\label{main}}
-
-The main file is \texttt{MCMC\_DiasSyst\_v3.R}. It reads in the cleaned NHANES data, the specific choice of simulation parameters (for example, whether to use the FRS number or mean systolic \& diastolic blood pressure), and runs the correct RStan scripts for that specific selection of simulation parameters. This script is intended for use on computing clusters.
-
-\hypertarget{stan}{%
-\subsubsection{Stan}\label{stan}}
-
-There are eight Stan files:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \texttt{mystanmodel\_DS\_sigma\_v2\_autopred.stan}
-\item
-  \texttt{mystanmodel\_DS\_tau\_v2\_autopred.stan}
-\item
-  \texttt{mystanmodelFRS\_DS\_sigma\_v2\_autopred.stan}
-\item
-  \texttt{mystanmodelFRS\_DS\_tau\_v2\_autopred.stan}
-\item
-  \texttt{mystanmodel\_DS\_sigma\_v2.stan}
-\item
-  \texttt{mystanmodel\_DS\_tau\_v2.stan}
-\item
-  \texttt{mystanmodelFRS\_DS\_sigma\_v2.stan}
-\item
-  \texttt{mystanmodelFRS\_DS\_tau\_v2.stan}
-\end{enumerate}
-
-These correspond to the following alternative simulation parameters:
-
-\begin{itemize}
-\tightlist
-\item
-  For the blood-pressure variability, choosing to use the standard-deviation \(\sigma\) or the precision \(\tau=1/\sigma\){]}\}
-\item
-  Using the FRS score or the mean diastolic and systolic blood pressure as a covariate in the analysis
-\item
-  Whether the centering parameters, \(\hat{X}\), in the linear predictor term are automatically calculated to satisfy \(\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0\) for every MCMC iteration, or whether the centering is held constant across all iterations
-\end{itemize}
-
-\hypertarget{centering}{%
-\subsubsection{Centering}\label{centering}}
-
-The centering of the linear predictors, which is required as input to every MCMC simulation iteration, is recalculated in the files \texttt{AutoPred\_Recalc.R} and \texttt{ManPred\_Recalc.R}. This is then provided to the Main script, \texttt{MCMC\_DiasSyst\_v3.R}, which provides these centering values to the Stan code for the MCMC simulations.
-
-\hypertarget{empirical-bayes-estimation}{%
-\subsubsection{Empirical Bayes Estimation}\label{empirical-bayes-estimation}}
-
-The file \texttt{gamma\_fits.Rmd} contains all the necessary routines in order to replicate the calculation of the empirical Bayes' priors for the hyperparameters of the model.
-
-\hypertarget{post-processing}{%
-\subsubsection{Post-processing}\label{post-processing}}
-
-The post-processing script is called \texttt{PostProcessing.R}, which heavily relies on the \texttt{Functions.R} script which contains all the necessary functions to analyse the data. The post-processing script generates many useful plots of the MCMC posterior distribution for the user, including Bayes' factors, violin plots of the normalised beta and gompertz posteriors, and more.
-
-\clearpage
-
 \hypertarget{appendix-c-further-results}{%
 \section{Appendix C -- Further Results}\label{appendix-c-further-results}}
 
@@ -1053,7 +911,7 @@ Where T is the index at which the sum of the autocorrelation estimates \(\hat{\r
 \hypertarget{results---model-parameterization}{%
 \subsection{Results - Model Parameterization}\label{results---model-parameterization}}
 
-We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section `Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector \(\beta\) of covariates in the Cox' proportional hazards model. When the \(\beta\) vector is normalised, the larger (in absolute terms) the value of \(\beta\), the larger the correlation between that specific covariate and the risk of mortality. Positive values of \(\beta\) imply a higher risk of mortality, and the inverse for negative values of \(\beta\). As we can see from the violin plots of the MCMC posterior samples of the \(\beta\) parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of CVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately \(25\%\) more with mortality risk of CVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
+We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section `Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector \(\beta\) of covariates in the Cox' proportional hazards model. When the \(\beta\) vector is normalised, the larger (in absolute terms) the value of \(\beta\), the larger the correlation between that specific covariate and the risk of mortality. Positive values of \(\beta\) imply a higher risk of mortality, and the inverse for negative values of \(\beta\). As we can see from the violin plots of the MCMC posterior samples of the \(\beta\) parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of HA-CVD-CeVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately \(25\%\) more with mortality risk of HA-CVD-CeVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
 
 \begin{table}
 
@@ -1500,7 +1358,7 @@ As there were 3,916 individuals that were excluded from the research, it is impo
 \hypertarget{results---frequentist-comparison}{%
 \subsection{Results - Frequentist Comparison}\label{results---frequentist-comparison}}
 
-A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes. Note that, due to many individuals having less than one distinct blood pressure measurement, the sample size for the frequentist models is 7,633 and 12,458 for the FRS- and full-population, respectively.
+A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes. Note that, due to many individuals having less than one distinct blood pressure measurement, the sample size for the frequentist models is 7,633 and 12,458 for the FRS- and full-population, respectively. Please note that `race=1' refers to the white, `race=2' the black and the baseline as the mexican population.
 
 \begin{table}
 
@@ -1518,9 +1376,9 @@ sigma H S & 0.0542982 & 0.13 & (-0.015,0.12)\\
 \addlinespace
 sigma C D & 0.0268981 & 0.45 & (-0.042,0.096)\\
 sigma H D & 0.0299251 & 0.41 & (-0.043,0.1)\\
-survival::strata(race)race=1 & NA & 0.0017 & (NA,NA)\\
-survival::strata(race)race=2 & NA & 0.11 & (NA,NA)\\
-survival::strata(female)female=1 & NA & <0.001 & (NA,NA)\\
+race=1 & -0.3000000 & 0.0017 & (-0.49,-0.11)\\
+race=2 & 0.1600000 & 0.11 & (-0.037,0.37)\\
+female=1 & -0.3000000 & <0.001 & (-0.45,-0.14)\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1541,9 +1399,9 @@ sigma H S & 0.0144795 & 0.43 & (-0.022,0.05)\\
 \addlinespace
 sigma C D & 0.0230555 & 0.21 & (-0.013,0.058)\\
 sigma H D & 0.0142975 & 0.47 & (-0.025,0.053)\\
-survival::strata(race)race=1 & NA & 0.019 & (NA,NA)\\
-survival::strata(race)race=2 & NA & <0.001 & (NA,NA)\\
-survival::strata(female)female=1 & NA & <0.001 & (NA,NA)\\
+race=1 & -0.1100000 & 0.019 & (-0.21,-0.018)\\
+race=2 & 0.2000000 & <0.001 & (0.096,0.3)\\
+female=1 & -0.3300000 & <0.001 & (-0.4,-0.25)\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1565,10 +1423,10 @@ sigma C S & -0.0097834 & 0.67 & (-0.054,0.036)\\
 sigma H S & -0.0142106 & 0.54 & (-0.06,0.03)\\
 sigma C D & -0.0286500 & 0.28 & (-0.08,0.023)\\
 sigma H D & 0.0237782 & 0.38 & (-0.031,0.078)\\
-survival::strata(race)race=1 & NA & 0.93 & (NA,NA)\\
-survival::strata(race)race=2 & NA & 0.0079 & (NA,NA)\\
+race=1 & 0.0066000 & 0.93 & (-0.13,0.15)\\
+race=2 & 0.2200000 & 0.0079 & (0.056,0.37)\\
 \addlinespace
-survival::strata(female)female=1 & NA & <0.001 & (NA,NA)\\
+female=1 & -0.4500000 & <0.001 & (-0.56,-0.34)\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1590,10 +1448,10 @@ sigma C S & -0.0087536 & 0.5 & (-0.033,0.017)\\
 sigma H S & -0.0030022 & 0.82 & (-0.028,0.022)\\
 sigma C D & -0.0061393 & 0.67 & (-0.035,0.023)\\
 sigma H D & 0.0146066 & 0.34 & (-0.015,0.044)\\
-survival::strata(race)race=1 & NA & 0.29 & (NA,NA)\\
-survival::strata(race)race=2 & NA & 0.001 & (NA,NA)\\
+race=1 & -0.0410000 & 0.29 & (-0.12,0.034)\\
+race=2 & 0.1400000 & 0.001 & (0.057,0.23)\\
 \addlinespace
-survival::strata(female)female=1 & NA & <0.001 & (NA,NA)\\
+female=1 & -0.4300000 & <0.001 & (-0.48,-0.37)\\
 \bottomrule
 \end{tabular}
 \end{table}
