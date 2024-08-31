@@ -478,34 +478,6 @@ sds4 <- max(apply(xDH_F, 1, sd))
 tauis_av_F <- c(mean(1/sds1^2) , mean(1/sds2^2), mean(1/sds3^2), mean(1/sds4^2))
 tauis_F <- c(1/sds1^2 , 1/sds2^2, 1/sds3^2, 1/sds4^2)
 rm(sds1,sds2,sds3,sds4)
-### Create datafranes from full data for K-M and Cox-PH models later
-list_nhanesA$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_NF)+as.matrix(xDH_NF)) ))
-list_nhanesA$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_NF)+as.matrix(xSH_NF)) ))
-list_nhanesA$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_NF)-as.matrix(xDH_NF))/2)))
-list_nhanesA$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_NF)-as.matrix(xSH_NF))/2)))
-list_nhanesA$sigma_C_S<-unname(apply(xSC_NF, 1, sd))
-list_nhanesA$sigma_H_S<-unname(apply(xSH_NF, 1, sd))
-list_nhanesA$sigma_C_D<-unname(apply(xDC_NF, 1, sd))
-list_nhanesA$sigma_H_D<-unname(apply(xDH_NF, 1, sd))
-# FRS
-list_nhanesFRS$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_F)+as.matrix(xDH_F)) ))
-list_nhanesFRS$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_F)+as.matrix(xSH_F)) ))
-list_nhanesFRS$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_F)-as.matrix(xDH_F))/2)))
-list_nhanesFRS$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_F)-as.matrix(xSH_F))/2)))
-list_nhanesFRS$sigma_C_S<-unname(apply(xSC_F, 1, sd))
-list_nhanesFRS$sigma_H_S<-unname(apply(xSH_F, 1, sd))
-list_nhanesFRS$sigma_C_D<-unname(apply(xDC_F, 1, sd))
-list_nhanesFRS$sigma_H_D<-unname(apply(xDH_F, 1, sd))
-# Remove all the zero values from standard deviation
-is.zero<-function(x) x==0
-DF_nhanesA <- list_nhanesA[-c(1:4)] %>% as.data.frame() %>%
-  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
-DF_nhanesFRS <- list_nhanesFRS[-c(1:4)] %>% as.data.frame() %>%
-  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
-colnames(DF_nhanesA)[1]<-"Time"
-colnames(DF_nhanesFRS)[1]<-"Time"
-
-saveRDS(list(DF_nhanesA=DF_nhanesA,DF_nhanesFRS=DF_nhanesFRS),"./Data_cleaned/nhanes_DF.RData")
 ###################################################################
 
 Nits<-5
@@ -1875,27 +1847,6 @@ ggsave("LexisDelta.png", plot=p,path = paste0(directory,'Plots/Survival'),width 
 p<-plot_discrete_cbar(unique((hist(output$Delta,breaks = 10,plot = F))$breaks), 
                       spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
 ggsave("LexisDelta_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
-
-
-
-#@@@@@@@@@@@@@@@@@@@@@@ COMPARISON WITH FREQUENTIST COX-PH MODEL @@@@@@@@@@@@@@@@@@@@@@#
-
-survival::coxph(survival::Surv(Time, eventCVDHrt) ~ age + female + black + other + 
-        M_D_NF + M_S_NF + Delta_D_NF + Delta_S_NF + 
-        tauis_SC_NF + tauis_SH_NF + tauis_DC_NF + tauis_DH_NF, 
-      data = DF_nhanesA) %>% 
-  summary()
-
-
-
-
-
-
-
-
-
-
-
 
 
 # BEST SURVIVAL PREDICTION
