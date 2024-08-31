@@ -1698,25 +1698,25 @@ survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n
 
 saveRDS(survFrame,"./Plots/Survival/ROC_Data.Rdata")
 
-survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=RL),size=1)+facet_wrap(~Plot,nrow = 2)
-
-survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=Plot),size=1)+facet_wrap(~RL,nrow = 2)
-
+# survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=RL),size=1)+facet_wrap(~Plot,nrow = 2)
+# 
+# survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=Plot),size=1)+facet_wrap(~RL,nrow = 2)
+# 
 survFrame$Plot<-factor(survFrame$Plot)
 levels(survFrame$Plot)<-c("Delta Terms","All","FRS and Delta","FRS Only","Gompertz Only","Mean and Delta","Systolic Mean Only")
 survFrame$Plot<-as.character(survFrame$Plot)
-
-p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=Plot,shape=Event),size=1)+
-  scale_color_discrete(labels=TeX(unique(survFrame$Plot))) + geom_abline(slope = 1,intercept = 0) +
-  xlab("False Positive Rate") + ylab("True Positive Rate") +
-  facet_wrap(~RL,labeller = as_labeller(TeX,default = label_parsed),nrow = 2);p
-ggsave("ROCSurvival_RL.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
-
-p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=RL,shape=Event),size=1)+
-  xlab("False Positive Rate") + ylab("True Positive Rate") + geom_abline(slope = 1,intercept = 0) +
-  # ggtitle(label = c("Delta Terms","All","FRS and Delta","FRS Only","Gompertz Only","Mean and Delta","Systolic Mean Only")) +
-  facet_wrap(~Plot,nrow = 2);p
-ggsave("ROCSurvival_Plot.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
+# 
+# p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=Plot,shape=Event),size=1)+
+#   scale_color_discrete(labels=TeX(unique(survFrame$Plot))) + geom_abline(slope = 1,intercept = 0) +
+#   xlab("False Positive Rate") + ylab("True Positive Rate") +
+#   facet_wrap(~RL,labeller = as_labeller(TeX,default = label_parsed),nrow = 2);p
+# ggsave("ROCSurvival_RL.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
+# 
+# p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=RL,shape=Event),size=1)+
+#   xlab("False Positive Rate") + ylab("True Positive Rate") + geom_abline(slope = 1,intercept = 0) +
+#   # ggtitle(label = c("Delta Terms","All","FRS and Delta","FRS Only","Gompertz Only","Mean and Delta","Systolic Mean Only")) +
+#   facet_wrap(~Plot,nrow = 2);p
+# ggsave("ROCSurvival_Plot.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
 
 survFrame$FRS<-F
 survFrame$FRS[survFrame$RL%in%c("RL5","RL6","RL7","RL8")]<-T
@@ -1724,10 +1724,9 @@ survFrame$Model<-survFrame$Plot
 survFrame$Model[survFrame$Plot%in%c("FRS and Delta","Mean and Delta")]<-"FRS/Mean + Delta"
 survFrame$Model[survFrame$Plot%in%c("FRS Only","Systolic Mean Only")]<-"FRS/Sys-Mean Only"
 
-survFrame$Event<-survFrame$Plot
-
-survFrame$Event[survFrame$Event=="All"]<-"All Deaths"
-survFrame$Event[survFrame$Event=="CVDHrt"]<-"CVD & Hrt Only"
+survFrame$Event<-NA_character_
+survFrame$Event[survFrame$RL%in%c("RL2","RL4","RL6","RL8")]<-"All Deaths"
+survFrame$Event[survFrame$RL%in%c("RL1","RL3","RL5","RL7")]<-"CVD & Hrt Only"
 
 AUROC<-survFrame%>%filter(RL%in%c("RL1","RL2","RL5","RL6"))%>%group_by(RL,Model,Event,FRS)%>%summarise(AUROC=max(auroc),.groups = "keep")
 AUROC$label<-paste0("AUC=",round(AUROC$AUROC,2))
