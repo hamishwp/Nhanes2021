@@ -2164,12 +2164,49 @@ ggsave("Excluded_SurvProbKM.png",p,path = "./Rmarkdown_Plots",width = 7,height =
 A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes. Note that, due to many individuals having less than one distinct blood pressure measurement, the sample size for the frequentist models is 7,633 and 12,458 for the FRS- and full-population, respectively. Please note that 'race=1' refers to the white, 'race=2' the black and the baseline as the mexican population.
 
 ```{r frequentist, include=FALSE, message=FALSE, warning=FALSE, echo=F}
-tmp<-readRDS("./Data_cleaned/nhanes_DF.RData")
-DF_nhanesA<-tmp$DF_nhanesA
-DF_nhanesFRS<-tmp$DF_nhanesFRS
+# Temporarily load the data
+load("./Data_cleaned/nhanes_cleaned_lists.RData")
+# Extract systolic and diastolic individual-level summary statistics
+xSC_NF<-list_nhanesA$sys
+xDC_NF<-list_nhanesA$dias
+xSH_NF<-list_nhanesA$sys_home
+xDH_NF<-list_nhanesA$dias_home
+xSC_F<-list_nhanesFRS$sys
+xDC_F<-list_nhanesFRS$dias
+xSH_F<-list_nhanesFRS$sys_home
+xDH_F<-list_nhanesFRS$dias_home
+### Create datafranes from full data for K-M and Cox-PH models later
+list_nhanesA$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_NF)+as.matrix(xDH_NF)) ))
+list_nhanesA$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_NF)+as.matrix(xSH_NF)) ))
+list_nhanesA$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_NF)-as.matrix(xDH_NF))/2)))
+list_nhanesA$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_NF)-as.matrix(xSH_NF))/2)))
+list_nhanesA$sigma_C_S<-unname(apply(xSC_NF, 1, sd))
+list_nhanesA$sigma_H_S<-unname(apply(xSH_NF, 1, sd))
+list_nhanesA$sigma_C_D<-unname(apply(xDC_NF, 1, sd))
+list_nhanesA$sigma_H_D<-unname(apply(xDH_NF, 1, sd))
+# FRS
+list_nhanesFRS$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_F)+as.matrix(xDH_F)) ))
+list_nhanesFRS$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_F)+as.matrix(xSH_F)) ))
+list_nhanesFRS$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_F)-as.matrix(xDH_F))/2)))
+list_nhanesFRS$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_F)-as.matrix(xSH_F))/2)))
+list_nhanesFRS$sigma_C_S<-unname(apply(xSC_F, 1, sd))
+list_nhanesFRS$sigma_H_S<-unname(apply(xSH_F, 1, sd))
+list_nhanesFRS$sigma_C_D<-unname(apply(xDC_F, 1, sd))
+list_nhanesFRS$sigma_H_D<-unname(apply(xDH_F, 1, sd))
+# Extract only what we need
+is.zero<-function(x) x==0
+DF_nhanesA <- list_nhanesA[-c(1:4)] %>% as.data.frame() %>%
+  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
+DF_nhanesFRS <- list_nhanesFRS[-c(1:4)] %>% as.data.frame() %>%
+  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
+# Cleanup
+rm(list_nhanesA,list_nhanesFRS)
+colnames(DF_nhanesA)[1]<-"Time"
+colnames(DF_nhanesFRS)[1]<-"Time"
+# add some extras
 DF_nhanesA%<>%mutate(race=case_when(black==1 ~ 2, white==1 ~ 1, T ~ 0))
 DF_nhanesFRS%<>%mutate(race=case_when(black==1 ~ 2, white==1 ~ 1, T ~ 0))
-rm(tmp)
+# Create the standard deviations to normalise the beta values
 SD_nA <- suppressWarnings(DF_nhanesA %>%
   select(M_i_D, M_i_S, D_i_D, D_i_S, sigma_C_S, sigma_H_S, sigma_C_D, sigma_H_D) %>%
   summarise(across(everything(), function(x) sd(x, na.rm=T)))%>%reshape2::melt()%>%
