@@ -301,7 +301,7 @@ quarty<-T
 beta<-data.frame()
 for(i in 1:8){
   RL<-get(paste0("RL",i))
-  if(is.na(RL$FRSt)) btmp<-ConvertBeta(RL,quarty) else {
+  if(is.na(RL$FRSt)) btmp<-ConvertBeta(RL,quarty=quarty) else {
     if(RL$FRSt=="ATP") FRS<-list_nhanesFRS$FRS.ATP else FRS<-list_nhanesFRS$FRS.1998
     btmp<-ConvertBeta(RL,FRS=FRS,quarty)
   }

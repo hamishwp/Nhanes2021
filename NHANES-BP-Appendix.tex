@@ -456,26 +456,31 @@ The majority of mortality events are censored --- not yet known at the time of d
 When CVD mortality is the event being analysed, deaths due to other causes are treated as noninformative censoring events.
 In this study, we explored the following covariates:
 
-\begin{tabular}{lll}
+\begin{table}[!h]
+
+\caption{\label{tab:runnumers}Explanations of the different models simulated in this work, according to run number.}
+\centering
+\begin{tabular}[t]{lll}
 \toprule
 Variable Name & Support & Description\\
 \midrule
-$FRS-1998$ & $R^N$ & 1998 version of the FRS score\\
+\cellcolor{gray!6}{$FRS-1998$} & \cellcolor{gray!6}{$R^N$} & \cellcolor{gray!6}{1998 version of the FRS score}\\
 $FRS-ATP$ & $R^N$ & ATP version of the FRS score\\
-$M_S$ & $R^{+,N}$ & Mean systolic blood pressure\\
+\cellcolor{gray!6}{$M_S$} & \cellcolor{gray!6}{$R^{+,N}$} & \cellcolor{gray!6}{Mean systolic blood pressure}\\
 $M_D$ & $R^{+,N}$ & Mean diastolic blood pressure\\
-$\Delta_S$ & $R^{+,N}$ & Semi-difference between Home and Clinic mean systolic blood pressure\\
+\cellcolor{gray!6}{$\Delta_S$} & \cellcolor{gray!6}{$R^{+,N}$} & \cellcolor{gray!6}{Semi-difference between Home and Clinic mean systolic blood pressure}\\
 $\Delta_D$ & $R^{+,N}$ & Semi-difference between Home and Clinic mean diastolic blood pressure\\
-$\sigma_{\{S,H\}}$ & $R^{+,N}$ & Standard deviation of the systolic blood pressure taken at home\\
+\cellcolor{gray!6}{$\sigma_{\{S,H\}}$} & \cellcolor{gray!6}{$R^{+,N}$} & \cellcolor{gray!6}{Standard deviation of the systolic blood pressure taken at home}\\
 $\sigma_{\{D,H\}}$ & $R^{+,N}$ & Standard deviation of the diastolic blood pressure taken at home\\
-$\sigma_{\{S,C\}}$ & $R^{+,N}$ & Standard deviation of the systolic blood pressure taken at the clinic\\
+\cellcolor{gray!6}{$\sigma_{\{S,C\}}$} & \cellcolor{gray!6}{$R^{+,N}$} & \cellcolor{gray!6}{Standard deviation of the systolic blood pressure taken at the clinic}\\
 $\sigma_{\{D,C\}}$ & $R^{+,N}$ & Standard deviation of the diastolic blood pressure taken at the clinic\\
-$\tau_{\{S,H\}}$ & $R^{+,N}$ & Precision of the systolic blood pressure taken at home\\
+\cellcolor{gray!6}{$\tau_{\{S,H\}}$} & \cellcolor{gray!6}{$R^{+,N}$} & \cellcolor{gray!6}{Precision of the systolic blood pressure taken at home}\\
 $\tau_{\{D,H\}}$ & $R^{+,N}$ & Precision of the diastolic blood pressure taken at home\\
-$\tau_{\{S,C\}}$ & $R^{+,N}$ & Precision of the systolic blood pressure taken at the clinic\\
+\cellcolor{gray!6}{$\tau_{\{S,C\}}$} & \cellcolor{gray!6}{$R^{+,N}$} & \cellcolor{gray!6}{Precision of the systolic blood pressure taken at the clinic}\\
 $\tau_{\{D,C\}}$ & $R^{+,N}$ & Precision of the diastolic blood pressure taken at the clinic\\
 \bottomrule
 \end{tabular}
+\end{table}
 
 Please note that the last four elements of this list, the precision values, were only carried out to ensure model consistency with the use of standard deviation instead.
 Note as well that the \(\Delta\) covariates, representing the medium-term variability, enter into the log relative risk sum as an \textbf{absolute value}.
@@ -728,24 +733,24 @@ so the standard errors for \(\hat\sigma_M^2\) and \(\hat\sigma_\Delta^2\) are ap
 \midrule
 \addlinespace[0.3em]
 \multicolumn{7}{l}{\textbf{Parameter estimates}}\\
-\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{123.4} & \cellcolor{gray!6}{123.3} & \cellcolor{gray!6}{0.0001757} & \cellcolor{gray!6}{72.29} & \cellcolor{gray!6}{72.31} & \cellcolor{gray!6}{-0.0003104}\\
-\hspace{1em}$m_\Delta$ & 1.363 & 1.351 & 0.008801 & 1.101 & 1.096 & 0.00499\\
-\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{376.7} & \cellcolor{gray!6}{376.7} & \cellcolor{gray!6}{8.636e-06} & \cellcolor{gray!6}{104.7} & \cellcolor{gray!6}{104} & \cellcolor{gray!6}{0.007564}\\
-\hspace{1em}$\sigma^2_\Delta$ & 46.54 & 46.46 & 0.001874 & 21.98 & 21.93 & 0.00197\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{2.181} & \cellcolor{gray!6}{2.179} & \cellcolor{gray!6}{0.000885} & \cellcolor{gray!6}{2.324} & \cellcolor{gray!6}{2.331} & \cellcolor{gray!6}{-0.003183}\\
-\hspace{1em}$\theta_H$ & 0.1493 & 0.1491 & 0.00132 & 0.1952 & 0.1956 & -0.001773\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{2.53} & \cellcolor{gray!6}{2.565} & \cellcolor{gray!6}{-0.01371} & \cellcolor{gray!6}{2.799} & \cellcolor{gray!6}{2.763} & \cellcolor{gray!6}{0.01292}\\
-\hspace{1em}$\theta_C$ & 0.07558 & 0.07507 & 0.006866 & 0.1085 & 0.1086 & -0.0002892\\
+\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{123.4} & \cellcolor{gray!6}{123.3} & \cellcolor{gray!6}{0.0006065} & \cellcolor{gray!6}{72.34} & \cellcolor{gray!6}{72.31} & \cellcolor{gray!6}{0.0004937}\\
+\hspace{1em}$m_\Delta$ & 1.358 & 1.351 & 0.004746 & 1.081 & 1.096 & -0.0135\\
+\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{376.1} & \cellcolor{gray!6}{376.7} & \cellcolor{gray!6}{-0.001494} & \cellcolor{gray!6}{104.1} & \cellcolor{gray!6}{104} & \cellcolor{gray!6}{0.00128}\\
+\hspace{1em}$\sigma^2_\Delta$ & 46.11 & 46.46 & -0.007488 & 21.94 & 21.93 & 0.0005394\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{2.16} & \cellcolor{gray!6}{2.179} & \cellcolor{gray!6}{-0.008571} & \cellcolor{gray!6}{2.331} & \cellcolor{gray!6}{2.331} & \cellcolor{gray!6}{-4.281e-05}\\
+\hspace{1em}$\theta_H$ & 0.1487 & 0.1491 & -0.002611 & 0.1966 & 0.1956 & 0.005262\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{2.545} & \cellcolor{gray!6}{2.565} & \cellcolor{gray!6}{-0.007827} & \cellcolor{gray!6}{2.728} & \cellcolor{gray!6}{2.763} & \cellcolor{gray!6}{-0.0129}\\
+\hspace{1em}$\theta_C$ & 0.07504 & 0.07507 & -0.0003069 & 0.1097 & 0.1086 & 0.01065\\
 \addlinespace[0.3em]
 \multicolumn{7}{l}{\textbf{Parameter SE estimates}}\\
-\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{0.1609} & \cellcolor{gray!6}{0.129} & \cellcolor{gray!6}{0.2474} & \cellcolor{gray!6}{0.08533} & \cellcolor{gray!6}{0.07883} & \cellcolor{gray!6}{0.08236}\\
-\hspace{1em}$m_\Delta$ & 0.05806 & 0.06699 & -0.1333 & 0.0404 & 0.02261 & 0.7869\\
-\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{4.402} & \cellcolor{gray!6}{5.165} & \cellcolor{gray!6}{-0.1477} & \cellcolor{gray!6}{1.226} & \cellcolor{gray!6}{0.8555} & \cellcolor{gray!6}{0.4327}\\
-\hspace{1em}$\sigma^2_\Delta$ & 0.5531 & 0.3522 & 0.5704 & 0.2657 & 0.3146 & -0.1552\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{0.05747} & \cellcolor{gray!6}{0.05527} & \cellcolor{gray!6}{0.03985} & \cellcolor{gray!6}{0.06399} & \cellcolor{gray!6}{0.06849} & \cellcolor{gray!6}{-0.06576}\\
-\hspace{1em}$\theta_H$ & 0.00211 & 0.001707 & 0.2362 & 0.002733 & 0.003431 & -0.2035\\
-\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{0.07382} & \cellcolor{gray!6}{0.06675} & \cellcolor{gray!6}{0.1058} & \cellcolor{gray!6}{0.08768} & \cellcolor{gray!6}{0.08917} & \cellcolor{gray!6}{-0.01674}\\
-\hspace{1em}$\theta_C$ & 0.001043 & 0.0009402 & 0.1098 & 0.001475 & 0.001715 & -0.14\\
+\cellcolor{gray!6}{\hspace{1em}$m_M$} & \cellcolor{gray!6}{0.1608} & \cellcolor{gray!6}{0.1622} & \cellcolor{gray!6}{-0.00835} & \cellcolor{gray!6}{0.08506} & \cellcolor{gray!6}{0.05272} & \cellcolor{gray!6}{0.6136}\\
+\hspace{1em}$m_\Delta$ & 0.05781 & 0.05591 & 0.03403 & 0.04037 & 0.05079 & -0.2052\\
+\cellcolor{gray!6}{\hspace{1em}$\sigma^2_M$} & \cellcolor{gray!6}{4.395} & \cellcolor{gray!6}{4.827} & \cellcolor{gray!6}{-0.08949} & \cellcolor{gray!6}{1.218} & \cellcolor{gray!6}{1.486} & \cellcolor{gray!6}{-0.1803}\\
+\hspace{1em}$\sigma^2_\Delta$ & 0.5482 & 0.5041 & 0.08747 & 0.2653 & 0.2867 & -0.07463\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_H$} & \cellcolor{gray!6}{0.05649} & \cellcolor{gray!6}{0.03736} & \cellcolor{gray!6}{0.5121} & \cellcolor{gray!6}{0.06407} & \cellcolor{gray!6}{0.06849} & \cellcolor{gray!6}{-0.06442}\\
+\hspace{1em}$\theta_H$ & 0.002103 & 0.001358 & 0.5483 & 0.002743 & 0.002892 & -0.05173\\
+\cellcolor{gray!6}{\hspace{1em}$\alpha_C$} & \cellcolor{gray!6}{0.07439} & \cellcolor{gray!6}{0.05754} & \cellcolor{gray!6}{0.2929} & \cellcolor{gray!6}{0.08384} & \cellcolor{gray!6}{0.08321} & \cellcolor{gray!6}{0.007639}\\
+\hspace{1em}$\theta_C$ & 0.001033 & 0.0007554 & 0.3679 & 0.001496 & 0.001465 & 0.02087\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -913,7 +918,7 @@ Where T is the index at which the sum of the autocorrelation estimates \(\hat{\r
 
 We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section `Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector \(\beta\) of covariates in the Cox' proportional hazards model. When the \(\beta\) vector is normalised, the larger (in absolute terms) the value of \(\beta\), the larger the correlation between that specific covariate and the risk of mortality. Positive values of \(\beta\) imply a higher risk of mortality, and the inverse for negative values of \(\beta\). As we can see from the violin plots of the MCMC posterior samples of the \(\beta\) parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of HA-CVD-CeVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately \(25\%\) more with mortality risk of HA-CVD-CeVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
 
-\begin{table}
+\begin{table}[!h]
 
 \caption{\label{tab:iqrnormbeta}Beta parameters for all-cause mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.}
 \centering
@@ -921,18 +926,19 @@ We remind the reader of the list of numbers of the different models explored in 
 \toprule
 Covariate & Beta Normalised (IQR) & Range\\
 \midrule
-D i D & -0.053 & \(-0.067,-0.039\)\\
-D i S & 0.130 & \(0.096,0.16\)\\
-sigma C D & 0.023 & \(0.012,0.035\)\\
-sigma C S & -0.021 & \(-0.052,0.0098\)\\
-sigma H D & -0.075 & \(-0.12,-0.032\)\\
-\addlinespace
-sigma H S & -0.026 & \(-0.06,0.0076\)\\
+\cellcolor{gray!6}{Diastolic Mean} & \cellcolor{gray!6}{-0.077} & \cellcolor{gray!6}{\(-0.097,-0.057\)}\\
+Systolic Mean & 0.240 & \(0.22,0.26\)\\
+\cellcolor{gray!6}{Diastolic $|\Delta|$} & \cellcolor{gray!6}{0.052} & \cellcolor{gray!6}{\(0.026,0.078\)}\\
+Systolic $|\Delta|$ & 0.074 & \(0.055,0.092\)\\
+\cellcolor{gray!6}{Diastolic Clinic Stand Dev} & \cellcolor{gray!6}{-0.050} & \cellcolor{gray!6}{\(-0.079,-0.022\)}\\
+Systolic Clinic Stand Dev & -0.011 & \(-0.028,0.0052\)\\
+\cellcolor{gray!6}{Diastolic Home Stand Dev} & \cellcolor{gray!6}{0.019} & \cellcolor{gray!6}{\(-0.0059,0.044\)}\\
+Systolic Home Stand Dev & -0.014 & \(-0.032,0.004\)\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}
+\begin{table}[!h]
 
 \caption{\label{tab:iqrnormbeta}Beta parameters for cardiovascular mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.}
 \centering
@@ -940,18 +946,19 @@ sigma H S & -0.026 & \(-0.06,0.0076\)\\
 \toprule
 Covariate & Beta Normalised (IQR) & Range\\
 \midrule
-D i D & -0.03400 & \(-0.042,-0.026\)\\
-D i S & 0.07800 & \(0.059,0.096\)\\
-sigma C D & 0.02400 & \(0.017,0.03\)\\
-sigma C S & -0.01600 & \(-0.032,-7.6e-05\)\\
-sigma H D & -0.02800 & \(-0.05,-0.0066\)\\
-\addlinespace
-sigma H S & 0.00066 & \(-0.015,0.017\)\\
+\cellcolor{gray!6}{Diastolic Mean} & \cellcolor{gray!6}{-0.049} & \cellcolor{gray!6}{\(-0.061,-0.038\)}\\
+Systolic Mean & 0.140 & \(0.13,0.15\)\\
+\cellcolor{gray!6}{Diastolic $|\Delta|$} & \cellcolor{gray!6}{0.053} & \cellcolor{gray!6}{\(0.038,0.068\)}\\
+Systolic $|\Delta|$ & 0.045 & \(0.034,0.056\)\\
+\cellcolor{gray!6}{Diastolic Clinic Stand Dev} & \cellcolor{gray!6}{-0.019} & \cellcolor{gray!6}{\(-0.034,-0.0044\)}\\
+Systolic Clinic Stand Dev & -0.009 & \(-0.017,1.7e-05\)\\
+\cellcolor{gray!6}{Diastolic Home Stand Dev} & \cellcolor{gray!6}{0.012} & \cellcolor{gray!6}{\(-6e-04,0.025\)}\\
+Systolic Home Stand Dev & 0.000 & \(-0.0082,0.0088\)\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}
+\begin{table}[!h]
 
 \caption{\label{tab:iqrnormbeta}Beta parameters for all-cause mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.}
 \centering
@@ -959,18 +966,19 @@ sigma H S & 0.00066 & \(-0.015,0.017\)\\
 \toprule
 Covariate & Beta Normalised (IQR) & Range\\
 \midrule
-D i D & -0.0150 & \(-0.034,0.0045\)\\
-D i S & 0.1200 & \(0.067,0.17\)\\
-sigma C D & 0.0260 & \(0.01,0.042\)\\
-sigma C S & -0.0470 & \(-0.096,0.0021\)\\
-sigma H D & 0.0046 & \(-0.056,0.065\)\\
-\addlinespace
-sigma H S & 0.0600 & \(0.012,0.11\)\\
+\cellcolor{gray!6}{Diastolic Mean} & \cellcolor{gray!6}{-0.022} & \cellcolor{gray!6}{\(-0.05,0.0065\)}\\
+Systolic Mean & 0.260 & \(0.23,0.28\)\\
+\cellcolor{gray!6}{Diastolic $|\Delta|$} & \cellcolor{gray!6}{0.060} & \cellcolor{gray!6}{\(0.023,0.096\)}\\
+Systolic $|\Delta|$ & 0.069 & \(0.039,0.098\)\\
+\cellcolor{gray!6}{Diastolic Clinic Stand Dev} & \cellcolor{gray!6}{0.003} & \cellcolor{gray!6}{\(-0.037,0.043\)}\\
+Systolic Clinic Stand Dev & -0.027 & \(-0.055,0.0013\)\\
+\cellcolor{gray!6}{Diastolic Home Stand Dev} & \cellcolor{gray!6}{0.021} & \cellcolor{gray!6}{\(-0.01,0.052\)}\\
+Systolic Home Stand Dev & 0.032 & \(0.0063,0.059\)\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}
+\begin{table}[!h]
 
 \caption{\label{tab:iqrnormbeta}Beta parameters for cardiovascular mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.}
 \centering
@@ -978,13 +986,14 @@ sigma H S & 0.0600 & \(0.012,0.11\)\\
 \toprule
 Covariate & Beta Normalised (IQR) & Range\\
 \midrule
-D i D & -0.013 & \(-0.023,-0.0025\)\\
-D i S & 0.073 & \(0.047,0.099\)\\
-sigma C D & 0.024 & \(0.015,0.032\)\\
-sigma C S & -0.023 & \(-0.046,0.00067\)\\
-sigma H D & 0.010 & \(-0.018,0.039\)\\
-\addlinespace
-sigma H S & 0.032 & \(0.0055,0.058\)\\
+\cellcolor{gray!6}{Diastolic Mean} & \cellcolor{gray!6}{-0.019} & \cellcolor{gray!6}{\(-0.034,-0.0036\)}\\
+Systolic Mean & 0.140 & \(0.13,0.16\)\\
+\cellcolor{gray!6}{Diastolic $|\Delta|$} & \cellcolor{gray!6}{0.054} & \cellcolor{gray!6}{\(0.035,0.072\)}\\
+Systolic $|\Delta|$ & 0.043 & \(0.028,0.059\)\\
+\cellcolor{gray!6}{Diastolic Clinic Stand Dev} & \cellcolor{gray!6}{0.007} & \cellcolor{gray!6}{\(-0.012,0.026\)}\\
+Systolic Clinic Stand Dev & -0.013 & \(-0.027,0.00049\)\\
+\cellcolor{gray!6}{Diastolic Home Stand Dev} & \cellcolor{gray!6}{0.005} & \cellcolor{gray!6}{\(-0.011,0.021\)}\\
+Systolic Home Stand Dev & 0.017 & \(0.0028,0.031\)\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1360,7 +1369,7 @@ As there were 3,916 individuals that were excluded from the research, it is impo
 
 A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes. Note that, due to many individuals having less than one distinct blood pressure measurement, the sample size for the frequentist models is 7,633 and 12,458 for the FRS- and full-population, respectively. Please note that `race=1' refers to the white, `race=2' the black and the baseline as the mexican population.
 
-\begin{table}
+\begin{table}[!h]
 
 \caption{\label{tab:freqCVDF}Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.}
 \centering
@@ -1368,90 +1377,72 @@ A comparison with the frequentist Cox proportional hazards model is presented in
 \toprule
 Covariate & Beta Normalised & P-Value & Range\\
 \midrule
-FRS.1998 & 0.5191881 & <0.001 & (0.36,0.67)\\
-D i S & 0.1127844 & <0.001 & (0.05,0.18)\\
-D i D & 0.1081153 & 0.0033 & (0.035,0.18)\\
-sigma C S & 0.0186258 & 0.59 & (-0.05,0.087)\\
-sigma H S & 0.0542982 & 0.13 & (-0.015,0.12)\\
-\addlinespace
-sigma C D & 0.0268981 & 0.45 & (-0.042,0.096)\\
-sigma H D & 0.0299251 & 0.41 & (-0.043,0.1)\\
-race=1 & -0.3000000 & 0.0017 & (-0.49,-0.11)\\
-race=2 & 0.1600000 & 0.11 & (-0.037,0.37)\\
-female=1 & -0.3000000 & <0.001 & (-0.45,-0.14)\\
+\cellcolor{gray!6}{FRS (1998)} & \cellcolor{gray!6}{0.519} & \cellcolor{gray!6}{<0.001} & \cellcolor{gray!6}{(0.36,0.67)}\\
+Systolic $|\Delta|$ & 0.113 & <0.001 & (0.05,0.18)\\
+\cellcolor{gray!6}{Diastolic $|\Delta|$} & \cellcolor{gray!6}{0.108} & \cellcolor{gray!6}{0.0033} & \cellcolor{gray!6}{(0.035,0.18)}\\
+Systolic Clinic Stand Dev & 0.019 & 0.59 & (-0.05,0.087)\\
+\cellcolor{gray!6}{Systolic Home Stand Dev} & \cellcolor{gray!6}{0.054} & \cellcolor{gray!6}{0.13} & \cellcolor{gray!6}{(-0.015,0.12)}\\
+Diastolic Clinic Stand Dev & 0.027 & 0.45 & (-0.042,0.096)\\
+\cellcolor{gray!6}{Diastolic Home Stand Dev} & \cellcolor{gray!6}{0.030} & \cellcolor{gray!6}{0.41} & \cellcolor{gray!6}{(-0.043,0.1)}\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}
+\begin{table}[!h]
 
-\caption{\label{tab:freqALLF}Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.}
+\caption{\label{tab:freqCVDF}Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.}
 \centering
 \begin{tabular}[t]{lrll}
 \toprule
 Covariate & Beta Normalised & P-Value & Range\\
 \midrule
-FRS.1998 & 0.2022811 & <0.001 & (0.13,0.28)\\
-D i S & 0.0812047 & <0.001 & (0.05,0.12)\\
-D i D & 0.0730509 & <0.001 & (0.035,0.11)\\
-sigma C S & 0.0096854 & 0.59 & (-0.025,0.045)\\
-sigma H S & 0.0144795 & 0.43 & (-0.022,0.05)\\
-\addlinespace
-sigma C D & 0.0230555 & 0.21 & (-0.013,0.058)\\
-sigma H D & 0.0142975 & 0.47 & (-0.025,0.053)\\
-race=1 & -0.1100000 & 0.019 & (-0.21,-0.018)\\
-race=2 & 0.2000000 & <0.001 & (0.096,0.3)\\
-female=1 & -0.3300000 & <0.001 & (-0.4,-0.25)\\
+\cellcolor{gray!6}{FRS (1998)} & \cellcolor{gray!6}{0.202} & \cellcolor{gray!6}{<0.001} & \cellcolor{gray!6}{(0.13,0.28)}\\
+Systolic $|\Delta|$ & 0.081 & <0.001 & (0.05,0.12)\\
+\cellcolor{gray!6}{Diastolic $|\Delta|$} & \cellcolor{gray!6}{0.073} & \cellcolor{gray!6}{<0.001} & \cellcolor{gray!6}{(0.035,0.11)}\\
+Systolic Clinic Stand Dev & 0.010 & 0.59 & (-0.025,0.045)\\
+\cellcolor{gray!6}{Systolic Home Stand Dev} & \cellcolor{gray!6}{0.014} & \cellcolor{gray!6}{0.43} & \cellcolor{gray!6}{(-0.022,0.05)}\\
+Diastolic Clinic Stand Dev & 0.023 & 0.21 & (-0.013,0.058)\\
+\cellcolor{gray!6}{Diastolic Home Stand Dev} & \cellcolor{gray!6}{0.014} & \cellcolor{gray!6}{0.47} & \cellcolor{gray!6}{(-0.025,0.053)}\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}
+\begin{table}[!h]
 
-\caption{\label{tab:freqCVDNF}Cox-PH parameter estimates for cardiovascular mortality, NHANES III, Full population.}
+\caption{\label{tab:freqCVDF}Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.}
 \centering
 \begin{tabular}[t]{lrll}
 \toprule
 Covariate & Beta Normalised & P-Value & Range\\
 \midrule
-M i S & 0.3117548 & <0.001 & (0.25,0.37)\\
-M i D & -0.0998613 & 0.0021 & (-0.16,-0.036)\\
-D i S & 0.0653030 & 0.003 & (0.021,0.11)\\
-D i D & 0.0561367 & 0.033 & (0.0044,0.11)\\
-sigma C S & -0.0097834 & 0.67 & (-0.054,0.036)\\
-\addlinespace
-sigma H S & -0.0142106 & 0.54 & (-0.06,0.03)\\
-sigma C D & -0.0286500 & 0.28 & (-0.08,0.023)\\
-sigma H D & 0.0237782 & 0.38 & (-0.031,0.078)\\
-race=1 & 0.0066000 & 0.93 & (-0.13,0.15)\\
-race=2 & 0.2200000 & 0.0079 & (0.056,0.37)\\
-\addlinespace
-female=1 & -0.4500000 & <0.001 & (-0.56,-0.34)\\
+\cellcolor{gray!6}{Systolic Mean} & \cellcolor{gray!6}{0.312} & \cellcolor{gray!6}{<0.001} & \cellcolor{gray!6}{(0.25,0.37)}\\
+Diastolic Mean & -0.100 & 0.0021 & (-0.16,-0.036)\\
+\cellcolor{gray!6}{Systolic $|\Delta|$} & \cellcolor{gray!6}{0.065} & \cellcolor{gray!6}{0.003} & \cellcolor{gray!6}{(0.021,0.11)}\\
+Diastolic $|\Delta|$ & 0.056 & 0.033 & (0.0044,0.11)\\
+\cellcolor{gray!6}{Systolic Clinic Stand Dev} & \cellcolor{gray!6}{-0.010} & \cellcolor{gray!6}{0.67} & \cellcolor{gray!6}{(-0.054,0.036)}\\
+Systolic Home Stand Dev & -0.014 & 0.54 & (-0.06,0.03)\\
+\cellcolor{gray!6}{Diastolic Clinic Stand Dev} & \cellcolor{gray!6}{-0.029} & \cellcolor{gray!6}{0.28} & \cellcolor{gray!6}{(-0.08,0.023)}\\
+Diastolic Home Stand Dev & 0.024 & 0.38 & (-0.031,0.078)\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}
+\begin{table}[!h]
 
-\caption{\label{tab:freqALLNF}Cox-PH parameter estimates for all-cause mortality, NHANES III, Full population.}
+\caption{\label{tab:freqCVDF}Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.}
 \centering
 \begin{tabular}[t]{lrll}
 \toprule
 Covariate & Beta Normalised & P-Value & Range\\
 \midrule
-M i S & 0.1714651 & <0.001 & (0.13,0.21)\\
-M i D & -0.0535339 & 0.0035 & (-0.089,-0.018)\\
-D i S & 0.0447792 & <0.001 & (0.02,0.07)\\
-D i D & 0.0561367 & <0.001 & (0.026,0.083)\\
-sigma C S & -0.0087536 & 0.5 & (-0.033,0.017)\\
-\addlinespace
-sigma H S & -0.0030022 & 0.82 & (-0.028,0.022)\\
-sigma C D & -0.0061393 & 0.67 & (-0.035,0.023)\\
-sigma H D & 0.0146066 & 0.34 & (-0.015,0.044)\\
-race=1 & -0.0410000 & 0.29 & (-0.12,0.034)\\
-race=2 & 0.1400000 & 0.001 & (0.057,0.23)\\
-\addlinespace
-female=1 & -0.4300000 & <0.001 & (-0.48,-0.37)\\
+\cellcolor{gray!6}{Systolic Mean} & \cellcolor{gray!6}{0.171} & \cellcolor{gray!6}{<0.001} & \cellcolor{gray!6}{(0.13,0.21)}\\
+Diastolic Mean & -0.054 & 0.0035 & (-0.089,-0.018)\\
+\cellcolor{gray!6}{Systolic $|\Delta|$} & \cellcolor{gray!6}{0.045} & \cellcolor{gray!6}{<0.001} & \cellcolor{gray!6}{(0.02,0.07)}\\
+Diastolic $|\Delta|$ & 0.056 & <0.001 & (0.026,0.083)\\
+\cellcolor{gray!6}{Systolic Clinic Stand Dev} & \cellcolor{gray!6}{-0.009} & \cellcolor{gray!6}{0.5} & \cellcolor{gray!6}{(-0.033,0.017)}\\
+Systolic Home Stand Dev & -0.003 & 0.82 & (-0.028,0.022)\\
+\cellcolor{gray!6}{Diastolic Clinic Stand Dev} & \cellcolor{gray!6}{-0.006} & \cellcolor{gray!6}{0.67} & \cellcolor{gray!6}{(-0.035,0.023)}\\
+Diastolic Home Stand Dev & 0.015 & 0.34 & (-0.015,0.044)\\
 \bottomrule
 \end{tabular}
 \end{table}
