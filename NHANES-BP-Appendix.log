@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.99998 (TeX Live 2017/Debian) (preloaded format=xelatex 2024.8.30)  30 AUG 2024 18:23
+This is XeTeX, Version 3.14159265-2.6-0.99998 (TeX Live 2017/Debian) (preloaded format=xelatex 2024.8.30)  1 SEP 2024 18:28
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1012,6 +1012,15 @@ LaTeX Warning: Label `tab:iqrnormbeta' multiply defined.
 
 LaTeX Warning: Label `tab:iqrnormbeta' multiply defined.
 
+
+LaTeX Warning: Label `tab:freqCVDF' multiply defined.
+
+
+LaTeX Warning: Label `tab:freqCVDF' multiply defined.
+
+
+LaTeX Warning: Label `tab:freqCVDF' multiply defined.
+
 )
 \openout1 = `NHANES-BP-Appendix.aux'.
 
@@ -1453,6 +1462,9 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/bx/n' will be
 (Font)              scaled to size 7.01224pt on input line 452.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/bx/n' will be
 (Font)              scaled to size 4.98067pt on input line 452.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
 [12] [13] [14]
 File: ./DAG_Mean2.png Graphic file (type bmp)
 <./DAG_Mean2.png>
@@ -1473,16 +1485,16 @@ f)
 File: ./Rmarkdown_Plots/RMSE-Linpred_Convergence.png Graphic file (type bmp)
 <./Rmarkdown_Plots/RMSE-Linpred_Convergence.png>
 [24] [25] [26]
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
 File: ./Plots/beta/Beta_parameter_normalised.png Graphic file (type bmp)
 <./Plots/beta/Beta_parameter_normalised.png>
 File: ./Plots/gompertz/B_parameter.png Graphic file (type bmp)
 <./Plots/gompertz/B_parameter.png>
-[27] [28] [29]
+[27]
 File: ./Plots/gompertz/theta_parameter.png Graphic file (type bmp)
 <./Plots/gompertz/theta_parameter.png>
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
@@ -1495,11 +1507,10 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 File: ./Plots/Survival/redlinpred_Cumulative_haz-death_age.png Graphic file (ty
 pe bmp)
 <./Plots/Survival/redlinpred_Cumulative_haz-death_age.png>
-[30] [31]
+[28] [29] [30] [31] [32]
 File: ./Rmarkdown_Plots/SysDelta_Densities_Demography.png Graphic file (type bm
 p)
 <./Rmarkdown_Plots/SysDelta_Densities_Demography.png>
-[32]
 File: ./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png Graphic file (type bm
 p)
 <./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png>
@@ -1508,14 +1519,13 @@ File: ./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png Graphic file (type bmp)
 File: ./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png Graphic file (ty
 pe bmp)
 <./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png>
-[33] [34] [35] [36]
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[37]
+[33] [34] [35] [36] [37]
 File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png Graphic file (type
  bmp)
 <./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png>
@@ -1537,10 +1547,17 @@ ype bmp)
 [38] [39] [40] [41] [42] [43] [44]
 File: ./Rmarkdown_Plots/Excluded_SurvProbKM.png Graphic file (type bmp)
 <./Rmarkdown_Plots/Excluded_SurvProbKM.png>
+
+LaTeX Warning: Reference `tab:freqALLNF' on page 45 undefined on input line 137
+0.
+
 [45] [46]
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[47]
 File: ./Rmarkdown_Plots/Delta_plusminus_Demography.png Graphic file (type bmp)
 <./Rmarkdown_Plots/Delta_plusminus_Demography.png>
-[47] [48] [49]
 File: ./Rmarkdown_Plots/SurvProbKM_45-64.png Graphic file (type bmp)
 <./Rmarkdown_Plots/SurvProbKM_45-64.png>
 File: ./Rmarkdown_Plots/SurvProbKM_65-84.png Graphic file (type bmp)
@@ -1549,24 +1566,28 @@ File: ./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png Graphic file (type bmp)
 <./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png>
 File: ./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png Graphic file (type bmp)
 <./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png>
+[48] [49] [50] [51] [52] [53]
 File: ./Rmarkdown_Plots/DeltaDirection_AUCs.png Graphic file (type bmp)
 <./Rmarkdown_Plots/DeltaDirection_AUCs.png>
-[50] [51] [52] [53] [54]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1569.
+[54]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1560.
 [55]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1569.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1560.
 (./NHANES-BP-Appendix.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 1569.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 1569.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 1560.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 1560.
+
+LaTeX Warning: There were undefined references.
+
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 27530 strings out of 494956
- 499174 string characters out of 6177213
- 758022 words of memory out of 5000000
- 31024 multiletter control sequences out of 15000+600000
+ 27529 strings out of 494956
+ 499160 string characters out of 6177213
+ 766120 words of memory out of 5000000
+ 31023 multiletter control sequences out of 15000+600000
  538144 words of font info for 82 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  59i,20n,117p,10413b,521s stack positions out of 5000i,500n,10000p,200000b,80000s

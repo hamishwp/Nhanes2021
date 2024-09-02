@@ -441,8 +441,8 @@ The last-digit preference in NHANES III, on the other hand, is substantial, with
 
 ```{r digit-summary, include=TRUE, echo=FALSE,results='asis'}
 # Printing the table using kable
-    kable(bp_last_digit,format="latex", escape = F,booktabs = T, digits=3,col.names=c("Place","Sys/Dias",2*(0:4)),caption = 'Summary data for BP end digits') %>%  
-          kable_styling(latex_options = c("hold_position","striped"))
+    cat(kable(bp_last_digit,format="latex", escape = F,booktabs = T, digits=3,col.names=c("Place","Sys/Dias",2*(0:4)),caption = 'Summary data for BP end digits') %>%  
+          kable_styling(latex_options = c("hold_position","striped")))
     cat('\n')
 ```
 
@@ -516,6 +516,8 @@ sd_summary %<>% relocate(Fraction2, .after = Prob_repeated3)
 cat(kable(sd_summary,format="latex", escape = F,booktabs = T, digits=3,
           linesep = rep(c(rep("",5),"\\addlinespace"),4),
           col.names=c("Place","Sys/Dias","Mean of SD","Frac all rep",  "Prob all rep", "Frac 2 rep", "Prob 2 rep"),caption = 'Summary data for repeated measures') %>%  kable_styling(latex_options = c("hold_position","striped")) )
+cat('\n')
+
 ```
 
 
@@ -656,6 +658,8 @@ cat(kable(chisq1, format="latex", escape = F,booktabs = T,
           col.names=c("Place","Sys/Dias","Freq1","Freq2","Freq3","ChiSq","p-value"),
       caption="Chi-square test for difference between observed proportions (all examiners), stratified by place and type")%>%
   kable_styling(latex_options = c("hold_position","striped")) )
+cat('\n')
+
 ```
 To explore this further, we can look at the proportions of first, second and third measurements from each examiner that are different from the other two.
 The results of a chi-squared test for each examiner (stratified by site and type of BP) for difference from the expected equal proportions are shown in Figure \ref{fig:proportionChisq3}.
@@ -701,6 +705,8 @@ cat(kable(chisq2, format="latex", escape = F,booktabs = T,
           col.names=c("Place","Sys/Dias","ChiSq","p-value"),
       caption="Chi-square test for difference between observed proportions among the examiners, stratified by place and type")%>%
   kable_styling(latex_options = c("hold_position","striped")) )
+cat('\n')
+
 ```
 
 ```{r ternaryPlot, include=TRUE,fig.height=8,fig.width=8, echo=FALSE,results='asis',message=FALSE,warning=FALSE,fig.cap="Ternary plot of the position of the measurement that is unique, among subjects with 2 equal measurements. V1 is the fraction with the first distinct, V2 is the fraction with the second distinct, V3 is the fraction with the third distinct."}
@@ -859,9 +865,17 @@ DF<-data.frame(varnames=c("$FRS-1998$",
 
 ```
 
-```{r, echo=F, label= "runnumers",message=FALSE,warning=FALSE}
-kable(DF,col.names = c("Variable Name", "Support", "Description"),
-format="latex", escape = F,booktabs = T, linesep = "")
+```{r, echo=F, label= "runnumers",message=FALSE,warning=FALSE,results='asis'}
+
+cat(kable(DF,col.names = c("Variable Name", "Support", "Description"),
+          format = "latex", 
+          caption="Explanations of the different models simulated in this work, according to run number.",
+          escape = FALSE,
+          booktabs = TRUE, 
+          linesep = "",
+          digits = 3) %>%  
+          kable_styling(latex_options = c("hold_position","striped")) )
+    cat('\n')
 
 ```
 
@@ -959,7 +973,7 @@ In order to read the DAGs, note that each square background layer that appears a
 The outcome variables measured are represented by a square-shaped text box, and a parameter of the model is represented by a circular-shaped text box. If either a square or circular text box is placed on top of a stacked rectangular layer, it means that multiple values of that variable (as many as there are layers to the stack) are either measured (for outcome variables) or simulated (for parameters of the model). Please note that the number of layers in the stack is written in the text box that does not contain a frame which is intentionally displayed on top of the stacked layer that it represents. For example, $i=1,...,N$. 
 Finally, the direction of the arrows implies causality assumed in the model.
 
-The distribution of the blood pressure parameters in the population are derived from the model, and are summarised with other outputs of the model in Table \ref{tab:Mean-SD} of Appendix C.
+The distribution of the blood pressure parameters in the population are derived from the model, and are summarised with other outputs of the model in table \ref{tab:Mean-SD} of Appendix C.
 
 ![An illustration of the DAG of the mean blood pressure-based model presented in this article. ](./DAG_Mean2.png){#fig:DAGmean}
 
@@ -1377,7 +1391,7 @@ final_table <- kable_combined %>%
 
 # Print the table
 cat(final_table)
-
+cat('\n')
 
 ```
 
@@ -1907,31 +1921,80 @@ Where T is the index at which the sum of the autocorrelation estimates $\hat{\rh
 
 We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section 'Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of HA-CVD-CeVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of HA-CVD-CeVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term. 
 
-```{r iqrnormbeta_RL1, echo=F}
-kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%filter(runnum==1)%>%dplyr::select(-runnum)%>%setNames(c("Covariate","Beta Normalised (IQR)","Range")),
-format="latex", escape = F,booktabs = T, label = "iqrnormbeta",
-caption = "Beta parameters for all-cause mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.")
+```{r iqrnormbeta_RL1, echo=F,results='asis'}
+convnames<-data.frame(variable=c("M i S","M i D","D i S","D i D","FRS.1998",
+                                 "sigma C S","sigma H S","sigma C D","sigma H D"),
+                      Covariate=c("Systolic Mean", "Diastolic Mean",
+                                  "Systolic $|\\Delta|$","Diastolic $|\\Delta|$",
+                                  "FRS (1998)",
+                                  "Systolic Clinic Stand Dev","Systolic Home Stand Dev",
+                                  "Diastolic Clinic Stand Dev","Diastolic Home Stand Dev"))
+
+cat(kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%
+        filter(runnum==1)%>%slice(c(3,4,1,2,5:8))%>%
+        left_join(convnames,by="variable")%>%dplyr::select(Covariate,beta,Range)%>%
+        setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+        format="latex", 
+        escape = F,
+        booktabs = T, 
+        label = "iqrnormbeta",
+        linesep = "",
+        digits=3,
+        caption = "Beta parameters for all-cause mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.")%>%
+  kable_styling(latex_options = c("striped", "hold_position")))
+cat('\n')
+
 
 ```
 
-```{r iqrnormbeta_RL2, echo=F}
-kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%filter(runnum==2)%>%dplyr::select(-runnum)%>%setNames(c("Covariate","Beta Normalised (IQR)","Range")),
-format="latex", escape = F,booktabs = T, label = "iqrnormbeta",
-caption = "Beta parameters for cardiovascular mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.")
+```{r iqrnormbeta_RL2, echo=F,results='asis'}
+cat(kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%
+        filter(runnum==2)%>%slice(c(3,4,1,2,5:8))%>%
+        left_join(convnames,by="variable")%>%dplyr::select(Covariate,beta,Range)%>%
+        setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+        format="latex", 
+        escape = F,
+        booktabs = T, 
+        label = "iqrnormbeta",
+        linesep = "",
+        digits=3,
+        caption = "Beta parameters for cardiovascular mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.")%>%
+  kable_styling(latex_options = c("striped", "hold_position")))
+cat('\n')
 
 ```
 
-```{r iqrnormbeta_RL3, echo=F}
-kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%filter(runnum==3)%>%dplyr::select(-runnum)%>%setNames(c("Covariate","Beta Normalised (IQR)","Range")),
-format="latex", escape = F,booktabs = T, label = "iqrnormbeta",
-caption = "Beta parameters for all-cause mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.")
+```{r iqrnormbeta_RL3, echo=F,results='asis'}
+cat(kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%
+        filter(runnum==3)%>%slice(c(3,4,1,2,5:8))%>%
+        left_join(convnames,by="variable")%>%dplyr::select(Covariate,beta,Range)%>%
+        setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+        format="latex", 
+        escape = F,
+        booktabs = T, 
+        label = "iqrnormbeta",
+        linesep = "",
+        digits=3,
+        caption = "Beta parameters for all-cause mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.")%>%
+  kable_styling(latex_options = c("striped", "hold_position")))
+cat('\n')
 
 ```
 
-```{r iqrnormbeta_RL4, echo=F}
-kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%filter(runnum==4)%>%dplyr::select(-runnum)%>%setNames(c("Covariate","Beta Normalised (IQR)","Range")),
-format="latex", escape = F,booktabs = T, label = "iqrnormbeta",
-caption = "Beta parameters for cardiovascular mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.")
+```{r iqrnormbeta_RL4, echo=F,results='asis'}
+cat(kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%
+        filter(runnum==4)%>%slice(c(3,4,1,2,5:8))%>%
+        left_join(convnames,by="variable")%>%dplyr::select(Covariate,beta,Range)%>%
+        setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+        format="latex", 
+        escape = F,
+        booktabs = T, 
+        label = "iqrnormbeta",
+        linesep = "",
+        digits=3,
+        caption = "Beta parameters for cardiovascular mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.")%>%
+  kable_styling(latex_options = c("striped", "hold_position")))
+cat('\n')
 
 ```
 
@@ -1946,7 +2009,7 @@ Figure \ref{fig:gompt} reflects the same level of consistency for the Gompertz p
 ![Violin plots of the normalised $\theta$ parameter (from the Gompertz equation) of the different models.](./Plots/gompertz/theta_parameter.png){#fig:gompt}
 
 
-```{r Mean-SD, echo=FALSE,message=FALSE,warning=FALSE}
+```{r Mean-SD, echo=FALSE,message=FALSE,warning=FALSE,results='asis'}
 # Read the tables from Excel
 systolic_full <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "MeanValues", rows = 3:7)
 diastolic_full <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "MeanValues", rows = 9:13)[,-1]
@@ -1964,7 +2027,7 @@ format_rows <- function(df,n_digits){ #n_digits must have the same length as the
 combined_data <- rbind(format_rows(cbind(systolic_full, diastolic_full),c(1,2,2,2)), format_rows(cbind( systolic_FRS, diastolic_FRS),c(1,2,2,2)) )
 
 # Create a single kable for the combined data
-kable_combined <- kable(combined_data, format = "latex", escape = FALSE, booktabs = TRUE, 
+kable_combined <- kable(combined_data, format = "latex", escape = FALSE, booktabs = TRUE, digits=3,
                         caption = "Summary of the posterior estimate of the blood pressure distribution.")
 
 # Use pack_rows to add headers
@@ -1976,10 +2039,11 @@ final_table <- kable_combined %>%
 
 
 # Print the table
-final_table
+cat(final_table)
+cat('\n')
 ```
 
-```{r RL12, echo=FALSE,message=FALSE,warning=FALSE}
+```{r RL12, echo=FALSE,message=FALSE,warning=FALSE,results='asis'}
 # Read the tables from Excel
 all_cause_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL1-2", rows = 11:17)
 cvd_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL1-2", rows = 3:9)
@@ -1998,10 +2062,12 @@ final_table <- kable_combined %>%
   kable_styling(latex_options = c("striped", "hold_position"))
 
 # Output the final table
-final_table
+cat(final_table)
+cat('\n')
+
 ```
 
-```{r RL34, echo=FALSE,message=FALSE,warning=FALSE}
+```{r RL34, echo=FALSE,message=FALSE,warning=FALSE,results='asis'}
 # Read the tables from Excel
 all_cause_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL3-4", rows = 11:17)
 cvd_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL3-4", rows = 3:9)
@@ -2020,12 +2086,13 @@ final_table <- kable_combined %>%
   kable_styling(latex_options = c("striped", "hold_position"))
 
 # Output the final table
-final_table
+cat(final_table)
+cat('\n')
 
 ```
 
 
-```{r RL78, echo=FALSE,message=FALSE,warning=FALSE}
+```{r RL78, echo=FALSE,message=FALSE,warning=FALSE,results='asis'}
 # Read the tables from Excel
 all_cause_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL7-8", rows = 11:17)
 cvd_mortality <- openxlsx::read.xlsx("./Results/AppendixTables.xlsx", sheet = "RL7-8", rows = 3:9)
@@ -2044,7 +2111,9 @@ final_table <- kable_combined %>%
   kable_styling(latex_options = c("striped", "hold_position"))
 
 # Output the final table
-final_table
+cat(final_table)
+cat('\n')
+
 ```
 
 ## Results - Model Performance
@@ -2084,21 +2153,25 @@ Comparison of the ROC curves and AUC values is also presented for the different 
 
 ![ROC curves stratified by the different demographic groups used in this research. The point and line colours represent the different event types that were used to predict on. ](./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png){#fig:ROC_Demog}
 
-```{r DeathFreq1,echo=F,message=FALSE,warning=FALSE}
+```{r DeathFreq1,echo=F,message=FALSE,warning=FALSE,results='asis'}
 deaths<-read_csv("Results/Deaths_FreqTable.csv",show_col_types = FALSE)
-kable(deaths[deaths[,2]=="Age: 45-64",-2],
+cat(kable(deaths[deaths[,2]=="Age: 45-64",-2],
 format="latex", escape = F,booktabs = T, linesep="",
 caption = "Frequency table of the population aged 45-64 for the N-year survival outcomes as separated by demographic group and mortality cause.") %>%   row_spec(c(12,24), extra_latex_after = "\\addlinespace") %>%
-          kable_styling(latex_options = c("hold_position","striped"))
+          kable_styling(latex_options = c("hold_position","striped")))
+
+cat('\n')
   
 ```
 
 
-```{r DeathFreq2,echo=F,message=FALSE,warning=FALSE}
-kable(deaths[deaths[,2]=="Age: 65-84",-2],
+```{r DeathFreq2,echo=F,message=FALSE,warning=FALSE,results='asis'}
+cat(kable(deaths[deaths[,2]=="Age: 65-84",-2],
 format="latex", escape = F,booktabs = T, linesep="",
 caption = "Frequency table of the population aged 65-84 for the N-year survival outcomes as separated by demographic group and mortality cause.")%>%   row_spec(c(12,24), extra_latex_after = "\\addlinespace") %>%
-          kable_styling(latex_options = c("hold_position","striped"))
+          kable_styling(latex_options = c("hold_position","striped")))
+cat('\n')
+
 ```
 
 
@@ -2164,12 +2237,49 @@ ggsave("Excluded_SurvProbKM.png",p,path = "./Rmarkdown_Plots",width = 7,height =
 A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes. Note that, due to many individuals having less than one distinct blood pressure measurement, the sample size for the frequentist models is 7,633 and 12,458 for the FRS- and full-population, respectively. Please note that 'race=1' refers to the white, 'race=2' the black and the baseline as the mexican population.
 
 ```{r frequentist, include=FALSE, message=FALSE, warning=FALSE, echo=F}
-tmp<-readRDS("./Data_cleaned/nhanes_DF.RData")
-DF_nhanesA<-tmp$DF_nhanesA
-DF_nhanesFRS<-tmp$DF_nhanesFRS
+# Temporarily load the data
+load("./Data_cleaned/nhanes_cleaned_lists.RData")
+# Extract systolic and diastolic individual-level summary statistics
+xSC_NF<-list_nhanesA$sys
+xDC_NF<-list_nhanesA$dias
+xSH_NF<-list_nhanesA$sys_home
+xDH_NF<-list_nhanesA$dias_home
+xSC_F<-list_nhanesFRS$sys
+xDC_F<-list_nhanesFRS$dias
+xSH_F<-list_nhanesFRS$sys_home
+xDH_F<-list_nhanesFRS$dias_home
+### Create datafranes from full data for K-M and Cox-PH models later
+list_nhanesA$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_NF)+as.matrix(xDH_NF)) ))
+list_nhanesA$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_NF)+as.matrix(xSH_NF)) ))
+list_nhanesA$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_NF)-as.matrix(xDH_NF))/2)))
+list_nhanesA$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_NF)-as.matrix(xSH_NF))/2)))
+list_nhanesA$sigma_C_S<-unname(apply(xSC_NF, 1, sd))
+list_nhanesA$sigma_H_S<-unname(apply(xSH_NF, 1, sd))
+list_nhanesA$sigma_C_D<-unname(apply(xDC_NF, 1, sd))
+list_nhanesA$sigma_H_D<-unname(apply(xDH_NF, 1, sd))
+# FRS
+list_nhanesFRS$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_F)+as.matrix(xDH_F)) ))
+list_nhanesFRS$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_F)+as.matrix(xSH_F)) ))
+list_nhanesFRS$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_F)-as.matrix(xDH_F))/2)))
+list_nhanesFRS$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_F)-as.matrix(xSH_F))/2)))
+list_nhanesFRS$sigma_C_S<-unname(apply(xSC_F, 1, sd))
+list_nhanesFRS$sigma_H_S<-unname(apply(xSH_F, 1, sd))
+list_nhanesFRS$sigma_C_D<-unname(apply(xDC_F, 1, sd))
+list_nhanesFRS$sigma_H_D<-unname(apply(xDH_F, 1, sd))
+# Extract only what we need
+is.zero<-function(x) x==0
+DF_nhanesA <- list_nhanesA[-c(1:4)] %>% as.data.frame() %>%
+  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
+DF_nhanesFRS <- list_nhanesFRS[-c(1:4)] %>% as.data.frame() %>%
+  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
+# Cleanup
+rm(list_nhanesA,list_nhanesFRS)
+colnames(DF_nhanesA)[1]<-"Time"
+colnames(DF_nhanesFRS)[1]<-"Time"
+# add some extras
 DF_nhanesA%<>%mutate(race=case_when(black==1 ~ 2, white==1 ~ 1, T ~ 0))
 DF_nhanesFRS%<>%mutate(race=case_when(black==1 ~ 2, white==1 ~ 1, T ~ 0))
-rm(tmp)
+# Create the standard deviations to normalise the beta values
 SD_nA <- suppressWarnings(DF_nhanesA %>%
   select(M_i_D, M_i_S, D_i_D, D_i_S, sigma_C_S, sigma_H_S, sigma_C_D, sigma_H_D) %>%
   summarise(across(everything(), function(x) sd(x, na.rm=T)))%>%reshape2::melt()%>%
@@ -2181,14 +2291,14 @@ SD_nFRS <- suppressWarnings(DF_nhanesFRS %>%
 ```
 
 
-```{r freqCVDF, echo=F}
+```{r freqCVDF, echo=F,results='asis'}
 # survival::coxph(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
 #         M_i_D + M_i_S + D_i_D + D_i_S + 
 #         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
 #       data = DF_nhanesA)
 # flexsurv::flexsurvreg(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
 #                               data = DF_nhanesA, dist = "gompertz") %>% 
-survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ FRS.1998 +
+cat(survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ FRS.1998 +
                      D_i_S + D_i_D + sigma_C_S + sigma_H_S +
                      sigma_C_D + sigma_H_D +
                   survival::strata(race) + survival::strata(female), data = DF_nhanesFRS) %>%
@@ -2201,12 +2311,17 @@ survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ FRS.1998 +
          term=gsub("survival::strata\\(female\\)","",gsub("survival::strata\\(race\\)","",term)))%>%
   left_join(SD_nFRS,by="term")%>%
   mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
-  mutate(estimate=estimate*std)%>%
+  mutate(estimate=estimate*std, term=gsub("_"," ",term))%>%
   dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+    filter(!(grepl("race=",term,T) | grepl("female=",term,T)))%>%
+    rename("variable"="term")%>%left_join(convnames,by="variable")%>%
+    dplyr::select(Covariate,estimate,p.value,Range)%>%
   setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
-  mutate(Covariate=gsub("_"," ",Covariate))%>%
-  kableExtra::kable(format = "latex", booktabs = TRUE, label = "freqCVDF",
-                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.")
+  kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqCVDF", digits=3,linesep = "",
+                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.")%>%
+  kable_styling(latex_options = c("hold_position","striped")))
+cat('\n')
+
   # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
 # coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
 #                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
@@ -2215,14 +2330,14 @@ survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ FRS.1998 +
 ```
 
 
-```{r freqALLF, echo=F}
+```{r freqALLF, echo=F,results='asis'}
 # survival::coxph(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
 #         M_i_D + M_i_S + D_i_D + D_i_S + 
 #         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
 #       data = DF_nhanesA)
 # flexsurv::flexsurvreg(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
 #                               data = DF_nhanesA, dist = "gompertz") %>% 
-survival::coxph(survival::Surv(age, Time+age, eventall) ~ FRS.1998 +
+cat(survival::coxph(survival::Surv(age, Time+age, eventall) ~ FRS.1998 +
                      D_i_S + D_i_D + sigma_C_S + sigma_H_S +
                      sigma_C_D + sigma_H_D +
                   survival::strata(race) + survival::strata(female), data = DF_nhanesFRS) %>%
@@ -2235,12 +2350,16 @@ survival::coxph(survival::Surv(age, Time+age, eventall) ~ FRS.1998 +
          term=gsub("survival::strata\\(female\\)","",gsub("survival::strata\\(race\\)","",term)))%>%
   left_join(SD_nFRS,by="term")%>%
   mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
-  mutate(estimate=estimate*std)%>%
+  mutate(estimate=estimate*std, term=gsub("_"," ",term))%>%
   dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+    filter(!(grepl("race=",term,T) | grepl("female=",term,T)))%>%
+    rename("variable"="term")%>%left_join(convnames,by="variable")%>%
+    dplyr::select(Covariate,estimate,p.value,Range)%>%
   setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
-  mutate(Covariate=gsub("_"," ",Covariate))%>%
-  kableExtra::kable(format = "latex", booktabs = TRUE, label = "freqALLF",
-                    caption="Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.")
+  kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqCVDF", digits=3,linesep = "",
+                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.")%>%
+  kable_styling(latex_options = c("hold_position","striped")))
+cat('\n')
   # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
 # coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
 #                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
@@ -2249,14 +2368,14 @@ survival::coxph(survival::Surv(age, Time+age, eventall) ~ FRS.1998 +
 ```
 
 
-```{r freqCVDNF, echo=F}
+```{r freqCVDNF, echo=F,results='asis'}
 # survival::coxph(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
 #         M_i_D + M_i_S + D_i_D + D_i_S + 
 #         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
 #       data = DF_nhanesA)
 # flexsurv::flexsurvreg(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
 #                               data = DF_nhanesA, dist = "gompertz") %>% 
-survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ M_i_S + M_i_D +
+cat(survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ M_i_S + M_i_D +
                      D_i_S + D_i_D + sigma_C_S + sigma_H_S +
                      sigma_C_D + sigma_H_D +
                   survival::strata(race) + survival::strata(female), data = DF_nhanesA) %>%
@@ -2268,12 +2387,16 @@ survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ M_i_S + M_i_D +
          term=gsub("survival::strata\\(female\\)","",gsub("survival::strata\\(race\\)","",term)))%>%
   left_join(SD_nA,by="term")%>%
   mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
-  mutate(estimate=estimate*std)%>%
+  mutate(estimate=estimate*std, term=gsub("_"," ",term))%>%
   dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+    filter(!(grepl("race=",term,T) | grepl("female=",term,T)))%>%
+    rename("variable"="term")%>%left_join(convnames,by="variable")%>%
+    dplyr::select(Covariate,estimate,p.value,Range)%>%
   setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
-  mutate(Covariate=gsub("_"," ",Covariate))%>%
-  kableExtra::kable(format = "latex", booktabs = TRUE, label = "freqCVDNF",
-                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, Full population.")
+  kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqCVDF", digits=3,linesep = "",
+                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.")%>%
+  kable_styling(latex_options = c("hold_position","striped")))
+cat('\n')
   # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
 # coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
 #                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
@@ -2281,14 +2404,14 @@ survival::coxph(survival::Surv(age, Time+age, eventCVDHrt) ~ M_i_S + M_i_D +
 
 ```
 
-```{r freqALLNF, echo=F}
+```{r freqALLNF, echo=F,results='asis'}
 # survival::coxph(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
 #         M_i_D + M_i_S + D_i_D + D_i_S + 
 #         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
 #       data = DF_nhanesA)
 # flexsurv::flexsurvreg(survival::Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
 #                               data = DF_nhanesA, dist = "gompertz") %>% 
-survival::coxph(survival::Surv(age, Time+age, eventall) ~ M_i_S + M_i_D +
+cat(survival::coxph(survival::Surv(age, Time+age, eventall) ~ M_i_S + M_i_D +
                      D_i_S + D_i_D + sigma_C_S + sigma_H_S +
                      sigma_C_D + sigma_H_D +
                   survival::strata(race) + survival::strata(female), data = DF_nhanesA) %>%
@@ -2300,12 +2423,16 @@ survival::coxph(survival::Surv(age, Time+age, eventall) ~ M_i_S + M_i_D +
          term=gsub("survival::strata\\(female\\)","",gsub("survival::strata\\(race\\)","",term)))%>%
   left_join(SD_nA,by="term")%>%
   mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
-  mutate(estimate=estimate*std)%>%
+  mutate(estimate=estimate*std, term=gsub("_"," ",term))%>%
   dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+    filter(!(grepl("race=",term,T) | grepl("female=",term,T)))%>%
+    rename("variable"="term")%>%left_join(convnames,by="variable")%>%
+    dplyr::select(Covariate,estimate,p.value,Range)%>%
   setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
-  mutate(Covariate=gsub("_"," ",Covariate))%>%
-  kableExtra::kable(format = "latex", booktabs = TRUE, label = "freqALLNF",
-                    caption="Cox-PH parameter estimates for all-cause mortality, NHANES III, Full population.")
+  kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqCVDF", digits=3,linesep = "",
+                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.")%>%
+  kable_styling(latex_options = c("hold_position","striped")))
+cat('\n')
   # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
 # coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
 #                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
@@ -2348,10 +2475,11 @@ By splitting the populations into the respective regions of the $\Delta$ directi
 
 We further quantify this insignificant relationship between $\Delta$ directionality and survival outcome via the use of a Cox's Proportional Hazards (CPH) model. Via the use of the 'coxph' function in the 'survival' R package, we fit (using MLE) a CPH model. The covariates used in the model are $\Delta$ directionality region, gender, ethnicity and age. Table \ref{tab:DeltaDir} shows the summary of the model fit, which reflects that being in different $\Delta$ directionality regions has a non-statistically significant influence on survival outcomes. As shown in the remainder of this article, ethnicity, gender and age are shown to have statistically significant effects on survival outcome.
 
-```{r DeltaDir,echo=F}
+```{r DeltaDir,echo=F,results='asis'}
 DCox<-read_csv("./Results/DeltaPosTab.csv",show_col_types = FALSE)
-kable(DCox, linesep = "",
-format="latex", escape = F,booktabs = T, digits = 3, caption = "Parameters for distribution of blood pressure, for the full population")%>%  kable_styling(latex_options = c("hold_position","striped")) 
+cat(kable(DCox, linesep = "",
+format="latex", escape = F,booktabs = T, digits = 3, caption = "Parameters for distribution of blood pressure, for the full population")%>%  kable_styling(latex_options = c("hold_position","striped")) )
+cat('\n')
 ```
 
 Finally, we wish to confirm that the perfomance of the model does not depend on the directionality of $\Delta$. Figure \ref{fig:DeltaAUCs} plots the AUC values of 10-year CVD mortality for the all-covariate mean blood pressure-based model trained on the full NHANES population, split by the two age-ranges (45-64 and 65-84) and demographic groups. There is no clear trend between mode performance for the different regions of $\Delta$ directionality.

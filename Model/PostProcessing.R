@@ -301,7 +301,7 @@ quarty<-T
 beta<-data.frame()
 for(i in 1:8){
   RL<-get(paste0("RL",i))
-  if(is.na(RL$FRSt)) btmp<-ConvertBeta(RL,quarty) else {
+  if(is.na(RL$FRSt)) btmp<-ConvertBeta(RL,quarty=quarty) else {
     if(RL$FRSt=="ATP") FRS<-list_nhanesFRS$FRS.ATP else FRS<-list_nhanesFRS$FRS.1998
     btmp<-ConvertBeta(RL,FRS=FRS,quarty)
   }
@@ -478,34 +478,6 @@ sds4 <- max(apply(xDH_F, 1, sd))
 tauis_av_F <- c(mean(1/sds1^2) , mean(1/sds2^2), mean(1/sds3^2), mean(1/sds4^2))
 tauis_F <- c(1/sds1^2 , 1/sds2^2, 1/sds3^2, 1/sds4^2)
 rm(sds1,sds2,sds3,sds4)
-### Create datafranes from full data for K-M and Cox-PH models later
-list_nhanesA$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_NF)+as.matrix(xDH_NF)) ))
-list_nhanesA$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_NF)+as.matrix(xSH_NF)) ))
-list_nhanesA$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_NF)-as.matrix(xDH_NF))/2)))
-list_nhanesA$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_NF)-as.matrix(xSH_NF))/2)))
-list_nhanesA$sigma_C_S<-unname(apply(xSC_NF, 1, sd))
-list_nhanesA$sigma_H_S<-unname(apply(xSH_NF, 1, sd))
-list_nhanesA$sigma_C_D<-unname(apply(xDC_NF, 1, sd))
-list_nhanesA$sigma_H_D<-unname(apply(xDH_NF, 1, sd))
-# FRS
-list_nhanesFRS$M_i_D<-unname(rowMeans( 0.5*(as.matrix(xDC_F)+as.matrix(xDH_F)) ))
-list_nhanesFRS$M_i_S<-unname(rowMeans( 0.5*(as.matrix(xSC_F)+as.matrix(xSH_F)) ))
-list_nhanesFRS$D_i_D<-unname(rowMeans( abs((as.matrix(xDC_F)-as.matrix(xDH_F))/2)))
-list_nhanesFRS$D_i_S<-unname(rowMeans( abs((as.matrix(xSC_F)-as.matrix(xSH_F))/2)))
-list_nhanesFRS$sigma_C_S<-unname(apply(xSC_F, 1, sd))
-list_nhanesFRS$sigma_H_S<-unname(apply(xSH_F, 1, sd))
-list_nhanesFRS$sigma_C_D<-unname(apply(xDC_F, 1, sd))
-list_nhanesFRS$sigma_H_D<-unname(apply(xDH_F, 1, sd))
-# Remove all the zero values from standard deviation
-is.zero<-function(x) x==0
-DF_nhanesA <- list_nhanesA[-c(1:4)] %>% as.data.frame() %>%
-  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
-DF_nhanesFRS <- list_nhanesFRS[-c(1:4)] %>% as.data.frame() %>%
-  mutate(across(starts_with('sigma_'), ~ replace(., is.zero(.), NA_real_)))
-colnames(DF_nhanesA)[1]<-"Time"
-colnames(DF_nhanesFRS)[1]<-"Time"
-
-saveRDS(list(DF_nhanesA=DF_nhanesA,DF_nhanesFRS=DF_nhanesFRS),"./Data_cleaned/nhanes_DF.RData")
 ###################################################################
 
 Nits<-5
@@ -1726,25 +1698,25 @@ survFrame%<>%rbind(cbind(calculate_roc(df=survDelta,cost_of_fp =1,cost_of_fn=1,n
 
 saveRDS(survFrame,"./Plots/Survival/ROC_Data.Rdata")
 
-survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=RL),size=1)+facet_wrap(~Plot,nrow = 2)
-
-survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=Plot),size=1)+facet_wrap(~RL,nrow = 2)
-
+# survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=RL),size=1)+facet_wrap(~Plot,nrow = 2)
+# 
+# survFrame%>%ggplot()+geom_line(aes(fpr,tpr,colour=Plot),size=1)+facet_wrap(~RL,nrow = 2)
+# 
 survFrame$Plot<-factor(survFrame$Plot)
 levels(survFrame$Plot)<-c("Delta Terms","All","FRS and Delta","FRS Only","Gompertz Only","Mean and Delta","Systolic Mean Only")
 survFrame$Plot<-as.character(survFrame$Plot)
-
-p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=Plot,shape=Event),size=1)+
-  scale_color_discrete(labels=TeX(unique(survFrame$Plot))) + geom_abline(slope = 1,intercept = 0) +
-  xlab("False Positive Rate") + ylab("True Positive Rate") +
-  facet_wrap(~RL,labeller = as_labeller(TeX,default = label_parsed),nrow = 2);p
-ggsave("ROCSurvival_RL.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
-
-p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=RL,shape=Event),size=1)+
-  xlab("False Positive Rate") + ylab("True Positive Rate") + geom_abline(slope = 1,intercept = 0) +
-  # ggtitle(label = c("Delta Terms","All","FRS and Delta","FRS Only","Gompertz Only","Mean and Delta","Systolic Mean Only")) +
-  facet_wrap(~Plot,nrow = 2);p
-ggsave("ROCSurvival_Plot.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
+# 
+# p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=Plot,shape=Event),size=1)+
+#   scale_color_discrete(labels=TeX(unique(survFrame$Plot))) + geom_abline(slope = 1,intercept = 0) +
+#   xlab("False Positive Rate") + ylab("True Positive Rate") +
+#   facet_wrap(~RL,labeller = as_labeller(TeX,default = label_parsed),nrow = 2);p
+# ggsave("ROCSurvival_RL.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
+# 
+# p<-survFrame%>%ggplot()+geom_point(aes(fpr,tpr,colour=RL,shape=Event),size=1)+
+#   xlab("False Positive Rate") + ylab("True Positive Rate") + geom_abline(slope = 1,intercept = 0) +
+#   # ggtitle(label = c("Delta Terms","All","FRS and Delta","FRS Only","Gompertz Only","Mean and Delta","Systolic Mean Only")) +
+#   facet_wrap(~Plot,nrow = 2);p
+# ggsave("ROCSurvival_Plot.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 12,height = 6) 
 
 survFrame$FRS<-F
 survFrame$FRS[survFrame$RL%in%c("RL5","RL6","RL7","RL8")]<-T
@@ -1752,10 +1724,9 @@ survFrame$Model<-survFrame$Plot
 survFrame$Model[survFrame$Plot%in%c("FRS and Delta","Mean and Delta")]<-"FRS/Mean + Delta"
 survFrame$Model[survFrame$Plot%in%c("FRS Only","Systolic Mean Only")]<-"FRS/Sys-Mean Only"
 
-survFrame$Event<-survFrame$Plot
-
-survFrame$Event[survFrame$Event=="All"]<-"All Deaths"
-survFrame$Event[survFrame$Event=="CVDHrt"]<-"CVD & Hrt Only"
+survFrame$Event<-NA_character_
+survFrame$Event[survFrame$RL%in%c("RL2","RL4","RL6","RL8")]<-"All Deaths"
+survFrame$Event[survFrame$RL%in%c("RL1","RL3","RL5","RL7")]<-"CVD & Hrt Only"
 
 AUROC<-survFrame%>%filter(RL%in%c("RL1","RL2","RL5","RL6"))%>%group_by(RL,Model,Event,FRS)%>%summarise(AUROC=max(auroc),.groups = "keep")
 AUROC$label<-paste0("AUC=",round(AUROC$AUROC,2))
@@ -1875,27 +1846,6 @@ ggsave("LexisDelta.png", plot=p,path = paste0(directory,'Plots/Survival'),width 
 p<-plot_discrete_cbar(unique((hist(output$Delta,breaks = 10,plot = F))$breaks), 
                       spacing = "constant", palette="Spectral",legend_direction = "vertical",direction = -1)
 ggsave("LexisDelta_col.png", plot=p,path = paste0(directory,'Plots/Survival'),width = 6,height = 10) 
-
-
-
-#@@@@@@@@@@@@@@@@@@@@@@ COMPARISON WITH FREQUENTIST COX-PH MODEL @@@@@@@@@@@@@@@@@@@@@@#
-
-survival::coxph(survival::Surv(Time, eventCVDHrt) ~ age + female + black + other + 
-        M_D_NF + M_S_NF + Delta_D_NF + Delta_S_NF + 
-        tauis_SC_NF + tauis_SH_NF + tauis_DC_NF + tauis_DH_NF, 
-      data = DF_nhanesA) %>% 
-  summary()
-
-
-
-
-
-
-
-
-
-
-
 
 
 # BEST SURVIVAL PREDICTION
