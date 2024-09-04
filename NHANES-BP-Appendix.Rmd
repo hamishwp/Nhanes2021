@@ -2365,12 +2365,6 @@ cat('\n')
 ```
 
 ```{r freqALLNF, echo=F,results='asis'}
-# coxph(Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
-#         M_i_D + M_i_S + D_i_D + D_i_S + 
-#         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
-#       data = DF_nhanesA)
-# flexsurv::flexsurvreg(Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
-#                               data = DF_nhanesA, dist = "gompertz") %>% 
 cat(coxph(Surv(age, Time+age, eventall) ~ M_i_S + M_i_D +
                      D_i_S + D_i_D + sigma_C_S + sigma_H_S +
                      sigma_C_D + sigma_H_D +
@@ -2390,7 +2384,7 @@ cat(coxph(Surv(age, Time+age, eventall) ~ M_i_S + M_i_D +
     dplyr::select(Covariate,estimate,p.value,Range)%>%
   setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
   kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqALLNF", digits=3,linesep = "",
-                    caption="Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.")%>%
+                    caption="Cox-PH parameter estimates for all-cause mortality, NHANES III, full population.")%>%
   kable_styling(latex_options = c("hold_position","striped")))
 cat('\n')
 
