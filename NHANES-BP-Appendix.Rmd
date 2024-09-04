@@ -2270,6 +2270,7 @@ ggsave("Excluded_SurvProbKM.png",p,path = "./Rmarkdown_Plots",width = 7,height =
 ## Results - Frequentist Comparison
 
 A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes.
+The baseline mortality is stratified by sex and ethnicity.
 
 
 ```{r frequentist, include=FALSE, message=FALSE, warning=FALSE, echo=F}
@@ -2332,6 +2333,69 @@ cox_NHANES <- coxph( Surv(age, Time+age, eventCVDHrt) ~ FRS.1998 +
                      D_i_S + D_i_D + sigma_C_S + sigma_H_S +
                      sigma_C_D + sigma_H_D + strata(race) + strata(female), data = DF_nhanesFRS)
 ```
+
+```{r freqCVDNF, echo=F,results='asis'}
+cat(coxph(Surv(age, Time+age, eventCVDHrt) ~ M_i_S + M_i_D +
+                     D_i_S + D_i_D + sigma_C_S + sigma_H_S +
+                     sigma_C_D + sigma_H_D +
+                  strata(race) + strata(female), data = DF_nhanesA) %>%
+  broom::tidy(conf.int = TRUE) %>%    # Include confidence intervals
+  mutate_if(is.numeric, signif, digits = 2) %>%
+  # mutate_at(vars(matches("_i_")), scale, scale=F) %>%
+  # mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)),
+         term=gsub("strata\\(female\\)","",gsub("strata\\(race\\)","",term)))%>%
+  left_join(SD_nA,by="term")%>%
+  mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
+  mutate(estimate=estimate*std, term=gsub("_"," ",term))%>%
+  dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+    filter(!(grepl("race=",term,T) | grepl("female=",term,T)))%>%
+    rename("variable"="term")%>%left_join(convnames,by="variable")%>%
+    dplyr::select(Covariate,estimate,p.value,Range)%>%
+  setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
+  kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqCVDNF", digits=3,linesep = "",
+                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, full population.")%>%
+  kable_styling(latex_options = c("hold_position","striped")))
+cat('\n')
+  # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
+# coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
+#                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
+#                      sigma_C_D + sigma_H_D, data = DF_nhanesA)
+
+```
+
+```{r freqALLNF, echo=F,results='asis'}
+# coxph(Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
+#         M_i_D + M_i_S + D_i_D + D_i_S + 
+#         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
+#       data = DF_nhanesA)
+# flexsurv::flexsurvreg(Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
+#                               data = DF_nhanesA, dist = "gompertz") %>% 
+cat(coxph(Surv(age, Time+age, eventall) ~ M_i_S + M_i_D +
+                     D_i_S + D_i_D + sigma_C_S + sigma_H_S +
+                     sigma_C_D + sigma_H_D +
+                  strata(race) + strata(female), data = DF_nhanesA) %>%
+  broom::tidy(conf.int = TRUE) %>%    # Include confidence intervals
+  mutate_if(is.numeric, signif, digits = 2) %>%
+  mutate_at(vars(matches("_i_")), scale, scale=F) %>%
+  mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
+  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)),
+         term=gsub("strata\\(female\\)","",gsub("strata\\(race\\)","",term)))%>%
+  left_join(SD_nA,by="term")%>%
+  mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
+  mutate(estimate=estimate*std, term=gsub("_"," ",term))%>%
+  dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
+    filter(!(grepl("race=",term,T) | grepl("female=",term,T)))%>%
+    rename("variable"="term")%>%left_join(convnames,by="variable")%>%
+    dplyr::select(Covariate,estimate,p.value,Range)%>%
+  setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
+  kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqALLNF", digits=3,linesep = "",
+                    caption="Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.")%>%
+  kable_styling(latex_options = c("hold_position","striped")))
+cat('\n')
+
+```
+
 ```{r freqCVDF, echo=F,results='asis'}
 cat(cox_NHANES %>%
   broom::tidy(conf.int = TRUE) %>%    # Include confidence intervals
@@ -2384,78 +2448,13 @@ cat(coxph(Surv(age, Time+age, eventall) ~ FRS.1998 +
     dplyr::select(Covariate,estimate,p.value,Range)%>%
   setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
   kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqALLF", digits=3,linesep = "",
-                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.")%>%
+                    caption="Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.")%>%
   kable_styling(latex_options = c("hold_position","striped")))
 cat('\n')
 
 ```
 
 
-```{r freqCVDNF, echo=F,results='asis'}
-cat(coxph(Surv(age, Time+age, eventCVDHrt) ~ M_i_S + M_i_D +
-                     D_i_S + D_i_D + sigma_C_S + sigma_H_S +
-                     sigma_C_D + sigma_H_D +
-                  strata(race) + strata(female), data = DF_nhanesA) %>%
-  broom::tidy(conf.int = TRUE) %>%    # Include confidence intervals
-  mutate_if(is.numeric, signif, digits = 2) %>%
-  # mutate_at(vars(matches("_i_")), scale, scale=F) %>%
-  # mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
-  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)),
-         term=gsub("strata\\(female\\)","",gsub("strata\\(race\\)","",term)))%>%
-  left_join(SD_nA,by="term")%>%
-  mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
-  mutate(estimate=estimate*std, term=gsub("_"," ",term))%>%
-  dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
-    filter(!(grepl("race=",term,T) | grepl("female=",term,T)))%>%
-    rename("variable"="term")%>%left_join(convnames,by="variable")%>%
-    dplyr::select(Covariate,estimate,p.value,Range)%>%
-  setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
-  kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqCVDNF", digits=3,linesep = "",
-                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.")%>%
-  kable_styling(latex_options = c("hold_position","striped")))
-cat('\n')
-  # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
-# coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
-#                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
-#                      sigma_C_D + sigma_H_D, data = DF_nhanesA)
-
-```
-
-```{r freqALLNF, echo=F,results='asis'}
-# coxph(Surv(Time+age, eventCVDHrt) ~ age + female + black + other + 
-#         M_i_D + M_i_S + D_i_D + D_i_S + 
-#         sigma_C_S + sigma_H_S + sigma_C_D + sigma_H_D, 
-#       data = DF_nhanesA)
-# flexsurv::flexsurvreg(Surv(Time+age, eventCVDHrt) ~ age + female + black + other, 
-#                               data = DF_nhanesA, dist = "gompertz") %>% 
-cat(coxph(Surv(age, Time+age, eventall) ~ M_i_S + M_i_D +
-                     D_i_S + D_i_D + sigma_C_S + sigma_H_S +
-                     sigma_C_D + sigma_H_D +
-                  strata(race) + strata(female), data = DF_nhanesA) %>%
-  broom::tidy(conf.int = TRUE) %>%    # Include confidence intervals
-  mutate_if(is.numeric, signif, digits = 2) %>%
-  mutate_at(vars(matches("_i_")), scale, scale=F) %>%
-  mutate_at(vars(matches("sigma_")), scale, scale=F) %>%
-  mutate(p.value=case_when(p.value<0.001 ~ "<0.001", T ~ as.character(p.value)),
-         term=gsub("strata\\(female\\)","",gsub("strata\\(race\\)","",term)))%>%
-  left_join(SD_nA,by="term")%>%
-  mutate(Range = paste0("(", signif(conf.low*std,2), ",", signif(conf.high*std,2), ")")) %>%  # Add the range column
-  mutate(estimate=estimate*std, term=gsub("_"," ",term))%>%
-  dplyr::select(-statistic, -conf.low, -conf.high, -std.error, -std) %>%    # Remove unnecessary columns
-    filter(!(grepl("race=",term,T) | grepl("female=",term,T)))%>%
-    rename("variable"="term")%>%left_join(convnames,by="variable")%>%
-    dplyr::select(Covariate,estimate,p.value,Range)%>%
-  setNames(c("Covariate", "Beta Normalised", "P-Value", "Range")) %>%
-  kableExtra::kable(format = "latex", escape = F, booktabs = TRUE, label = "freqALLNF", digits=3,linesep = "",
-                    caption="Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.")%>%
-  kable_styling(latex_options = c("hold_position","striped")))
-cat('\n')
-  # kableExtra::kable(caption = "Tidy Summary of GLM Model",format="latex", escape = F,booktabs = T)
-# coxph(Surv(Time+age, eventCVDHrt) ~ age + M_i_D + M_i_S + 
-#                      D_i_D + D_i_S + sigma_C_S + sigma_H_S + 
-#                      sigma_C_D + sigma_H_D, data = DF_nhanesA)
-
-```
 
 
 

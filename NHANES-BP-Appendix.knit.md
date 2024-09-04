@@ -1,181 +1,28 @@
-% Options for packages loaded elsewhere
-\PassOptionsToPackage{unicode}{hyperref}
-\PassOptionsToPackage{hyphens}{url}
-%
-\documentclass[
-]{article}
-\usepackage{amsmath,amssymb}
-\usepackage{iftex}
-\ifPDFTeX
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
-  \usepackage{unicode-math} % this also loads fontspec
-  \defaultfontfeatures{Scale=MatchLowercase}
-  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-\usepackage{lmodern}
-\ifPDFTeX\else
-  % xetex/luatex font selection
-\fi
-% Use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-\IfFileExists{microtype.sty}{% use microtype if available
-  \usepackage[]{microtype}
-  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
-\makeatletter
-\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \IfFileExists{parskip.sty}{%
-    \usepackage{parskip}
-  }{% else
-    \setlength{\parindent}{0pt}
-    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \KOMAoptions{parskip=half}}
-\makeatother
-\usepackage{xcolor}
-\usepackage[margin=1in]{geometry}
-\usepackage{color}
-\usepackage{fancyvrb}
-\newcommand{\VerbBar}{|}
-\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
-\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
-% Add ',fontsize=\small' for more characters per line
-\usepackage{framed}
-\definecolor{shadecolor}{RGB}{248,248,248}
-\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
-\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
-\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
-\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\BuiltInTok}[1]{#1}
-\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
-\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
-\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
-\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
-\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
-\newcommand{\ExtensionTok}[1]{#1}
-\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
-\newcommand{\ImportTok}[1]{#1}
-\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
-\newcommand{\NormalTok}[1]{#1}
-\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
-\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
-\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
-\newcommand{\RegionMarkerTok}[1]{#1}
-\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
-\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
-\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\usepackage{longtable,booktabs,array}
-\usepackage{calc} % for calculating minipage widths
-% Correct order of tables after \paragraph or \subparagraph
-\usepackage{etoolbox}
-\makeatletter
-\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
-\makeatother
-% Allow footnotes in longtable head/foot
-\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
-\makesavenoteenv{longtable}
-\usepackage{graphicx}
-\makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-% Set default figure placement to htbp
-\makeatletter
-\def\fps@figure{htbp}
-\makeatother
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{5}
-% definitions for citeproc citations
-\NewDocumentCommand\citeproctext{}{}
-\NewDocumentCommand\citeproc{mm}{%
-  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
-\makeatletter
- % allow citations to break across lines
- \let\@cite@ofmt\@firstofone
- % avoid brackets around text for \cite:
- \def\@biblabel#1{}
- \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
-\makeatother
-\newlength{\cslhangindent}
-\setlength{\cslhangindent}{1.5em}
-\newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
-\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
- {\begin{list}{}{%
-  \setlength{\itemindent}{0pt}
-  \setlength{\leftmargin}{0pt}
-  \setlength{\parsep}{0pt}
-  % turn on hanging indent if param 1 is 1
-  \ifodd #1
-   \setlength{\leftmargin}{\cslhangindent}
-   \setlength{\itemindent}{-1\cslhangindent}
-  \fi
-  % set entry spacing
-  \setlength{\itemsep}{#2\baselineskip}}}
- {\end{list}}
-\usepackage{calc}
-\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
-\usepackage{lscape}
-\usepackage{booktabs}
-\usepackage{longtable}
-\usepackage{array}
-\usepackage{multirow}
-\usepackage{wrapfig}
-\usepackage{float}
-\usepackage{colortbl}
-\usepackage{pdflscape}
-\usepackage{tabu}
-\usepackage{threeparttable}
-\usepackage{threeparttablex}
-\usepackage[normalem]{ulem}
-\usepackage{makecell}
-\usepackage{xcolor}
-\ifLuaTeX
-  \usepackage{selnolig}  % disable illegal ligatures
-\fi
-\usepackage{bookmark}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same}
-\hypersetup{
-  pdftitle={NHANES Blood Pressure-Based Mortality Risk - Appendix},
-  pdfauthor={Rscripts by Hamish Patten, DW Bester and David Steinsaltz},
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
+---
+title: "NHANES Blood Pressure-Based Mortality Risk - Appendix"
+author: "Rscripts by Hamish Patten, DW Bester and David Steinsaltz"
+date: "03/08/2024"
+output: 
+  bookdown::pdf_document2:
+    keep_tex: true
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    table_caption: true
+    latex_engine: xelatex  # Change the LaTeX engine to xelatex
+header-includes:
+  - "\\usepackage{lscape}"  # Use lscape package to change page orientation
+bibliography: nhanesBP.bib
+---
 
-\title{NHANES Blood Pressure-Based Mortality Risk - Appendix}
-\author{Rscripts by Hamish Patten, DW Bester and David Steinsaltz}
-\date{03/08/2024}
 
-\begin{document}
-\maketitle
+# Appendix A -- The data
 
-{
-\setcounter{tocdepth}{3}
-\tableofcontents
-}
-\section{Appendix A -- The data}\label{appendix-a-the-data}
+
+
+
+
+
 
 \begin{figure}
 
@@ -183,33 +30,35 @@
 
 }
 
-\caption{Venn diagram of subjects excluded from the analysis.}\label{fig:Venn1}
+\caption{Venn diagram of subjects excluded from the analysis.}(\#fig:Venn1)
 \end{figure}
 
-\subsection{Exclusions}\label{exclusions}
+## Exclusions
 
 There were 19592 subjects in the initial data set.
-Of these 4573 were excluded because they had missing data or were not followed up, or belonged to the ``Other'' ethnic group.
+Of these 4573 were excluded because they had missing data or were not followed up, or belonged to the "Other" ethnic group.
 This left 15019 subjects for further consideration.
 A small number of subjects were excluded because their blood pressure measurements were outside the normal range, as described below in section \ref{sec:BPrange}.
 As our method depends on estimating the mortality rates for each demographic group (ethnicity and sex),
-we removed the small number of subjects whose ethnic group was given as ``Other'' (n=751).
+we removed the small number of subjects whose ethnic group was given as "Other" (n=751).
 (The three included ethnic groups were Mexican American (n=5150), Black (n=5336), and White (n=8355).
 In the end there were 14654 subjects in the analysis data set.
 A Venn diagram of the different causes of exclusion is given in figure \ref{fig:Venn1}.
-We will refer to this as the ``full population''.
+We will refer to this as the "full population".
 Of these, 9008 had a computable FRS score.
-We call this the ``FRS population'\,'.
+We call this the ``FRS population''.
 
-\subsection{Exploratory data analysis}\label{exploratory-data-analysis}
 
-The empirical means of the home and clinic measures in population B are tabulated in Table \ref{tab:summaries}. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female.
-The average difference is about 2.2 for diastolic and 2.7 for systolic, which is small compared with the general range of the differences, which have SD of
+
+
+## Exploratory data analysis
+The empirical means of the home and clinic measures in population B are tabulated in Table \ref{tab:summaries}. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female. 
+The average difference is about 2.2 for diastolic and 2.7 for systolic, which is small compared with the general range of the differences, which have SD of 
 10.5 (diastolic) and 14.8 (systolic).
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:summaries}Summary data for blood pressure}
+\caption{(\#tab:summaries)Summary data for blood pressure}
 \centering
 \begin{tabular}[t]{llllrr}
 \toprule
@@ -246,19 +95,32 @@ Clinic & Diastolic & Female & Mexican & 69.2 & 3.0\\
 \end{tabular}
 \end{table}
 
-\subsubsection{Correlations between measurements}\label{sec:correlations}
-
+### Correlations between measurements {#sec:correlations}
 In Figure \ref{fig:SD-mean} see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model.
 
-\begin{figure}
-\centering
-\includegraphics{NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf}
-\caption{\label{fig:SD-mean}Scatterplot of individual mean BP against individual SD of BP}
-\end{figure}
 
+![(\#fig:SD-mean)Scatterplot of individual mean BP against individual SD of BP](NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf) 
+
+<!--#```{r Delta-mean,fig.pos='H', fig.cap='Scatterplot of individual mean BP against individual absolute difference between Clinic and Home mean', echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+#bp.sub <- data.frame(Mean=bp.data$TotalMean[bp.data$BPplace=='Clinic'],Delta=bp.data$Delta[bp.data$BPplace=='Clinic'], #BPtype=bp.data$BPtype[bp.data$BPplace=='Clinic']) %>%   # Home and clinic are identical
+#  group_by(BPtype)
+  
+# bp.data.cor <- bp.sub %>%
+#   summarize(correlationDelta = cor(Mean, Delta, use = "complete.obs"))
+# # Scatterplot of mean BP against SD of BP from bp.data
+#     ggplot(bp.sub %>% group_by(BPtype), aes(x = Mean, y = Delta)) + 
+#     geom_point(alpha=.03, color = 'navyblue' ) +
+#     labs(title = "Scatterplot of Mean against |Delta|",
+#          x = "Mean",y = "|Delta|") + ylim(0,20)+
+#       geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line
+#     facet_grid(~ BPtype, scales = 'free_x') +
+#     theme(plot.title = element_text(hjust = 0.5)) +
+#     geom_text(data = bp.data.cor2, aes(label = sprintf("Cor: %.2f", correlationDelta), x = Inf, y = Inf), 
+#                  vjust = "top", hjust = "right", inherit.aes = FALSE)
+-->
 \begin{table}
 
-\caption{\label{tab:Delta-mean}Correlation between mean and Delta. Rows correspond to type of Delta, columns to type of mean.}
+\caption{(\#tab:Delta-mean)Correlation between mean and Delta. Rows correspond to type of Delta, columns to type of mean.}
 \centering
 \begin{tabular}[t]{lrr}
 \toprule
@@ -272,7 +134,7 @@ DiasDelta & 0.347 & 0.128\\
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:SD-mean2}Correlation between mean and SD. Rows correspond to type and location of SD, columns to type and location of mean.}
+\caption{(\#tab:SD-mean2)Correlation between mean and SD. Rows correspond to type and location of SD, columns to type and location of mean.}
 \centering
 \begin{tabular}[t]{lrrrr}
 \toprule
@@ -286,19 +148,19 @@ Home Dias SD & 0.045 & 0.060 & 0.010 & 0.003\\
 \end{tabular}
 \end{table}
 
-In Table \ref{tab:Delta-mean} we show the correlations between overall mean and absolute difference (\(|\Delta|\)) between clinic and home measurements.
-The results are given as a \(2\times2\) table, showing correlations within systolic and diastolic BP, and between the two.
+In Table \ref{tab:Delta-mean} we show the correlations between overall mean and absolute difference ($|\Delta|$) between clinic and home measurements.
+The results are given as a $2\times2$ table, showing correlations within systolic and diastolic BP, and between the two.
 The only moderately high correlation is between Systolic mean and Diastolic absolute Delta, which would correspond to a Variance Inflation Factor of 1.14.
 While this is not directly relevant to the present Bayesian methodology, it suggests that this correlation should not substantially affect the estimation of the model coefficients.
 
-In Table \ref{tab:SD-mean2} we show the correlations between mean and standard deviation for the three BP measures, considering all pairs of (Clinic,Home) and (Systolic,Diastolic).
+In Table \ref{tab:SD-mean2} we show the correlations between mean and standard deviation for the three BP measures, considering all pairs of (Clinic,Home) and (Systolic,Diastolic). 
 Finally, Table \ref{tab:SD-mean3} shows the correlations between systolic and diastolic, ranging over (Clinic,Home) and (Mean,SD).
 (Some of the numbers here of course duplicate those in Table \ref{tab:SD-mean2}.)
 Again, the correlations are too low to require any special treatment.
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:SD-mean3}Correlation between diastolic and systolic summary statistics. Rows correspond to variables and locations for diastolic, columns to variables and locations for systolic.}
+\caption{(\#tab:SD-mean3)Correlation between diastolic and systolic summary statistics. Rows correspond to variables and locations for diastolic, columns to variables and locations for systolic.}
 \centering
 \begin{tabular}[t]{lrrrr}
 \toprule
@@ -312,21 +174,21 @@ Home Dias Mean & 0.106 & 0.405 & 0.073 & 0.547\\
 \end{tabular}
 \end{table}
 
-\subsection{Errors in blood pressure measurement or recording}\label{sec:errors}
+## Errors in blood pressure measurement or recording {#sec:errors}
 
-The blood pressure measurement or recording errors were found particularly in the home measurements.
-While these did not destroy the usefulness of the home measurements, they did require some attention and decisions for how to work with these defects.
-We also consider them inherently interesting, and worth registering for future researchers working on these or similar data.
-In particular, the problem we have called ``dependent replication'' was entirely unexpected, although not unprecedented, and is of particular concern to researchers trying to estimate individual variation in clinically relevant measures.
+The blood pressure measurement or recording errors were found particularly in the home measurements. 
+While these did not destroy the usefulness of the home measurements, they did require some attention and decisions for how to work with these defects. 
+We also consider them inherently interesting, and worth registering for future researchers working on these or similar data. 
+In particular, the problem we have called “dependent replication” was entirely unexpected, although not unprecedented, and is of particular concern to researchers trying to estimate individual variation in clinically relevant measures.
 
-\subsubsection{Last-digit preference}\label{sec:lastdigit}
+### Last-digit preference {#sec:lastdigit}
 
-Mild tendency for observers to prefer certain last digits in reporting BP measurements has been reported in other studies, though an analysis of the 1999 wave of NHANES reported no last-digit preference (Ostchega et al. 2003).\\
-The last-digit preference in NHANES III, on the other hand, is substantial, with about 26.7\% of all the clinic-measured systolic BP measurements ending in 0, but only about 31.9\% ending in 4 or 6. Because the shifts due to last-digit preference are presumably small, we expect them to have little effect on the main effects that we are examining in this paper, but they do increase the probability of two measurements being rounded to the same value, something that needs to be taken into account in examining the problem of dependent replication.
+Mild tendency for observers to prefer certain last digits in reporting BP measurements has been reported in other studies, though an analysis of the 1999 wave of NHANES reported no last-digit preference [@ostchega2003national].  
+The last-digit preference in NHANES III, on the other hand, is substantial, with about 26.7% of all the clinic-measured systolic BP measurements ending in 0, but only about 31.9% ending in 4 or 6. Because the shifts due to last-digit preference are presumably small, we expect them to have little effect on the main effects that we are examining in this paper, but they do increase the probability of two measurements being rounded to the same value, something that needs to be taken into account in examining the problem of dependent replication.
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:digit-summary}Summary data for BP end digits}
+\caption{(\#tab:digit-summary)Summary data for BP end digits}
 \centering
 \begin{tabular}[t]{llrrrrr}
 \toprule
@@ -340,26 +202,28 @@ Clinic & Diastolic & 0.192 & 0.189 & 0.209 & 0.212 & 0.198\\
 \end{tabular}
 \end{table}
 
-\subsubsection{Dependent replicates}\label{sec:pseudorep}
+### Dependent replicates {#sec:pseudorep}
 
 While the protocol calls for each subject to have three independent BP measures taken, it is not impossible that the observers may have been influenced by one measure in recording the next.
 This could happen in either direction: later measurements could be pulled closer to the first, or there could be an inclination to avoid repeated measures.
 This is relevant, because erroneously repeated measures would artificially decrease the variance of the three measurements, and avoiding repeated measures would have the opposite effect.
 
 The end-digit bias may be expected to have an effect here, since it influences the probability of two measurements being rounded to the same value.
-We begin by noting the standard deviations for measurements of individual subjects as given in the column `Mean of SD' in Table \ref{tab:sd-summary}.
-The column `Prob all rep' gives the theoretical probability that two of the three measurements for a subject would have the same value, if the measurements were independent and normally distributed with the given standard deviation (adjusted for the rounding), and assuming that rounding to particular digits is done in proportion to the fractions listed in Table \ref{tab:digit-summary}.
-The column `Prob 2 rep' gives the probability that two of the three measurements would have the same value, under the same conditions.
-The column `Frac all rep' gives the observed fraction of subjects for whom all three measurements were equal, and `Frac 2 rep' gives the fraction for whom two of the three measurements were equal.
+We begin by noting the standard deviations for measurements of individual subjects as given in the column 'Mean of SD' in Table \ref{tab:sd-summary}.
+The column 'Prob all rep' gives the theoretical probability that two of the three measurements for a subject would have the same value, if the measurements were independent and normally distributed with the given standard deviation (adjusted for the rounding), and assuming that rounding to particular digits is done in proportion to the fractions listed in Table \ref{tab:digit-summary}.
+The column 'Prob 2 rep' gives the probability that two of the three measurements would have the same value, under the same conditions.
+The column 'Frac all rep' gives the observed fraction of subjects for whom all three measurements were equal, and 'Frac 2 rep' gives the fraction for whom two of the three measurements were equal.
 The observed fractions for three equal measurements are all very close to the theoretical probabilities, but the observed fractions for two equal measurements are substantially lower than the theoretical probabilities.
-(For comparison, a 95\% probability range for the fraction of subjects with two equal measurements is about \(\pm 0.008\).)
+(For comparison, a 95\% probability range for the fraction of subjects with two equal measurements is about $\pm 0.008$.)
 
 In Figure \ref{fig:examinerPlot}, we show the fraction of subjects with two equal measurements, by examiner, blocked by place and type.
 We see that the fraction of subjects with two equal measurements varies substantially by examiner, and that the variation is greater for the systolic than for the diastolic measurements.
 
+
+
 \begin{table}[!h]
 \centering
-\caption{\label{tab:sd-summary}Summary data for repeated measures}
+\caption{(\#tab:sd-summary)Summary data for repeated measures}
 \centering
 \begin{tabular}[t]{llrrrrr}
 \toprule
@@ -373,20 +237,18 @@ Clinic & Diastolic & 3.082 & 0.028 & 0.036 & 0.414 & 0.459\\
 \end{tabular}
 \end{table}
 
-We show the fraction of subjects with two equal measurements in Figure \{fig:examinerPlot\}, split by examiner, blocked by place and type.
+
+We show the fraction of subjects with two equal measurements in Figure {fig:examinerPlot}, split by examiner, blocked by place and type.
 We see that the fraction of subjects with two equal measurements varies substantially by examiner, and that the variation is greater for the systolic than for the diastolic measurements.
 
-\begin{figure}
-\centering
-\includegraphics{NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.pdf}
-\caption{\label{fig:examinerPlot}Number of subjects with 2 equal measurements by examiner, blocked by place and type. Red band shows 95\% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners.}
-\end{figure}
 
-\begin{figure}
-\centering
-\includegraphics{NHANES-BP-Appendix_files/figure-latex/examinerPlot3-1.pdf}
-\caption{\label{fig:examinerPlot3}Number of subjects with 3 equal measurements by examiner, blocked by place and type. Red band shows 95\% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners.}
-\end{figure}
+
+
+
+
+![(\#fig:examinerPlot)Number of subjects with 2 equal measurements by examiner, blocked by place and type. Red band shows 95% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners.](NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.pdf) 
+
+![(\#fig:examinerPlot3)Number of subjects with 3 equal measurements by examiner, blocked by place and type. Red band shows 95% probability range. Vertical green dashed line shows expected fraction; blue dotted line shows observed fraction over all examiners.](NHANES-BP-Appendix_files/figure-latex/examinerPlot3-1.pdf) 
 
 In Figure \ref{fig:examinerPlot3}, we show the fraction of subjects with three equal measurements, by examiner, blocked by place and type.
 Relative to the expected random fluctuations, we see that there is even more variation among the examiners.
@@ -405,7 +267,7 @@ We see that there is a huge deviation from the expected proportions in the Home 
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:proportionChisq}Chi-square test for difference between observed proportions (all examiners), stratified by place and type}
+\caption{(\#tab:proportionChisq)Chi-square test for difference between observed proportions (all examiners), stratified by place and type}
 \centering
 \begin{tabular}[t]{llrrrrl}
 \toprule
@@ -418,25 +280,21 @@ Clinic & Diastolic & 2172 & 1992 & 1906 & 18.2 & 1.12e-04\\
 \bottomrule
 \end{tabular}
 \end{table}
-
 To explore this further, we can look at the proportions of first, second and third measurements from each examiner that are different from the other two.
 The results of a chi-squared test for each examiner (stratified by site and type of BP) for difference from the expected equal proportions are shown in Figure \ref{fig:proportionChisq3}.
 The dashed line represents a p-value of 0.001.
 Here we see that the Home measurements are extremely variable, while the Clinic measurements are quite consistent with the expected proportions, with the single exception of examiner 3004, who is far from the expected equal proportions in all categories of measurement.
 
-\begin{figure}
-\centering
-\includegraphics{NHANES-BP-Appendix_files/figure-latex/proportionChisq3-1.pdf}
-\caption{\label{fig:proportionChisq3}Proportions of first, second and third measurements from each examiner that are different from the other two, by place and type. Chi-squared value for difference from expected proportions. Dashed line represents p-value 0.001.}
-\end{figure}
+![(\#fig:proportionChisq3)Proportions of first, second and third measurements from each examiner that are different from the other two, by place and type. Chi-squared value for difference from expected proportions. Dashed line represents p-value 0.001.](NHANES-BP-Appendix_files/figure-latex/proportionChisq3-1.pdf) 
 
 Given that the position of the differing measure clearly differs from the expected equal proportions, we might ask whether the examiners agree on a common proportion, suggesting that there might be some underlying systematic (observer-independent) reason for the differing measurements.
 In Table \ref{tab:ternaryChi2} we show the results of a chi-squared test for equality of observed proportions among the examiners, stratified by place and type.
 Interestingly, we see here that the examiners are fairly consistent in their proportions for the Home measures, but not for the Clinic measures.
 
+
 \begin{table}[!h]
 \centering
-\caption{\label{tab:ternaryChi2}Chi-square test for difference between observed proportions among the examiners, stratified by place and type}
+\caption{(\#tab:ternaryChi2)Chi-square test for difference between observed proportions among the examiners, stratified by place and type}
 \centering
 \begin{tabular}[t]{llrl}
 \toprule
@@ -450,57 +308,91 @@ Clinic & Diastolic & 110.0 & 3.05e-12\\
 \end{tabular}
 \end{table}
 
-\begin{figure}
-\centering
-\includegraphics{NHANES-BP-Appendix_files/figure-latex/ternaryPlot-1.pdf}
-\caption{\label{fig:ternaryPlot}Ternary plot of the position of the measurement that is unique, among subjects with 2 equal measurements. V1 is the fraction with the first distinct, V2 is the fraction with the second distinct, V3 is the fraction with the third distinct.}
-\end{figure}
+![(\#fig:ternaryPlot)Ternary plot of the position of the measurement that is unique, among subjects with 2 equal measurements. V1 is the fraction with the first distinct, V2 is the fraction with the second distinct, V3 is the fraction with the third distinct.](NHANES-BP-Appendix_files/figure-latex/ternaryPlot-1.pdf) 
 
 Looking at a ternary plot Figure \ref{fig:ternaryPlot} for the proportions from the 13 different examiners, we see very clearly the bias toward having the last two measures agree, for almost all examiners, and examiner 3004 (marked larger) standing out as a clear outlier.
+
 
 Overall, we can only conclude that there are clearly some irregularities in the BP measurement process, but we cannot identify a specific structure to them, or propose a remedy.
 As the irregularities are not very large, we will proceed with the analysis without attempting to correct for them.
 
-\subsubsection{Missing or implausible measurements}\label{sec:BPrange}
 
-Some of the reported measures were extremely implausible, particularly for diastolic BP. NAsubjects had at least one diastolic BP measure recorded as 0, in addition to the 3916 subjects who were missing at least one measurement. We excluded all of these subjects, and indeed any subject who had at least one measurement recorded outside the ranges (40,140) for diastolic and (60,250) for systolic BP, as recommended by the CDC (Littman et al. 2012).
-There was just one subject with systolic BP measures that were too low, but NA subjects with low diastolic BP (in addition to those with measures recorded as 0).
-One subject was excluded for diastolic BP 156, and three were excluded for systolic BP that was too high, with the maximum being 264.
+### Missing or implausible measurements {#sec:BPrange}
+
+Some of the reported measures were extremely implausible, particularly for diastolic BP. NAsubjects had at least one diastolic BP measure recorded as 0, in addition to the 3916 subjects who were missing at least one measurement. We excluded all of these subjects, and indeed any subject who had at least one measurement recorded outside the ranges (40,140) for diastolic and (60,250) for systolic BP, as recommended by the CDC [@CDCBP]. 
+There was just one subject with systolic BP measures that were too low, but NA subjects with low diastolic BP (in addition to those with measures recorded as 0). 
+One subject was excluded for diastolic BP 156, and three were excluded for systolic BP that was too high, with the maximum being 264. 
 
 \newpage
 
-\section{Appendix B -- Model details}\label{appendix-b-model-details}
+<!-- ## Exploratory data analysis -->
+<!-- The empirical means of the home and clinic measures in population B are tabulated in Table 1. We note that the home measures are systematically higher than the clinic measures, within every demographic group, with greater differences for subjects who are white or Mexican, and female.  -->
+<!-- The average difference is about 2.2 for diastolic and 2.7 for systolic, which is small compared with the general range of the differences, which have SD of  -->
+<!-- 10.5 (diastolic) and 14.8 (systolic). -->
 
+<!-- ```{r summaries, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE} -->
+<!-- # Printing the table using kable -->
+<!--     cat(kable(mean_sd_summary,format="latex", escape = F,booktabs = T, digits=1, -->
+<!--               linesep = rep(c(rep("",5),"\\addlinespace"),4), -->
+<!--                   col.names=c("Sys/Dias", "Place","Sex", "Ethnicity", 'Mean', 'SD'),caption = 'Summary data for blood pressure') %>%  kable_styling(latex_options = "hold_position") ) -->
+<!--     cat('\n') -->
+<!-- ``` -->
+
+<!-- ### Correlations between measurements {#sec:correlations} -->
+<!-- We see that there is relatively little correlation between empirical SD and empirical mean SD for the different BP types and places. This is reassuring, as it avoids the possibility of a collinearity effect confounding the sampling of mean and SD, which are being treated as independent covariates in the model. -->
+
+<!-- ```{r SD-mean, dpi = 1,fig.pos='H', fig.width=8,fig.height=6, fig.cap='2D density plot of individual mean BP against individual SD of BP', echo=FALSE,results='asis',message=FALSE,warning=FALSE} -->
+<!-- # 2D density plot of mean BP against SD of BP from bp.data -->
+<!-- ggplot(bp.data, aes(x = Mean, y = SD)) + -->
+<!--   geom_bin2d() + -->
+<!--   labs(title = "2D Density Plot of Mean against SD", -->
+<!--        x = "Mean",y = "SD") + ylim(0,15)+ -->
+<!--   scale_fill_continuous(type = "viridis") + -->
+<!--   theme_bw()+ -->
+<!-- geom_smooth(method = "lm", se = FALSE, color = "black") +  # Add regression line -->
+<!--   facet_grid(BPtype ~ BPplace, scales = 'free_x') + -->
+<!--   theme(plot.title = element_text(hjust = 0.5)) + -->
+<!--   geom_text(data = bp.data.cor, aes(label = sprintf("Cor: %.2f", correlation), x = Inf, y = Inf),  -->
+<!--             vjust = "top", hjust = "right", inherit.aes = FALSE) -->
+
+<!-- ``` -->
+
+
+
+
+
+# Appendix B -- Model details
 This appendix aims to add more detail about the numerical modelling than was provided in the article. This is to ensure that the research methods are transparent and entirely reproducible. The numerical modelling presented in this paper was performed using R combined with Rstan. More detail will be provided here about the model, about the specific methodology used to parameterize the model, and more results are provided that were not included in the main text.
 
-\subsection{The Statistical Model}\label{the-statistical-model}
-
-The model used in this research is built from the theory of joint modelling of longitudinal and time-to-event data. This will be described in detail later on in this section, however, in brief, this allows the simultaneous modelling of both longitudinal observation data (in this article, this is blood pressure measurements) and also the time-to-event outcome.
+## The Statistical Model
+The model used in this research is built from the theory of joint modelling of longitudinal and time-to-event data. This will be described in detail later on in this section, however, in brief, this allows the simultaneous modelling of both longitudinal observation data (in this article, this is blood pressure measurements) and also the time-to-event outcome. 
 In this research the event of interest is either death from any cause, or death from specifically cardiovascular or cerebrovascular causes. We henceforth will refer to this latter mortality as CVD.
 In the latter case, death from a different cause is treated as a noninformative censoring event.
 
-\subsubsection{Survival Analysis (Time-to-Event)}\label{survival-analysis-time-to-event}
+### Survival Analysis (Time-to-Event)
 
-The basic survival model is a Gompertz hazard rate with proportional hazards influences of the blood pressure covariates.
-The Gompertz equation
+The basic survival model is a Gompertz hazard rate with proportional hazards influences of the blood pressure covariates. 
+The Gompertz equation 
 \begin{equation}\label{gompertz}
 h_0(t)=B\exp{\left(\theta(x+T)\right)},
 \end{equation}
-describes the baseline hazard of the population to a particular risk, which, for this article, investigates CVD mortality specifically, as well as studying mortality risk in general. \(x\in\mathbb{N^N}\) is the age of the individual at the initial interview time, for \(N\) the number of individuals, and \(T\in\mathbb{R}^{+,N}\) the time since the individual entered the survey.
-Note that both \(B\) and \(\theta\) have 6 different values, depending on the sex reported at the initial interview -- female or male --- or the race --- black, white or `other'.
-Note that `other' in the race category is a combination of all non-black or non-white racial identities, such as Hispanic populations.
+describes the baseline hazard of the population to a particular risk, which, for this article, investigates CVD mortality specifically, as well as studying mortality risk in general. $x\in\mathbb{N^N}$ is the age of the individual at the initial interview time, for $N$ the number of individuals, and $T\in\mathbb{R}^{+,N}$ the time since the individual entered the survey. 
+Note that both $B$ and $\theta$ have 6 different values, depending on the sex reported at the initial interview -- female or male --- or the race --- black, white or 'other'. 
+Note that 'other' in the race category is a combination of all non-black or non-white racial identities, such as Hispanic populations. 
 The log-linear proportional hazards model links the covariates of the model (mean systolic blood pressure, variance in the diastolic blood pressure, etc) to the survival outcome of the individual via the equation
 \begin{equation}\label{prophaz}
 h(t)=h_0(t)\exp{\left(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{\boldsymbol{X}})\right)},
 \end{equation}
-where \(\boldsymbol{X}\in\mathbb{R}^{+,N\times d}\) is a vector of summary statistics of the blood pressure measurements of individual covariates in our model, \(\hat{\boldsymbol{X}}\in\mathbb{R}^{+,d}\) is the centering of the covariates such that the equation \(\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{\boldsymbol{X}}))}=0\) is approximately satisfied (more on this later), and \(\boldsymbol{\beta}\in\mathbb{R}^d\) implies the strength of the influence of the covariate on the mortality risk.
-The majority of mortality events are censored --- not yet known at the time of data collection --- the censoring indicator being notated as \(\delta\in \{0,1\}\).
+where $\boldsymbol{X}\in\mathbb{R}^{+,N\times d}$ is a vector of summary statistics of the blood pressure measurements of individual covariates in our model, $\hat{\boldsymbol{X}}\in\mathbb{R}^{+,d}$ is the centering of the covariates such that the equation $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{\boldsymbol{X}}))}=0$ is approximately satisfied (more on this later), and $\boldsymbol{\beta}\in\mathbb{R}^d$ implies the strength of the influence of the covariate on the mortality risk. 
+The majority of mortality events are censored --- not yet known at the time of data collection --- the censoring indicator being notated as $\delta\in \{0,1\}$.
 When CVD mortality is the event being analysed, deaths due to other causes are treated as noninformative censoring events.
 In this study, we explored the following covariates:
 
+
+
 \begin{table}[!h]
 \centering
-\caption{\label{tab:runnumers}Explanations of the different models simulated in this work, according to run number.}
+\caption{(\#tab:runnumers)Explanations of the different models simulated in this work, according to run number.}
 \centering
 \begin{tabular}[t]{lll}
 \toprule
@@ -524,8 +416,8 @@ $\tau_{\{D,C\}}$ & $R^{+,N}$ & Precision of the diastolic blood pressure taken a
 \end{tabular}
 \end{table}
 
-Please note that the last four elements of this list, the precision values, were only carried out to ensure model consistency with the use of standard deviation instead.
-Note as well that the \(\Delta\) covariates, representing the medium-term variability, enter into the log relative risk sum as an \textbf{absolute value}.
+Please note that the last four elements of this list, the precision values, were only carried out to ensure model consistency with the use of standard deviation instead. 
+Note as well that the $\Delta$ covariates, representing the medium-term variability, enter into the log relative risk sum as an **absolute value**.
 
 For the parametrization of this model, we assume that the Gompertz parameters and the parameters in the linear predictor term have prior distributions as follows:
 \begin{equation}\label{priorsS}
@@ -540,13 +432,13 @@ The likelihood for this Gompertz proportional hazards model, over all individual
 \begin{equation}\label{likesurv}
 L_S(\boldsymbol{v},\boldsymbol{\delta})=\prod_i^N f(v_i,\delta_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}})=\prod_i^N h(v_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}})^{\delta_i} \exp{\left( -\sum_i^N H(v_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}}) \right)},
 \end{equation}
-with \(H(v)=\int_0^v h(w) \mathrm{d}w\) the cumulative hazard.
+with $H(v)=\int_0^v h(w) \mathrm{d}w$ the cumulative hazard.
 
-\subsubsection{Longitudinal Modelling}\label{longitudinal-modelling}
+### Longitudinal Modelling
 
 The mortality hazard rates are assumed to be influenced by individual-level blood pressure means and variability characteristics.
 These characteristics are not directly observed, but are inferred from their influence on the individual blood pressure measurements, which have been observed.
-Let \(Y_i(t_j)\) be the observed blood pressure for patient \(i\) at time \(t_j\), for the individual \(i\in 1,2,...,N\) and the number of blood pressure measurements per individual \(j\in 1,2,...,k\). Due to the fact that the blood pressure measurement data was taken at both the home and clinic (written using subscripts H and C, respectively), with approximately 6 months between these two measurements, we model the blood pressure using the following model, assuming the diastolic \(Y_{i}^D\) and systolic \(Y_{i}^S\) blood pressure to be Gaussian-distributed:
+Let $Y_i(t_j)$ be the observed blood pressure for patient $i$ at time $t_j$, for the individual $i\in 1,2,...,N$ and the number of blood pressure measurements per individual $j\in 1,2,...,k$. Due to the fact that the blood pressure measurement data was taken at both the home and clinic (written using subscripts H and C, respectively), with approximately 6 months between these two measurements, we model the blood pressure using the following model, assuming the diastolic $Y_{i}^D$ and systolic $Y_{i}^S$ blood pressure to be Gaussian-distributed:
 \begin{equation}\label{bp}
 \begin{aligned}
   (Y_{i}^D)_{H} \sim \mathcal{N}(M_i^D+\Delta_i^D,(\sigma_i^D)_H),\\
@@ -555,9 +447,9 @@ Let \(Y_i(t_j)\) be the observed blood pressure for patient \(i\) at time \(t_j\
   (Y_{i}^S)_{C} \sim \mathcal{N}(M_i^S-\Delta_i^S,(\sigma_i^S)_C),
 \end{aligned}
 \end{equation}
-where superscripts \(D\) and \(S\) refer to diastolic and systolic blood pressure, respectively.
+where superscripts $D$ and $S$ refer to diastolic and systolic blood pressure, respectively. 
 
-The blood pressure characteristics --- the individual-level parameters --- are themselves distributed according to a hierarchical model, determined by population-level parameters (also called ``hyperparameters'\,'):
+The blood pressure characteristics --- the individual-level parameters --- are themselves distributed according to a hierarchical model, determined by population-level parameters (also called ``hyperparameters''):
 \begin{equation}\label{priorsL}
 \begin{aligned}
   M_i^{\{D,S\}}\sim \mathcal{N}(\mu_M^{\{D,S\}},\sigma_M^{\{D,S\}}),\\
@@ -576,9 +468,9 @@ The likelihood for the longitudinal measurements is therefore (combining the sys
   L_L(\Theta|Y)=\prod_{i=1}^N\left(\prod_{j=1}^{k}f(y_{ij}|M_i,\Delta_i,\sigma_i)\right)f(M_i|\mu_M,\sigma_M)f(\Delta_i|\mu_D,\sigma_D)f(\tau_{i,C}|r_C,\lambda_C)f(\tau_{i,H}|r_H,\lambda_H)
 \end{equation}
 
-\subsubsection{Combined Hierarchical Model}\label{combined-hierarchical-model}
+### Combined Hierarchical Model
 
-Combining the longitudinal outcome and time-to-event partial likelihoods, and for a given parameter space value of \(\Omega=\{\beta,B,\theta\}\cup \Theta\), the joint likelihood is
+Combining the longitudinal outcome and time-to-event partial likelihoods, and for a given parameter space value of $\Omega=\{\beta,B,\theta\}\cup \Theta$, the joint likelihood is
 \begin{equation}
 \begin{split}
   L(\Omega|Y)=\prod_{i=1}^N\left(\prod_{j=1}^{k}f(y_{ij}|M_i,\Delta_i,\sigma_i)\right)f&(v_i,\delta_i|B_i,\theta_i,\beta_i,\boldsymbol{X},\hat{\boldsymbol{X}})f(M_i|\mu_M,\sigma_M)\\
@@ -590,15 +482,15 @@ One approach to estimating the complete set of hyperparameters
   \Omega_H=\{\mu_B,\sigma_B,\mu_\theta,\sigma_\theta,\mu_\beta,\sigma_\beta,\mu_M^{\{D,S\}},\sigma_M^{\{D,S\}},\mu_D^{\{D,S\}},\sigma_D^{\{D,S\}},r_C^{\{D,S\}},\lambda_C^{\{D,S\}},r_H^{\{D,S\}},\lambda_H^{\{D,S\}}\}
 \end{equation}
 is to impose a higher-level prior distribution, and use the machinery of Bayesian inference to produce posteriors for everything.
-This approach runs into computational difficulties, which have led us to a two-stage `empirical Bayes' approach, where the hyperparameters for the longitudinal model are first fixed by a maximum-likelihood calculation, after which the remaining hyperparameters and individual-level parameters can be estimated with Bayesian machinery.
-For the time-to-event parameters we choose flat hyperpriors, selecting the hyperparameters \(\mu_B=\mu_\theta=\mu_\beta=0\), \(\sigma_B=\sigma_\theta=2\), and \(\sigma_\beta=100\).
+This approach runs into computational difficulties, which have led us to a two-stage `empirical Bayes' approach, where the hyperparameters for the longitudinal model are first fixed by a maximum-likelihood calculation, after which the remaining hyperparameters and individual-level parameters can be estimated with Bayesian machinery. 
+For the time-to-event parameters we choose flat hyperpriors, selecting the hyperparameters $\mu_B=\mu_\theta=\mu_\beta=0$,  $\sigma_B=\sigma_\theta=2$, and $\sigma_\beta=100$.
 
-\subsubsection{The modelling variants}\label{the-modelling-variants}
+### The modelling variants
 
-In this article, we researched into 16 variants of the model-fitting problem, but focussed mainly on 8 of them.
-The 8 main models use the standard deviation, \(\sigma\), as the measure of the influence of blood-pressure variability on mortality.
-We also produced the same 8 models but using precision, \(\tau=1/\sigma^2\), as the measure of the influence of blood-pressure variability on mortality.
-However, this was only to ensure that there were no differences between the use of one over the other.
+In this article, we researched into 16 variants of the model-fitting problem, but focussed mainly on 8 of them. 
+The 8 main models use the standard deviation, $\sigma$, as the measure of the influence of blood-pressure variability on mortality. 
+We also produced the same 8 models but using precision, $\tau=1/\sigma^2$, as the measure of the influence of blood-pressure variability on mortality. 
+However, this was only to ensure that there were no differences between the use of one over the other. 
 Throughout the remainder of this appendix, we refer to the 8 main models using the following run numbers:
 
 \begin{enumerate}
@@ -613,51 +505,96 @@ Throughout the remainder of this appendix, we refer to the 8 main models using t
 \label{tab:runnums}
 \end{enumerate}
 
-We also include Directed Acyclical Graph (DAG) sketches to help visualize the different models, as shown in figures \ref{fig:DAGmean} and \ref{fig:DAGFRS}.
-In order to read the DAGs, note that each square background layer that appears as a stack of layers represents different measured outcomes that were made in the first wave of the survey.
-The outcome variables measured are represented by a square-shaped text box, and a parameter of the model is represented by a circular-shaped text box. If either a square or circular text box is placed on top of a stacked rectangular layer, it means that multiple values of that variable (as many as there are layers to the stack) are either measured (for outcome variables) or simulated (for parameters of the model). Please note that the number of layers in the stack is written in the text box that does not contain a frame which is intentionally displayed on top of the stacked layer that it represents. For example, \(i=1,...,N\).
+We also include Directed Acyclical Graph (DAG) sketches to help visualize the different models, as shown in figures \ref{fig:DAGmean} and \ref{fig:DAGFRS}. 
+In order to read the DAGs, note that each square background layer that appears as a stack of layers represents different measured outcomes that were made in the first wave of the survey. 
+The outcome variables measured are represented by a square-shaped text box, and a parameter of the model is represented by a circular-shaped text box. If either a square or circular text box is placed on top of a stacked rectangular layer, it means that multiple values of that variable (as many as there are layers to the stack) are either measured (for outcome variables) or simulated (for parameters of the model). Please note that the number of layers in the stack is written in the text box that does not contain a frame which is intentionally displayed on top of the stacked layer that it represents. For example, $i=1,...,N$. 
 Finally, the direction of the arrows implies causality assumed in the model.
 
 The distribution of the blood pressure parameters in the population are derived from the model, and are summarised with other outputs of the model in table \ref{tab:Mean-SD} of Appendix C.
 
-\begin{figure}
-\centering
-\includegraphics{./DAG_Mean2.png}
-\caption{An illustration of the DAG of the mean blood pressure-based model presented in this article.}\label{fig:DAGmean}
-\end{figure}
+![An illustration of the DAG of the mean blood pressure-based model presented in this article. ](./DAG_Mean2.png){#fig:DAGmean}
 
-\begin{figure}
-\centering
-\includegraphics{./DAG_FRS2.png}
-\caption{An illustration of the DAG of the FRS-based model presented in this article.}\label{fig:DAGFRS}
-\end{figure}
+![An illustration of the DAG of the FRS-based model presented in this article. ](./DAG_FRS2.png){#fig:DAGFRS}
 
-\subsection{Computational methodology}\label{computational-methodology}
+<!--
+For convenience, we provide an overview of the different blood pressure values in the full and FRS populations in tables \ref{tab:BloodFull} and \ref{tab:BloodFRS}.
+
+
+\begin{table}
+
+\caption{(\#tab:BloodFull)Parameters for distribution of blood pressure, for the full population}
+\centering
+\begin{tabular}[t]{llrr}
+\toprule
+BP & Variable & Mean & SD\\
+\midrule
+Systolic & Overall Mean & 125.36 & 19.48\\
+Systolic & Delta & 5.24 & 4.86\\
+Systolic & Home SD & 2.74 & 2.05\\
+Systolic & Clinic SD & 3.78 & 2.61\\
+\addlinespace\\
+Diastolic & Overall Mean & 74.34 & 10.29\\
+\addlinespace
+Diastolic & Delta & 3.90 & 3.14\\
+Diastolic & Home SD & 2.34 & 1.75\\
+Diastolic & Clinic SD & 3.08 & 2.08\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}
+
+\caption{(\#tab:BloodFRS)Parameters for distribution of blood pressure, for the FRS population}
+\centering
+\begin{tabular}[t]{llrr}
+\toprule
+BP & Variable & Mean & SD\\
+\midrule
+Systolic & Overall Mean & 125.89 & 18.33\\
+Systolic & Delta & 5.23 & 4.71\\
+Systolic & Home SD & 2.78 & 2.06\\
+Systolic & Clinic SD & 3.78 & 2.52\\
+\addlinespace\\
+Diastolic & Overall Mean & 76.41 & 10.00\\
+\addlinespace
+Diastolic & Delta & 3.84 & 3.10\\
+Diastolic & Home SD & 2.28 & 1.71\\
+Diastolic & Clinic SD & 2.92 & 1.97\\
+\bottomrule
+\end{tabular}
+\end{table}
+-->
+
+
+## Computational methodology
 
 The methodology for this research can be split into three main sections: 1) calculating the empirical Bayes' parameters, 2) parameterizing the model using Hamiltonian Monte Carlo (HMC) and 3) re-centering the variables in the linear predictor equation. By applying empirical Bayes', Maximum Likelihood Estimates (MLEs) of some of the parameter distributions are provided. Note that the parameters estimated here are only the prior distribution of the global (not individual) blood pressure means and the variances, for both systolic and diastolic and home and clinic measurements. These estimates are then provided as prior distributions for the Stan MCMC simulations using HMC, where estimates can be made for all the parameter distributions of the model, given the specific centering applied. Finally, section (3) recalculates the centering values based on the previous MCMC iteration, and sets of the next iteration, while simultaneously checking for convergence in both the MCMC simulations and the centering values.
 
-\subsection{Empirical Bayes Parameters}\label{empirical-bayes-parameters}
+## Empirical Bayes Parameters
 
-First, we extract the intervals for the digits in the blood pressure measurement recordings. Suppose the fractions of digits 0,2,4,6,8 are \(b_0,b_2,b_4,b_6,b_8\).
-Letting \(B_0=0\) and \(B_k=10\sum_{j=0}^{k-1}b_{2j}\) for \(k=1,\dots,5\),
-we want to choose a positive \(a\) and place breaks at \(-a+B_k\), so that measurements between \(-a+B_k\) and \(-a+B_{k+1}\) modulo
-10 are assigned the final digit \(2k\), for \(k=0,\dots,4\).
-We choose \(a\) to minimise the total distance of the intervals from the rounded value:
-\[
+First, we extract the intervals for the digits in the blood pressure measurement recordings. Suppose the fractions of digits 0,2,4,6,8 are $b_0,b_2,b_4,b_6,b_8$.
+Letting $B_0=0$ and $B_k=10\sum_{j=0}^{k-1}b_{2j}$ for $k=1,\dots,5$,
+we want to choose a positive $a$ and place breaks at $-a+B_k$, so that measurements between $-a+B_k$ and $-a+B_{k+1}$ modulo
+10 are assigned the final digit $2k$, for $k=0,\dots,4$.
+We choose $a$ to minimise the total distance of the intervals from the rounded value:
+$$
   \sum_{k=0}^4 \int_{-a+B_k}^{-a+B_{k+1}} \bigl| x-2k\bigr|\mathrm{d} x=\frac12\sum_{k=0}^4 \left(-a+B_k-2k\right)^2 + \left(-a+B_{k+1}-2k\right)^2,
-\]
-as long as \(2k\) is in the appropriate interval. This is minimized at
-\[
+$$
+as long as $2k$ is in the appropriate interval. This is minimized at
+$$
   a= \frac{1}{5}\left(B_1+B_2+B_3+B_4 - 15\right)=\sum_{j=0}^3 (8-2j) b_{2j} \, - 3.
-\]
+$$
+
+
 
 Next step, we fit the BP distribution parameters. We suppose that each individual has BP measures
-\(\tilde{y}_{ij}^l\) for \(i=1,\dots,n\), \(j=1,\dots,k\) (default \(k=3\)),
-and \(l=1,2\), which are rounded versions of
-\[
+$\tilde{y}_{ij}^l$ for $i=1,\dots,n$, $j=1,\dots,k$ (default $k=3$),
+and $l=1,2$, which are rounded versions of 
+$$
   y_{ij}^l \sim \mathcal{N}\bigl( \mu_i^l,(\tau_i^l)^{-1}\bigr),
-\]
-where
+$$
+where 
 \begin{align*}
 \mu_i^1&=(M_i+\Delta_i)/2,\\
 \mu_i^2&=(M_i-\Delta_i)/2,\\
@@ -665,33 +602,33 @@ M_i&\sim \mathcal{N}\bigl(m_M,\sigma^2_M) \text{ and }
   \Delta_i\sim \mathcal{N}\bigl(m_\Delta,\sigma^2_\Delta) \text{ independent,}\\
   \tau_i^l &\sim \mathrm{Gamma}(\alpha^l,\alpha^l/\theta^l ).
 \end{align*}
-(Note that \(\alpha^l\) is the usual shape parameter,
-while \(\theta^l\) is the expectation.)
+(Note that $\alpha^l$ is the usual shape parameter,
+while $\theta^l$ is the expectation.)
 
-We wish to estimate the eight parameters
-\[
+We wish to estimate the eight parameters 
+$$
 (m_M,m_\Delta,\sigma^2_M,\sigma^2_\Delta,\alpha^1,\theta^1,\alpha^2,\theta^2)
-\]
-We begin by assuming \(y_{ij}^l\) observed directly. We estimate
+$$
+We begin by assuming $y_{ij}^l$ observed directly. We estimate
 by maximising the partial likelihood on the observations
 \begin{align*}
   \bar{y}_{i+}&:= \frac{1}{2k} \sum_{j=1}^k \bigl( y_{ij}^1 + y_{ij}^2\bigr),\\
   \bar{y}_{i-}&:= \frac{1}{2k} \sum_{j=1}^k \bigl( y_{ij}^1 - y_{ij}^2 \bigr),\\
   s_i^l&:=  \frac{1}{k-1}\sum_{j=1}^k \Bigl( y_{ij}^l - \frac{1}{k} \sum_{j=1}^k y_{ij}^l \Bigr)^2.
 \end{align*}
-Note that
-\[
+Note that 
+$$
 (k-1)s_i^l \tau_i^l =\sum_{j=1}^k \Bigl( z_{ij}^l - \frac{1}{k} \sum_{j=1}^k z_{ij}^l \Bigr)^2.
-\]
-where \(z_{ij}^l\) are i.i.d.~standard normal
-is independent of \(\tau_i^l\), thus has a chi-squared distribution
-with \(k-1\) degrees of freedom --- hence \(\frac{k-1}{2}\cdot s_i^l\tau_i^l\) is
-gamma distributed with parameters \((\frac{k-1}{2},1)\). Since \(\frac{\alpha}{\theta}\tau_i^l\) is independent of \(s_i^l\tau_i^l\), with \(\mathrm{Gamma}(\alpha,1)\) distribution, we see that \(\frac{(k-1)\theta}{2\alpha}s_i^l\) is the ratio of two independent gamma random variables, hence has beta-prime distribution with parameters \(\left(\frac{k-1}{2}, \alpha \right)\), so log partial likelihood
-\[
+$$ 
+where $z_{ij}^l$ are i.i.d.\ standard normal
+is independent of $\tau_i^l$, thus has a chi-squared distribution
+with $k-1$ degrees of freedom --- hence $\frac{k-1}{2}\cdot s_i^l\tau_i^l$ is
+gamma distributed with parameters $(\frac{k-1}{2},1)$. Since $\frac{\alpha}{\theta}\tau_i^l$ is independent of $s_i^l\tau_i^l$, with $\mathrm{Gamma}(\alpha,1)$ distribution, we see that $\frac{(k-1)\theta}{2\alpha}s_i^l$ is the ratio of two independent gamma random variables, hence has beta-prime distribution with parameters $\left(\frac{k-1}{2}, \alpha \right)$, so log partial likelihood
+$$
   \ell_{\operatorname{Beta}}(\alpha,\theta;s^l_\cdot)=n\alpha \log\frac{\alpha}{\theta}+n\log\Gamma\left(\alpha+\frac{k-1}{2}\right)-n\log\Gamma(\alpha)
   + \frac{k-1}{2} \sum_{i=1}^n \log s_i^l -\left(\alpha+\frac{k-1}{2}\right) \sum_{i=1}^n \log \left(s_i^l+\frac\alpha\theta\right).
-\]
-Note as well that these quantities \((k-1)s_i^l\) should correspond to empirically observed individual variances; hence we will compare these empirical variances (with imputed fractional parts) divided by the normalization factor \(2\alpha/(k-1)\theta\) to the beta-prime distribution below as a goodness-of-fit test.
+$$
+Note as well that these quantities $(k-1)s_i^l$ should correspond to empirically observed individual variances; hence we will compare these empirical variances (with imputed fractional parts) divided by the normalization factor $2\alpha/(k-1)\theta$ to the beta-prime distribution below as a goodness-of-fit test.
 
 The partial Fisher Information has entries
 \begin{align*}
@@ -703,9 +640,9 @@ The partial Fisher Information has entries
 -\frac{\partial^2 \ell}{\partial \theta\partial\alpha} &= \frac{n}{\theta}-
    \frac1\theta \sum_{i=1}^n \frac{\alpha^2+2\alpha\theta s_i^l+\frac{k-1}{2}\theta s_i^l}{(\theta s_i^l + \alpha)^2}.
 \end{align*}
-where \(\psi_1\) is the trigamma function.
+where $\psi_1$ is the trigamma function.
 
-Let \((\hat\alpha^l,\hat\theta^l)\) be the maximum partial likelihood estimators. Conditioned on \((\tau_i^l)\) we have
+Let $(\hat\alpha^l,\hat\theta^l)$ be the maximum partial likelihood estimators. Conditioned on $(\tau_i^l)$ we have
 \begin{align*}
   \bar{y}_{i+}&\sim \mathcal{N}\left(m_M, \sigma^2_M + \frac{1}{4k}\left( \frac{1}{\tau_i^1}+\frac{1}{\tau_i^2}\right)\right),\\
   \bar{y}_{i-}&\sim \mathcal{N}\left(m_\Delta,\sigma^2_\Delta + \frac{1}{4k}\left( \frac{1}{\tau_i^1}+\frac{1}{\tau_i^2}\right)\right).
@@ -715,46 +652,50 @@ We would then have MLEs
   \hat{m}_M&= \frac{1}{n} \sum_{i=1}^n \bar{y}_{i+},\\
   \hat{m}_\Delta&= \frac{1}{n} \sum_{i=1}^n \bar{y}_{i-},
 \end{align*}
-which are approximately normally distributed, with means \(m_M\) and \(m_\Delta\) respectively, and conditional on \(\tau_i^l\) standard errors
-\[
+which are approximately normally distributed, with means $m_M$ and $m_\Delta$ respectively, and conditional on $\tau_i^l$ standard errors
+$$
   \frac{\sigma_M^2}{n}+\frac{1}{4kn^2} \sum_{i=1}^n (\tau_i^1)^{-1} + (\tau_i^2)^{-1} \quad \text{ and } \quad
   \frac{\sigma_\Delta^2}{n}+\frac{1}{4kn^2} \sum_{i=1}^n (\tau_i^1)^{-1} + (\tau_i^2)^{-1},
-\]
-which we may approximate --- with error on the order of \(n^{-3/2}\) --- replacing the mean of \((\tau_i^l)^{-1}\) by its expected value \(\theta^l/(\alpha^l-1)\) to obtain
+$$
+which we may approximate --- with error on the order of $n^{-3/2}$ --- replacing the mean of $(\tau_i^l)^{-1}$ by its expected value $\theta^l/(\alpha^l-1)$ to obtain
 \begin{align*}
   \mathrm{Var}(\hat{m}_M) &\approx \frac{\sigma_M^2}{n}+\frac{1}{4kn}\left( \frac{\theta^1}{\alpha^1-1}+ \frac{\theta^2}{\alpha^2-1}\right) \\
   \mathrm{Var}(\hat{m}_\Delta) &\approx \frac{\sigma_\Delta^2}{n}+\frac{1}{4kn}\left( \frac{\theta^1}{\alpha^1-1}+ \frac{\theta^2}{\alpha^2-1}\right) 
 \end{align*}
-Finally, conditioned on the \(\tau_i^l\) we have that the random variables \(\bar{y}_{i+}\) are normal with variance
-\[
+Finally, conditioned on the $\tau_i^l$ we have that the random variables $\bar{y}_{i+}$ are normal with variance
+$$
   \sigma_M^2+\frac{1}{4k}\left((\tau_i^1)^{-1} + (\tau_i^2)^{-1} \right),
-\]
+$$
 so the unconditional variance is the expected value, or
-\[
+$$
   \sigma_M^2+\frac{1}{4k}\left(\frac{\theta_1}{\alpha_1-1}+ \frac{\theta_2}{\alpha_2-1} \right).
-\]
+$$
 This yields the estimators
 \begin{align*}
   \hat\sigma_M^2 &=\frac{1}{n-1}\sum_{i=1}^n\left(\bar{y}_{i+}-n^{-1}\sum_{i=1}^n \bar{y}_{i+}\right)^2 - \frac{1}{4k}\left(\frac{\hat\theta_1}{\hat\alpha_1-1}+ \frac{\hat\theta_2}{\hat\alpha_2-1} \right),\\
   \hat\sigma_\Delta^2 &=\frac{1}{n-1}\sum_{i=1}^n\left(\bar{y}_{i-}-n^{-1}\sum_{i=1}^n \bar{y}_{i-}\right)^2 - \frac{1}{4k}\left(\frac{\hat\theta_1}{\hat\alpha_1-1}+ \frac{\hat\theta_2}{\hat\alpha_2-1} \right).
 \end{align*}
-Using the delta method, and the fact that the correlation between \(\hat\alpha\) and \(\hat\theta\) is small, we see that the variance of \(\hat\theta/(\hat\alpha-1)\) is approximately
-\[
+Using the delta method, and the fact that the correlation between $\hat\alpha$ and $\hat\theta$ is small, we see that the variance of $\hat\theta/(\hat\alpha-1)$ is approximately
+$$
   \frac{\sigma_\theta^2}{(\hat\alpha-1)^2} + \frac{\hat\theta^2\sigma_\alpha^2}{(\hat\alpha-1)^4},
-\]
-where \(\sigma_\alpha\) and \(\sigma_\theta\) are the standard errors for \(\hat\alpha\) and \(\hat\theta\) respectively. Define
-\[
+$$
+where $\sigma_\alpha$ and $\sigma_\theta$ are the standard errors for $\hat\alpha$ and $\hat\theta$ respectively. Define
+$$
   \hat\sigma_{\alpha\theta}^2 := \frac{1}{16k^2} \left(\frac{\hat\sigma_{\theta_1}^2}{(\hat\alpha_1-1)^2} + \frac{(\hat\theta_1)^2\hat\sigma_{\alpha_1}^2}{(\hat\alpha_1-1)^4} + \frac{\hat\sigma_{\theta_2}^2}{(\hat\alpha_2-1)^2} + \frac{(\hat\theta_2)^2\hat\sigma_{\alpha_2}}{(\hat\alpha_2-1)^4}\right)
-\]
-so the standard errors for \(\hat\sigma_M^2\) and \(\hat\sigma_\Delta^2\) are approximately
+$$
+so the standard errors for $\hat\sigma_M^2$ and $\hat\sigma_\Delta^2$ are approximately
 \begin{align*}
   \operatorname{SE}\left(\hat\sigma_M^2\right)&\approx \Bigl(\frac{2\hat\sigma_M^4}{n} + \hat\sigma_{\alpha\theta}^2 \Bigr)^{1/2},\\
   \operatorname{SE}\left(\hat\sigma_\Delta^2\right)&\approx \Bigl(\frac{2\hat\sigma_\Delta^4}{n} + \hat\sigma_{\alpha\theta}^2 \Bigr)^{1/2}.
 \end{align*}
 
+
+<!-- ## Test whether parameters are being fit correctly -->
+<!-- We simulate bootstrap data sets, find the average parameter estimate, and compare to the "true" parameters. -->
+<!-- We also compare the average estimated SE to the "true" SE (which is the SD of the estimates). -->
 \begin{table}[!h]
 \centering
-\caption{\label{tab:testparameters}Results of estimating parameters from simulated data from the whole population. 
+\caption{(\#tab:testparameters)Results of estimating parameters from simulated data from the whole population. 
     First column on top is the average parameter estimate from the simulations, second is the true parameter from which the simulations were made, third is the relative error.
     On bottom are the standard errors for the parameters: True is the theoretically computed standard error, SimAverage is the SD of the simulated parameter estimates, and RelError is the relative error.}
 \centering
@@ -788,40 +729,85 @@ so the standard errors for \(\hat\sigma_M^2\) and \(\hat\sigma_\Delta^2\) are ap
 \end{tabular}
 \end{table}
 
-Now we compute the combined variance. For a parameter like \(\alpha\) we estimate the variance of \(\hat\alpha\) by
+
+<!-- ## Multiple imputation for the real data -->
+
+
+Now we compute the combined variance. For a parameter like $\alpha$ we estimate the variance of $\hat\alpha$ by
 \newcommand{\E}{\mathbb{E}}
 \renewcommand{\P}{\mathbb{P}}
-\[
+$$
   \mathrm{Var}(\hat\alpha) = \mathbb{E}\bigl[ \mathrm{Var}\left(\hat\alpha\, |\, I\right)\bigr] + \mathrm{Var}\left(\mathbb{E} \left[ \hat\alpha\, |\, I \right]\right).
-\]
-Here \(I\) represents the randomly imputed fractional part.
+$$
+Here $I$ represents the randomly imputed fractional part. 
 We can estimate the first term by averaging the estimated variance (from Fisher Information) over all random imputations.
-We estimate the second term by the variance of the \(\alpha\) estimates over imputations. Note that this is not quite right, since what we really
-want the variance of is \(\alpha_0(I)\) --- effectively, the ``true'' parameter consistent with the imputation. This is a plug-in estimate,
-as is the Fisher Information estimate of the variance.
+We estimate the second term by the variance of the $\alpha$ estimates over imputations. Note that this is not quite right, since what we really
+want the variance of is $\alpha_0(I)$ --- effectively, the "true" parameter consistent with the imputation. This is a plug-in estimate,
+as is the Fisher Information estimate of the variance.  
 
-\subsubsection{Estimates for whole population}\label{estimates-for-whole-population}
+### Estimates for whole population
+The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled "True" in Table \ref{tab:testparameters}.
 
-The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled ``True'' in Table \ref{tab:testparameters}.
+<!--
+We then compute the residuals. We define the deviance for an individual $i$ with observations $(Y_i)$
+given the hyperparameters $h=(m_M,m_\Delta,\sigma^2_M,\sigma^2_\Delta,\alpha^H,\theta^H,\alpha^C,\theta^C)$
+$$
+  D= \sum_{i=1}^n \log \mathbb{P}\left\{ \mathbf{Y}_{i}\,|\, \text{hyperparameters}=h\right\}.
+$$
+\newcommand{\wtb}{\widetilde\mathbf}
+Since the $\mathbf{Y}_i$ are independent conditioned on $h$,
+\begin{align*}
+D&= \sum_{i=1}^n \log \E_h\left[ \P\left\{ \mathbf{Y}_i \, |\, M_i,\Delta_i,\tau_i^{C},\tau_i^H \right\} \right]\\
+    &\approx \sum_{i=1}^n \log \frac1R\sum_{r=1}^R \left[ \P\left\{ \mathbf{Y}_i \, |\, M_{i,r},\Delta_{i,r},\tau_{i,r}^{C},\tau_{i,r}^{H} \right\}\right] \frac{\pi_h(M_{i,r},\Delta_{i,r},\tau_{i,r}^{C},\tau_{i,r}^{H} )}{q(M_{i,r},\Delta_{i,r},\tau_{i,r}^{C},\tau_{i,r}^{H} \, | \, h,\, \mathbf{Y}_i)},
+\end{align*}
+where $(M_{i,r},\Delta_{i,r},\tau_{i,r}^{C},\tau_{i,r}^{H})$ are independent samples from a distribution $q$ that may depend
+on $\mathbf{Y}_i$ and $h$, and $\pi_h$ is the true density of those individual parameters given hyperparameters $h$.
+-->
+<!-- 
+We can try estimating this simply by Monte Carlo sampling of the individual parameters.
+-->
+<!--
+We estimate this by importance sampling on the four individual parameters $(M_i,\Delta_i,\tau_i^H, \tau_i^C)$ from an approximate posterior.
+We have, conditioned on the observations of sample variances for clinical and home measures $S_{Ci}^2$ and $S_{Hi}^2$,
+\begin{align*}
+  \tau_i^H &\sim \mathrm{Gamma}\left( \alpha^H+\frac{k-1}{2},\, \beta^H+\frac{k-1}{2} S_{Hi}^2 \right),\\
+  \tau_i^C &\sim \mathrm{Gamma}\left( \alpha^H+\frac{k-1}{2},\, \beta^H+\frac{k-1}{2} S_{Hi}^2 \right).
+\end{align*}
+Then, recalling the definitions of $y_{i+}$ and $y_{i-}$,
+conditioned on $\tau_i^H$ and $\tau_i^C$ we have
+\begin{align*}
+  M_i &= \mathcal{N} \left( (\tau_i^M)^{-1} \left( \frac{m_M}{\sigma_M^2} +\y_{i+}\cdot \frac{4k \tau_i^C \tau_i^H}{\tau_i^C + \tau_i^H}  \right) \, ,  (\tau_i^M)^{-1} \right),\\
+  \Delta_i &= \mathcal{N} \left( (\tau_i^Delta)^{-1} \left( \frac{m_\Delta}{\sigma_\Delta^2} +\y_{i+}\cdot \frac{4k \tau_i^C \tau_i^H}{\tau_i^C + \tau_i^H}  \right) \, ,  (\tau_i^\Delta)^{-1} \right),\\
+\end{align*}
+where
+\begin{align*}
+  \tau_i^M & = \frac{1}{\sigma_M^2} + \frac{4k \tau^C_i \tau^H_i}}{\tau^C_i + \tau^H_i},\\
+  \tau_i^\Delta & = \frac{1}{\sigma_\Delta^2} + \frac{4k \tau^C_i \tau^H_i}}{\tau^C_i + \tau^H_i},\\
+\end{align*}
+Because of rounding, the observed $S^2_i$ will be too small. We approximate the true $S^2_i$ by adding $\frac13$, the variance
+of a uniform random variable on $[-1,1]$.
+-->
+
+
 
 Finally, we check the variance distribution empirically, to check whether the continuous distribution we have fit for individual variances describes the true distribution of variances in the population reasonably well.
 The first thing we do is to compare the empirical
 variances (with fractional parts imputed according to the observed proportions for the unequal digit preference, as discussed in section \ref{sec:lastdigit}) to the theoretical beta-prime distribution.
-To match the standard distribution, the variances are normalized by being divided by the factor \(\alpha/\theta\).
-We show histograms of these ``unrounded'' empirical variances and the theoretical beta-prime distribution in Figure \ref{fig:histograms}.
+To match the standard distribution, the variances are normalized by being divided by the factor $\alpha/\theta$.
+We show histograms of these "unrounded" empirical variances and the theoretical beta-prime distribution in Figure \ref{fig:histograms}.
 Note that the distribution has a very long tail, and we have truncated about 2\% of the data to make the figures more readable.
 
 In Figure \ref{fig:QQplots} we show essentially the same data in the form of Q--Q plots.
-Here we have extended the plot far out into the tails of the distribution, including values in the range \([0,10]\), covering around 99.7\% of the data.
+Here we have extended the plot far out into the tails of the distribution, including values in the range $[0,10]$, covering around 99.7\% of the data.
 We generate data from the inferred model that mimic the true data, with three systolic and three diastolic BP measures per person.
 As before, we impute the fractional parts to the real data.
 This gives us a set of true variances and a set of simulated variances, which we hope will have approximately the same distribution.
 We see some deviation here, but it is slight, and quite deep into the tails.
 Furthermore, the deviation is in the direction of the simulated data having slightly fatter tails than the true data, which is the direction we would wish to err in for the sake of making conservative inferences.
 
-The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled ``True'' in Table \ref{tab:testparameters}.
+The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled "True" in Table \ref{tab:testparameters}.
 These parameters (and SEs) are accompanied by the results of 10 estimates of data simulated from the model with the parameters inferred from the data, and then fitted by the same procedure.
-Note that the errors for the estimates are consistent with the stated standard errors (\(\pm \sqrt{\operatorname{SE}}\)), and the relative errors for the SE are small, confirming that the estimation procedure is reliable.
+Note that the errors for the estimates are consistent with the stated standard errors ($\pm \sqrt{\operatorname{SE}}$), and the relative errors for the SE are small, confirming that the estimation procedure is reliable.
 
 \begin{landscape}
 \begin{figure}
@@ -830,10 +816,11 @@ Note that the errors for the estimates are consistent with the stated standard e
 
 }
 
-\caption{Comparison of the distribution of empirical variances, normalized by dividing by $\beta=\alpha/\theta$, to the fitted beta-prime distribution.}\label{fig:histograms}
+\caption{Comparison of the distribution of empirical variances, normalized by dividing by $\beta=\alpha/\theta$, to the fitted beta-prime distribution.}(\#fig:histograms)
 \end{figure}
 
 \end{landscape}
+
 
 \begin{figure}
 
@@ -841,13 +828,106 @@ Note that the errors for the estimates are consistent with the stated standard e
 
 }
 
-\caption{Q--Q plots of the variances of the observed data with imputed fractional parts (x-axis) against the variances of the simulated data (y-axis).}\label{fig:QQplots}
+\caption{Q--Q plots of the variances of the observed data with imputed fractional parts (x-axis) against the variances of the simulated data (y-axis).}(\#fig:QQplots)
+\end{figure}
+<!--
+Note: The empirical Bayes priors are now included in Table VarianceTest
+To finish this section, we include a table of the empirical Bayes priors, shown in tables \ref{tab:empestsS} and \ref{tab:empestsD}.
+
+\begin{table}
+
+\caption{(\#tab:empestsS)Empirical Bayes prior hyperparameter estimates for the systolic blood pressure for the NHANES III, full population.}
+\centering
+\begin{tabular}[t]{ll}
+\toprule
+Parameter & Estimate\\
+\midrule
+$\alpha$ for Clinic SD & 2.57$ \pm $0.0775\\
+$\alpha$ for Home SD & 2.16$ \pm $0.057\\
+$\mu$ for $M$ & 123$ \pm $0.401\\
+$\mu$ for $\Delta$ & 1.35$ \pm $0.241\\
+$\sigma^2$ for $M$ & 19.4$ \pm $1.45\\
+\addlinespace
+$\sigma^2$ for $\Delta$ & 6.81$ \pm $0.862\\
+$\theta$ for Clinic SD & 0.0751$ \pm $0.00105\\
+$\theta$ for Home SD & 0.15$ \pm $0.00213\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}
+
+\caption{(\#tab:empestsD)Empirical Bayes prior hyperparameter estimates for the diastolic blood pressure for the NHANES III, full population.}
+\centering
+\begin{tabular}[t]{ll}
+\toprule
+Parameter & Estimate\\
+\midrule
+$\alpha$ for Clinic SD & 2.76$ \pm $0.0867\\
+$\alpha$ for Home SD & 2.32$ \pm $0.0637\\
+$\mu$ for $M$ & 72.3$ \pm $0.292\\
+$\mu$ for $\Delta$ & 1.1$ \pm $0.201\\
+$\sigma^2$ for $M$ & 10.2$ \pm $1.05\\
+\addlinespace
+$\sigma^2$ for $\Delta$ & 4.68$ \pm $0.718\\
+$\theta$ for Clinic SD & 0.109$ \pm $0.00151\\
+$\theta$ for Home SD & 0.194$ \pm $0.00272\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+### Estimates for the FRS population
+The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled "True" in Table \ref{tab:testparameters}.
+
+
+
+
+Finally, we check the variance distribution empirically, to check whether the continuous distribution we have fit for individual variances describes the true distribution of variances in the population reasonably well.
+The first thing we do is to compare the empirical
+variances (with fractional parts imputed according to the observed proportions for the unequal digit preference, as discussed in section \ref{sec:lastdigit}) to the theoretical beta-prime distribution.
+To match the standard distribution, the variances are normalized by being divided by the factor $\alpha/\theta$.
+We show histograms of these "unrounded" empirical variances and the theoretical beta-prime distribution in Figure \ref{fig:histograms}.
+Note that the distribution has a very long tail, and we have truncated about 2\% of the data to make the figures more readable.
+
+In Figure \ref{fig:QQplots} we show essentially the same data in the form of Q--Q plots.
+Here we have extended the plot far out into the tails of the distribution, including values in the range $[0,10]$, covering around 99.7\% of the data.
+We generate data from the inferred model that mimic the true data, with three systolic and three diastolic BP measures per person.
+As before, we impute the fractional parts to the real data.
+This gives us a set of true variances and a set of simulated variances, which we hope will have approximately the same distribution.
+We see some deviation here, but it is slight, and quite deep into the tails.
+Furthermore, the deviation is in the direction of the simulated data having slightly fatter tails than the true data, which is the direction we would wish to err in for the sake of making conservative inferences.
+
+The estimates of the empirical Bayes parameters together with their standard errors are given in the column labelled "True" in Table \ref{tab:testparameters}.
+These parameters (and SEs) are accompanied by the results of 10 estimates of data simulated from the model with the parameters inferred from the data, and then fitted by the same procedure.
+Note that the errors for the estimates are consistent with the stated standard errors ($\pm \sqrt{\operatorname{SE}}$), and the relative errors for the SE are small, confirming that the estimation procedure is reliable.
+
+\begin{landscape}
+\begin{figure}
+
+{\centering \includegraphics{NHANES-BP-Appendix_files/figure-latex/histogramsFRS-1} 
+
+}
+
+\caption{Comparison of the distribution of empirical variances, normalized by dividing by $\beta=\alpha/\theta$, to the fitted beta-prime distribution.}(\#fig:histogramsFRS)
 \end{figure}
 
-\subsection{Hamiltonian Monte Carlo (HMC)}\label{hamiltonian-monte-carlo-hmc}
+\end{landscape}
 
-The model, as described in the article, is a Bayesian hierarchical model. In order to parameterize such an intricate model, traditional Maximum Likelihood Estimation methods can no longer be applied. Therefore, we apply the Hamiltonian Monte Carlo (HMC) method. HMC is a form of Markov Chain Monte Carlo methods, which samples potential parameter space values of the model, then calculates directly the likelihood function based on that choice of parameters. The derivative of the likelihood function, \(\phi\), guides parameter space exploration in \(\theta\) towards the modal value of the joint posterior distribution. This method is ideal for complicated, non-Gaussian distribution forms. The three steps of HMC are:
 
+\begin{figure}
+
+{\centering \includegraphics{NHANES-BP-Appendix_files/figure-latex/QQplotsFRS-1} 
+
+}
+
+\caption{Q--Q plots of the variances of the observed data with imputed fractional parts (x-axis) against the variances of the simulated data (y-axis).}(\#fig:QQplotsFRS)
+\end{figure}
+-->
+
+## Hamiltonian Monte Carlo (HMC)
+
+The model, as described in the article, is a Bayesian hierarchical model. In order to parameterize such an intricate model, traditional Maximum Likelihood Estimation methods can no longer be applied. Therefore, we apply the Hamiltonian Monte Carlo (HMC) method. HMC is a form of Markov Chain Monte Carlo methods, which samples potential parameter space values of the model, then calculates directly the likelihood function based on that choice of parameters. The derivative of the likelihood function, $\phi$, guides parameter space exploration in $\theta$ towards the modal value of the joint posterior distribution. This method is ideal for complicated, non-Gaussian distribution forms. The three steps of HMC are:
 \begin{enumerate}
 \item Draw a sample of the derivative $\phi$ using the posterior distribution of $\phi$, which is the same as its prior.
 \item Update the values of $\theta^*$ and $\phi^*$ using
@@ -864,36 +944,74 @@ where $M$ is the Jacobian of the parameters. This can be set to a diagonal matri
     r=\frac{p(\theta^*|y)p(\phi^*)}{p(\theta^{t-1}|y)p(\phi^{t-1})}
   \end{equation}
 \item Set $\theta^t$ to $\theta^*$ with probability $\min\{1,r\}$, or otherwise keep $\theta^{t-1}$.
-\end{enumerate}
+\end{enumerate}  
+The tuning parameters $\epsilon$ and L should be chosen according to a desired acceptance rate. The No-U-Turn Sampler of Stan automates the calculation of these tuning parameters. A more detailed overview of HMC and the NUTS algorithm integrated into the Stan package, see [@NUTS].
 
-The tuning parameters \(\epsilon\) and L should be chosen according to a desired acceptance rate. The No-U-Turn Sampler of Stan automates the calculation of these tuning parameters. A more detailed overview of HMC and the NUTS algorithm integrated into the Stan package, see (Hoffman, Gelman, et al. 2014).
+### Centering the Linear Predictor
 
-\subsubsection{Centering the Linear Predictor}\label{centering-the-linear-predictor}
-
-During the MCMC simulations, the centering values play a non-negligible role in shaping the model parameterization. If the centering parameters are held constant throughout all of the MCMC simulations, then the equation \(\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0\) is no longer guaranteed. However, automatically defining the centering values based on the model parameters sampled at the current MCMC iteration is not advisable as it can lead to poor parameter convergence. This is because it modifies the likelihood function at every MCMC iteration. Therefore, we iterate the MCMC algorithm multiple times. At every iteration, we recalculate the centering parameters to satisfy the requirement that the average of the linear predictor term going to zero, based on the posterior distributions of the previous MCMC simulation. This iteration is carried out until the centering parameters converge. Convergence is defined by optimising on two factors. The first is that the sum of the linear predictor term across all MCMC samples needs to tend to negligible values (we define this as the average difference being less than \(10^{-7}\)), see figure \ref{fig:linpred_conv}. The second convergence criteria is that the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations needs to also decrease towards zero, see figure \ref{fig:linpred_conv} (top). For the second criteria, we stopped the simulations when either the difference in the RMSE stopped decreasing (below a threshold of \(1\%\)), or the RMSE value was less than 20, see figure \ref{fig:linpred_conv} (bottom). Illustration of the convergence is shown in figure \ref{fig:linpred_conv}.
+During the MCMC simulations, the centering values play a non-negligible role in shaping the model parameterization. If the centering parameters are held constant throughout all of the MCMC simulations, then the equation $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0$ is no longer guaranteed. However, automatically defining the centering values based on the model parameters sampled at the current MCMC iteration is not advisable as it can lead to poor parameter convergence. This is because it modifies the likelihood function at every MCMC iteration. Therefore, we iterate the MCMC algorithm multiple times. At every iteration, we recalculate the centering parameters to satisfy the requirement that the average of the linear predictor term going to zero, based on the posterior distributions of the previous MCMC simulation. This iteration is carried out until the centering parameters converge. Convergence is defined by optimising on two factors. The first is that the sum of the linear predictor term across all MCMC samples needs to tend to negligible values (we define this as the average difference being less than $10^{-7}$), see figure \ref{fig:linpred_conv}. The second convergence criteria is that the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations needs to also decrease towards zero, see figure \ref{fig:linpred_conv} (top). For the second criteria, we stopped the simulations when either the difference in the RMSE stopped decreasing (below a threshold of $1\%$), or the RMSE value was less than 20, see figure \ref{fig:linpred_conv} (bottom). Illustration of the convergence is shown in figure \ref{fig:linpred_conv}.
 
 \newpage
-
-\subsection{Code Description}\label{code-description}
-
+## Code Description
 The code will be made available, but detailed references have been removed to preserve anonymity for the review process.
 
-\section{Appendix C -- Further Results}\label{appendix-c-further-results}
+<!--
+The code can be found at [https://github.com/hamishwp/NHANES_HPOX](https://github.com/hamishwp/NHANES_HPOX).
+The numerical code has been built in multiple stages. Below, we explain the principal files required to replicate the entire analysis presented in the article. There are 5 main groups for the code:
+
+1. Data cleaning scripts
+2. Main file
+3. Stan files for HMC
+4. Centering recalculation scripts
+5. Post-processing analysis
+
+We provide a brief description of each of these below.
+
+### Data Cleaning
+This is found in the file `Dataclean2021.R`. Provided the raw NHANES dataset (in CSV format), it extracts all the data required for the simulations, and stores it in a structure that can be directly read in to the main file (`MCMC_DiasSyst_v3.R`) of this research. 
+
+### Main
+The main file is `MCMC_DiasSyst_v3.R`. It reads in the cleaned NHANES data, the specific choice of simulation parameters (for example, whether to use the FRS number or mean systolic & diastolic blood pressure), and runs the correct RStan scripts for that specific selection of simulation parameters. This script is intended for use on computing clusters.
+
+### Stan
+
+There are eight Stan files: 
+
+1. `mystanmodel_DS_sigma_v2_autopred.stan` 
+2. `mystanmodel_DS_tau_v2_autopred.stan` 
+3. `mystanmodelFRS_DS_sigma_v2_autopred.stan` 
+4. `mystanmodelFRS_DS_tau_v2_autopred.stan`
+5. `mystanmodel_DS_sigma_v2.stan` 
+6. `mystanmodel_DS_tau_v2.stan`
+7. `mystanmodelFRS_DS_sigma_v2.stan`
+8. `mystanmodelFRS_DS_tau_v2.stan`
+
+These correspond to the following alternative simulation parameters:
+
+* For the blood-pressure variability, choosing to use the standard-deviation $\sigma$ or the precision $\tau=1/\sigma$]}
+* Using the FRS score or the mean diastolic and systolic blood pressure as a covariate in the analysis
+* Whether the centering parameters, $\hat{X}$, in the linear predictor term are automatically calculated to satisfy $\sum_i^N \exp{(\boldsymbol{\beta}\cdot(\boldsymbol{X}-\hat{X}))}=0$ for every MCMC iteration, or whether the centering is held constant across all iterations
+
+### Centering
+The centering of the linear predictors, which is required as input to every MCMC simulation iteration, is recalculated in the files `AutoPred_Recalc.R` and `ManPred_Recalc.R`. This is then provided to the Main script, `MCMC_DiasSyst_v3.R`, which provides these centering values to the Stan code for the MCMC simulations.
+
+
+### Post-processing
+The post-processing script is called `PostProcessing.R`, which heavily relies on the `Functions.R` script which contains all the necessary functions to analyse the data. The post-processing script generates many useful plots of the MCMC posterior distribution for the user, including Bayes' factors, violin plots of the normalised beta and gompertz posteriors, and more.
+-->
+
+
+# Appendix C -- Further Results
 
 In this section, we add some additional detail to the results section covered in the article. Extra information is given to explain how convergence of the simulations was ensured, and to also include more visualisations of the converged model parameterizations. The authors feel that this is particularly useful to provide confidence in the model parameterization and the predictions.
 
-\subsection{Convergence of Simulations}\label{convergence-of-simulations}
+## Convergence of Simulations
 
 Convergence of the simulations required to parameterize the model presented in this work is required for the MCMC simulations performed by Stan, as well as convergence in the centering values that requires repeating the Stan calculations several times. Convergence of the latter is shown in figure \ref{fig:linpred_conv}. The upper plot in figure \ref{fig:linpred_conv} illustrates convergence in the average Root Mean-Squared Error (RMSE) of the model predictions on the survival outcomes in the MCMC simulations. The lower plot in figure \ref{fig:linpred_conv} illustrates convergence in the average sum of the linear predictor terms over all MCMC chain iterations.
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/RMSE-Linpred_Convergence.png}
-\caption{Illustration of the convergence of the centering parameters of the model.}\label{fig:linpred_conv}
-\end{figure}
+![Illustration of the convergence of the centering parameters of the model. ](./Rmarkdown_Plots/RMSE-Linpred_Convergence.png){#fig:linpred_conv}
 
 With respect to convergence of the MCMC simulations, defining convergence first involves discarding the burn-in period of the simulations. When the time-evolution marker chain has a large number of samples, sequence thinning is used to reduce the amount of data storage - after convergence, take only the kth value of the simulations (after having discarded the burn-in phase values) and discard the rest. One measure of convergence is to bin similar markers and check that for each bin, the variation of the individual marker movement over a few time steps is larger than the variation of the ensemble markers in-between one-another. Other methods of convergence are stationarity and mixing. The former occurs by ensuring that the gradients of movements in the chains in time are in the same direction, the latter ensures that the amplitude of the movements in the chains are similar. To calculate the mixing and stationarity, one can do the following:
-
 \begin{itemize}
 \item Take the proposedly converged marker population, where there are N markers in total each of index length $\tau$ (thus of total physical time quantity $t\tau$). Split it k times, where k is a common denominator of $\tau$.
 \item Now you have $kN$ MCMC chains each of length $|\tau/k|$
@@ -923,28 +1041,29 @@ With respect to convergence of the MCMC simulations, defining convergence first 
   \end{equation}
   should approach close to 1 for converged simulations.
 \end{itemize}
-
-Another convergence parameter is the number of effective independent marker draws. Upon convergence, the time evolution of each marker should be uncorrelated and independent to previous time steps. To find the average time-correlation over all particles, we use the variogram \(V_t\):
+Another convergence parameter is the number of effective independent marker draws. Upon convergence, the time evolution of each marker should be uncorrelated and independent to previous time steps. To find the average time-correlation over all particles, we use the variogram $V_t$:
 \begin{equation}
   V_t=\frac{1}{Nk(\tau/k-\tilde{t})}\sum_{j=1}^{kN}\sum_{i=1}^{\tau/k}(\psi_{i,j}-\psi_{i-\tilde{t},j})^2,
 \end{equation}
-where \(\tilde{t}\in 1,2,...,\tau/k\) is a time index. Then we get the time-correlations:
+where $\tilde{t}\in 1,2,...,\tau/k$ is a time index. Then we get the time-correlations:
 \begin{equation}
   \hat{\rho}_t=1-\frac{V_t}{2\hat{\text{Var}}^+}
 \end{equation}
-This comes from the expectation of the variance \(E[(\psi_i-\psi_{i-t})^2]=2(1-\rho_t)\text{Var}(\psi)\). This can be used to infer the effective number of independent marker draws:
+This comes from the expectation of the variance $E[(\psi_i-\psi_{i-t})^2]=2(1-\rho_t)\text{Var}(\psi)$. This can be used to infer the effective number of independent marker draws:
 \begin{equation}
   \hat{n}_{eff}=\frac{mn}{1+2\sum_{\tilde{t}=1}^T\hat{\rho}_t}
 \end{equation}
-Where T is the index at which the sum of the autocorrelation estimates \(\hat{\rho}_{t'}+\hat{\rho}_{t'+1}\) is negative. As a general guide, we should have \(\hat{n}_{eff}\sim 10N/k\) effective independent marker draws and that \(\hat{R}\to 1\sim 1.1\). In this research, we continued running the MCMC simulations until these two criteria were met (and went beyond: \(\hat{R}<1.05\) for all parameters in all models and that \(\hat{n}_{eff}>750\) for all parameters in all models).
+Where T is the index at which the sum of the autocorrelation estimates $\hat{\rho}_{t'}+\hat{\rho}_{t'+1}$ is negative. As a general guide, we should have $\hat{n}_{eff}\sim 10N/k$ effective independent marker draws and that $\hat{R}\to 1\sim 1.1$. In this research, we continued running the MCMC simulations until these two criteria were met (and went beyond: $\hat{R}<1.05$ for all parameters in all models and that $\hat{n}_{eff}>750$ for all parameters in all models).
 
-\subsection{Results - Model Parameterization}\label{results---model-parameterization}
+## Results - Model Parameterization
 
-We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section `Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector \(\beta\) of covariates in the Cox' proportional hazards model. When the \(\beta\) vector is normalised, the larger (in absolute terms) the value of \(\beta\), the larger the correlation between that specific covariate and the risk of mortality. Positive values of \(\beta\) imply a higher risk of mortality, and the inverse for negative values of \(\beta\). As we can see from the violin plots of the MCMC posterior samples of the \(\beta\) parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of HA-CVD-CeVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately \(25\%\) more with mortality risk of HA-CVD-CeVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term.
+We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section 'Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of HA-CVD-CeVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of HA-CVD-CeVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term. 
+
+
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:iqrnormbetaRL1}Beta parameters for all-cause mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.}
+\caption{(\#tab:iqrnormbetaRL1)Beta parameters for all-cause mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.}
 \centering
 \begin{tabular}[t]{lcc}
 \toprule
@@ -962,9 +1081,10 @@ Systolic Home Stand Dev & -0.014 & (-0.032,0.004)\\
 \end{tabular}
 \end{table}
 
+
 \begin{table}[!h]
 \centering
-\caption{\label{tab:iqrnormbetaRL2}Beta parameters for cardiovascular mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.}
+\caption{(\#tab:iqrnormbetaRL2)Beta parameters for cardiovascular mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.}
 \centering
 \begin{tabular}[t]{lcc}
 \toprule
@@ -984,7 +1104,7 @@ Systolic Home Stand Dev & 0.000 & (-0.0082,0.0088)\\
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:iqrnormbetaRL3}Beta parameters for all-cause mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.}
+\caption{(\#tab:iqrnormbetaRL3)Beta parameters for all-cause mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.}
 \centering
 \begin{tabular}[t]{lcc}
 \toprule
@@ -1004,7 +1124,7 @@ Systolic Home Stand Dev & 0.032 & (0.0063,0.059)\\
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:iqrnormbetaRL4}Beta parameters for cardiovascular mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.}
+\caption{(\#tab:iqrnormbetaRL4)Beta parameters for cardiovascular mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.}
 \centering
 \begin{tabular}[t]{lcc}
 \toprule
@@ -1022,31 +1142,20 @@ Systolic Home Stand Dev & 0.017 & (0.0028,0.031)\\
 \end{tabular}
 \end{table}
 
-\begin{figure}
-\centering
-\includegraphics{./Plots/beta/Beta_parameter_normalised.png}
-\caption{Violin plots of the normalised \(\beta\) parameters of the different models.}\label{fig:betas}
-\end{figure}
+![Violin plots of the normalised $\beta$ parameters of the different models. ](./Plots/beta/Beta_parameter_normalised.png){#fig:betas}
 
-With respect to the time-independent Gompertz parameter, denoted \(B\) in this article, the results between all models that simulate CVD mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure \ref{fig:gompB}. The consistency appears across sex assigned at birth and race.
+With respect to the time-independent Gompertz parameter, denoted $B$ in this article, the results between all models that simulate CVD mortality risk, and all the models that simulation all-cause mortality risk are consistent with one-another. This is illustrated by the similarity between plots on the left hand side and the right hand side of figure \ref{fig:gompB}. The consistency appears across sex assigned at birth and race.
 
-\begin{figure}
-\centering
-\includegraphics{./Plots/gompertz/B_parameter.png}
-\caption{Violin plots of the normalised B parameter (from the Gompertz equation) of the different models.}\label{fig:gompB}
-\end{figure}
+![Violin plots of the normalised B parameter (from the Gompertz equation) of the different models.](./Plots/gompertz/B_parameter.png){#fig:gompB}
 
 Figure \ref{fig:gompt} reflects the same level of consistency for the Gompertz parameter that influences the temporal evolution of the mortality risk. It is worth noting that both figures \ref{fig:gompB} and \ref{fig:gompt} have inverse trends between the values of B and theta for each demographic group. This makes it difficult to imagine, based on these two plots, what the mortality risk is at different ages across demographics, yet it is evident that the form of the change in the mortality risk curve in time is different for each demographic group. Women are observed to have lower initial values of risk, but mortality risk later in life begins to increase much faster than for men. Additionally, hispanic populations are shown to have a larger initial mortality risk than black populations who are shown to have a larger initial mortality risk than white populations in the USA. However, mortality risk increases at a faster rate for white populations than for black populations, for which it increases faster than hispanic populations in the USA. For ease of comparison, we also present here tables of the mean and standard deviation values of the time dependent and independent Gompertz parameters in tables \ref{tab:RL12} to \ref{tab:RL78}.
 
-\begin{figure}
-\centering
-\includegraphics{./Plots/gompertz/theta_parameter.png}
-\caption{Violin plots of the normalised \(\theta\) parameter (from the Gompertz equation) of the different models.}\label{fig:gompt}
-\end{figure}
+![Violin plots of the normalised $\theta$ parameter (from the Gompertz equation) of the different models.](./Plots/gompertz/theta_parameter.png){#fig:gompt}
+
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:Mean-SD}Summary of the posterior estimate of the blood pressure distribution.}
+\caption{(\#tab:Mean-SD)Summary of the posterior estimate of the blood pressure distribution.}
 \centering
 \begin{tabular}[t]{lllll}
 \toprule
@@ -1070,7 +1179,7 @@ Figure \ref{fig:gompt} reflects the same level of consistency for the Gompertz p
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:RL12}Parameters for survival model, NHANES III, Full population, using the systolic and diastolic mean model.}
+\caption{(\#tab:RL12)Parameters for survival model, NHANES III, Full population, using the systolic and diastolic mean model.}
 \centering
 \begin{tabular}[t]{llrrrr}
 \toprule
@@ -1098,7 +1207,7 @@ Sex & Race/Ethnicity & B–Mean & B–SD & $\theta$-Mean & $\theta$–SD\\
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:RL34}Parameters for survival model, NHANES III, FRS-population only, using the systolic and diastolic mean model.}
+\caption{(\#tab:RL34)Parameters for survival model, NHANES III, FRS-population only, using the systolic and diastolic mean model.}
 \centering
 \begin{tabular}[t]{llrrrr}
 \toprule
@@ -1124,9 +1233,10 @@ Sex & Race/Ethnicity & B–Mean & B–SD & $\theta$-Mean & $\theta$–SD\\
 \end{tabular}
 \end{table}
 
+
 \begin{table}[!h]
 \centering
-\caption{\label{tab:RL78}Parameters for survival model, NHANES III, FRS-population only, using the 1998 FRS-based model.}
+\caption{(\#tab:RL78)Parameters for survival model, NHANES III, FRS-population only, using the 1998 FRS-based model.}
 \centering
 \begin{tabular}[t]{llrrrr}
 \toprule
@@ -1152,17 +1262,13 @@ Sex & Race/Ethnicity & B–Mean & B–SD & $\theta$-Mean & $\theta$–SD\\
 \end{tabular}
 \end{table}
 
-\subsection{Results - Model Performance}\label{results---model-performance}
+## Results - Model Performance
 
-To measure the performance of the model to predict the survival outcome of individuals in the population, figure \ref{fig:cumpred} shows, ordered by individual age, the cumulative hazard \(H(t)\) predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
+To measure the performance of the model to predict the survival outcome of individuals in the population, figure \ref{fig:cumpred} shows, ordered by individual age, the cumulative hazard $H(t)$ predicted against the cumulative number of deaths in the populations, for each model explored in this research. Each model is shown to predict survival outcomes reliably, across the entire age range of the population.
 
-\begin{figure}
-\centering
-\includegraphics{./Plots/Survival/redlinpred_Cumulative_haz-death_age.png}
-\caption{Predicted cumulative hazard against cumulative number of deaths in the population, ordered by the age of the individual.}\label{fig:cumpred}
-\end{figure}
+![Predicted cumulative hazard against cumulative number of deaths in the population, ordered by the age of the individual. ](./Plots/Survival/redlinpred_Cumulative_haz-death_age.png){#fig:cumpred}
 
-A common metric that is used to evaluate the performance of models such as presented in this article is called the Receiver Operating Characteristic (ROC) curve. With continuous predictor values such as cumulative hazard \(H(T_i)\), a threshold can be defined whereby any individual who has a cumulative risk larger than the threshold \(H(T_i)>\epsilon\) is predicted to die. The ratio of the number individuals that were predicted to die compared to the total number who die corresponds is referred to as the True Positive Ratio (TPR)
+A common metric that is used to evaluate the performance of models such as presented in this article is called the Receiver Operating Characteristic (ROC) curve. With continuous predictor values such as cumulative hazard $H(T_i)$, a threshold can be defined whereby any individual who has a cumulative risk larger than the threshold $H(T_i)>\epsilon$ is predicted to die. The ratio of the number individuals that were predicted to die compared to the total number who die corresponds is referred to as the True Positive Ratio (TPR)
 \begin{equation}
   TPR(\epsilon)=\frac{\sum_i\big(\mathbb{I}(H(T_i)>\epsilon \ \ \& \ \ \delta_i=1)\big)}{\sum_i\big(\mathbb{I}(\delta_i=1)\big)}.
 \end{equation}
@@ -1170,8 +1276,8 @@ Note that TPR is also referred to as the recall or sensitivity. Conversely, the 
 \begin{equation}
   FPR(\epsilon)=\frac{\sum_i\big(\mathbb{I}(H(T_i)>\epsilon \ \ \& \ \ \delta_i=0)\big)}{\sum_i\big(\mathbb{I}(\delta_i=0)\big)}.
 \end{equation}
-Note that the FPR is also referred to as \(1-\mathrm{specificity}\). An ROC curve is produced by varying the threshold value that is then used to calculate both the TPR and FPR, and plotting them against one another.
-The area under this curve is a metric that indicates performance of the model to predict survival outcomes. AUROC=1 implies perfect predictions and AUROC=0.5 implies the contrary. However, our model is formulated such that the variables age and time since starting the survey both form part of Cox's proportional hazard. Furthermore, the Gompertz model is stratified by demographic group. Therefore, in this work, we present a modified ROC curve, which calculates the individuals cumulative hazard at a given time since the start of the survey, \(T_{surv} \in {5, 10, 15}\) years, and calculates whether the model correctly predicted an event to occur before or after this time.
+Note that the FPR is also referred to as $1-\mathrm{specificity}$. An ROC curve is produced by varying the threshold value that is then used to calculate both the TPR and FPR, and plotting them against one another.
+The area under this curve is a metric that indicates performance of the model to predict survival outcomes. AUROC=1 implies perfect predictions and AUROC=0.5 implies the contrary. However, our model is formulated such that the variables age and time since starting the survey both form part of Cox's proportional hazard. Furthermore, the Gompertz model is stratified by demographic group. Therefore, in this work, we present a modified ROC curve, which calculates the individuals cumulative hazard at a given time since the start of the survey, $T_{surv} \in {5, 10, 15}$ years, and calculates whether the model correctly predicted an event to occur before or after this time. 
 Note that to do this, we split the ROC population by ages: 45-64 and 65-84. The modified TPR is then calculated via:
 \begin{equation}
   \operatorname{TPR}(\epsilon)=\frac{\sum_i\big(\mathbb{I}(\delta_i=1 \ \ \& \ \ \ H(T_i)\geq \epsilon \ \ \& \ \ T_i<T_{surv})\big)}{\sum_i\big(\mathbb{I}(\delta_i=1 \ \ \& \ \ \ T_i<T_{surv})\big)},
@@ -1184,41 +1290,26 @@ and the modified FPR:
 One problem with standard ROC curves is that they are stretched out along the diagonal of the plot, making it impossible to scale the actual differences to make the significant deviations from the diagonal more legible.
 For that reason it is often better to plot a variant ROC curve, where the ordinate (the vertical coordinate) is the difference TPR--FPR, rather than TPR itself.
 This modified plot --- also known as the Youden index plot --- rotates what was formerly the diagonal onto the abscissa, allowing the deviations to be plotted on the appropriate scale.
-The information content is, of course, the same, and the standard AUC is now simply \(0.5+\)the area under this modified plot.
+The information content is, of course, the same, and the standard AUC is now simply $0.5+$the area under this modified plot.
 
-Before presenting any plots or AUC values, we first present the density distributions of the median posterior systolic \(\Delta\) values for all individuals, split by demographic.
+Before presenting any plots or AUC values, we first present the density distributions of the median posterior systolic $\Delta$ values for all individuals, split by demographic. 
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/SysDelta_Densities_Demography.png}
-\caption{Density of the (median posterior) systolic \(\Delta\) values, per demographic.}\label{fig:DeltaDens}
-\end{figure}
+![Density of the (median posterior) systolic $\Delta$ values, per demographic. ](./Rmarkdown_Plots/SysDelta_Densities_Demography.png){#fig:DeltaDens}
 
-Using Welch's ANOVA test, we calculated that \(p<1\times 10^{-9}\) for all demographics, including when split between the male and female populations. Figures \ref{fig:ROC_MeanBP} and \ref{fig:ROC_FRS} show the Youden index plots (modified ROC curves) --- including the AUC values --- of the model, the former using the mean systolic and diastolic blood pressure as covariates in the linear predictor term (in the Cox's proportional hazards component) and the latter using the FRS value instead. By making predictions of the 5, 10 and 15 year survival between the middle aged and old aged sub-groups, for the three different mortality causes, we start to build a picture of the performance of the model. For figure \ref{fig:ROC_MeanBP}, we notice that the AUC value of the predictions for the middle aged compared to the older aged population is higher, independent of the survival year prediction or the different mortality causes. The highest AUC is for the 45-64 year old population with a focus on CVD and heart attack-related mortality, for all three survival year periods. We also note that the TPR seems to start increasing at a faster rate for the population aged 45-64 than the 65-84 group, implying that it is possible to choose a threshold level, \(\epsilon\), for the survival predictions that could correctly identify people at risk without incorrectly predicting as many people to be at risk of mortality as for the group aged 65-84. The results also reflect that the influence of choosing a 5, 10 or 15 year prediction period does not seem to significantly influence the results. Figure \ref{fig:ROC_FRS} displays similar results to the mean systolic and diastolic model when using the FRS value instead, with the main difference that the predictions of the middle aged group for CVD and heart attack-related mortality for 5 year survival seems to be lower than the equivalent in the older group or as compared to the mean blood pressure model. This is caused by a reduced mortality before 5 years for the middle aged population that had their FRS value calculated, where 36, 83 and 213 CVD and heart attack-related deaths occurred before 5, 10 and 15 years in this sub-group, respectively. This can be compared to 141, 356 and 952 all-cause deaths in this same sub-group (red-curve in figure \ref{fig:ROC_FRS} and \ref{fig:ROC_MeanBP}). Alternatively, when compared to the full-population (not just those who had the FRS value), the CVD and heart attack-related deaths for the middle aged population are 55, 115 and 282 over the 5, 10 and 15 year range, respectively.
+Using Welch's ANOVA test, we calculated that $p<1\times 10^{-9}$ for all demographics, including when split between the male and female populations. Figures \ref{fig:ROC_MeanBP} and \ref{fig:ROC_FRS} show the Youden index plots (modified ROC curves) --- including the AUC values --- of the model, the former using the mean systolic and diastolic blood pressure as covariates in the linear predictor term (in the Cox's proportional hazards component) and the latter using the FRS value instead. By making predictions of the 5, 10 and 15 year survival between the middle aged and old aged sub-groups, for the three different mortality causes, we start to build a picture of the performance of the model. For figure \ref{fig:ROC_MeanBP}, we notice that the AUC value of the predictions for the middle aged compared to the older aged population is higher, independent of the survival year prediction or the different mortality causes. The highest AUC is for the 45-64 year old population with a focus on CVD and heart attack-related mortality, for all three survival year periods. We also note that the TPR seems to start increasing at a faster rate for the population aged 45-64 than the 65-84 group, implying that it is possible to choose a threshold level, $\epsilon$, for the survival predictions that could correctly identify people at risk without incorrectly predicting as many people to be at risk of mortality as for the group aged 65-84. The results also reflect that the influence of choosing a 5, 10 or 15 year prediction period does not seem to significantly influence the results. Figure \ref{fig:ROC_FRS} displays similar results to the mean systolic and diastolic model when using the FRS value instead, with the main difference that the predictions of the middle aged group for CVD and heart attack-related mortality for 5 year survival seems to be lower than the equivalent in the older group or as compared to the mean blood pressure model. This is caused by a reduced mortality before 5 years for the middle aged population that had their FRS value calculated, where 36, 83 and 213 CVD and heart attack-related deaths occurred before 5, 10 and 15 years in this sub-group, respectively. This can be compared to 141, 356 and 952 all-cause deaths in this same sub-group (red-curve in figure \ref{fig:ROC_FRS} and \ref{fig:ROC_MeanBP}). Alternatively, when compared to the full-population (not just those who had the FRS value), the CVD and heart attack-related deaths for the middle aged population are 55, 115 and 282 over the 5, 10 and 15 year range, respectively.
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png}
-\caption{Youden index plots (modified ROC curves) for the model that used mean systolic and diastolic blood pressure as covariates in the linear predictor, stratified by the event type (cause of mortality). The columns split two groups in the population: those who start the survey aged between 45 to 64 and 65-84 years old. The rows split the model predictions between 5, 10 and 15 year survival.}\label{fig:ROC_MeanBP}
-\end{figure}
+![Youden index plots (modified ROC curves) for the model that used mean systolic and diastolic blood pressure as covariates in the linear predictor, stratified by the event type (cause of mortality). The columns split two groups in the population: those who start the survey aged between 45 to 64 and 65-84 years old. The rows split the model predictions between 5, 10 and 15 year survival. ](./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png){#fig:ROC_MeanBP}
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png}
-\caption{Youden index plots (modified ROC curves) for the model that used the FRS value as covariates in the linear predictor, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey.}\label{fig:ROC_FRS}
-\end{figure}
+![Youden index plots (modified ROC curves) for the model that used the FRS value as covariates in the linear predictor, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. ](./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png){#fig:ROC_FRS}
 
-Comparison of the Youden index plots (modified ROC curves) and AUC values is also presented for the different demographic groups, see figure \ref{fig:ROC_Demog}. This figure shows the differences in the prediction performance (w.r.t. the ROC and AUC values) of the full-population model for the 45-64 age population for their 10 year survival outcome, using the mean systolic and diastolic blood pressure model. This plot illustrates that potentially only the all-cause mortality has enough outcomes in each demographic group to separate the curves. The model seems to most accurately predict the 10 year survival outcome of the black and other ethnic groups, as well as the white female demographic as compared to the black female, other female and white male population. To provide insight into this, we also provide the frequency table of deaths for each demographic group, mortality cause and survival year, see table \ref{tab:DeathFreq1} and \ref{tab:DeathFreq2}.
+Comparison of the Youden index plots (modified ROC curves) and AUC values is also presented for the different demographic groups, see figure \ref{fig:ROC_Demog}. This figure shows the differences in the prediction performance (w.r.t. the ROC and AUC values)  of the full-population model for the 45-64 age population for their 10 year survival outcome, using the mean systolic and diastolic blood pressure model. This plot illustrates that potentially only the all-cause mortality has enough outcomes in each demographic group to separate the curves. The model seems to most accurately predict the 10 year survival outcome of the black and other ethnic groups, as well as the white female demographic as compared to the black female, other female and white male population. To provide insight into this, we also provide the frequency table of deaths for each demographic group, mortality cause and survival year, see table \ref{tab:DeathFreq1} and \ref{tab:DeathFreq2}.
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png}
-\caption{Youden index plots (modified ROC curves) stratified by the different demographic groups used in this research. The point and line colours represent the different event types that were used to predict on.}\label{fig:ROC_Demog}
-\end{figure}
+
+![Youden index plots (modified ROC curves) stratified by the different demographic groups used in this research. The point and line colours represent the different event types that were used to predict on. ](./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png){#fig:ROC_Demog}
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:DeathFreq1}Frequency table of the population aged 45-64 for the N-year survival outcomes as separated by demographic group and mortality cause.}
+\caption{(\#tab:DeathFreq1)Frequency table of the population aged 45-64 for the N-year survival outcomes as separated by demographic group and mortality cause.}
 \centering
 \begin{tabular}[t]{llllr}
 \toprule
@@ -1266,9 +1357,10 @@ Year & EventType & Ethnicity & Gender & Deaths\\
 \end{tabular}
 \end{table}
 
+
 \begin{table}[!h]
 \centering
-\caption{\label{tab:DeathFreq2}Frequency table of the population aged 65-84 for the N-year survival outcomes as separated by demographic group and mortality cause.}
+\caption{(\#tab:DeathFreq2)Frequency table of the population aged 65-84 for the N-year survival outcomes as separated by demographic group and mortality cause.}
 \centering
 \begin{tabular}[t]{llllr}
 \toprule
@@ -1316,70 +1408,47 @@ Year & EventType & Ethnicity & Gender & Deaths\\
 \end{tabular}
 \end{table}
 
-To finalise the section on the performance of the models using ROC and AUC values, we present a series of figures that provide Youden index plots and AUC values for different linear predictor (Cox's proportional hazards model) covariate configurations. By setting the covariate-specific \(\beta\) parameter values to zero, we can measure the additional prediction performance that adding different covariates provides to the model. In figures \ref{fig:ROC_RL1} to \ref{fig:ROC_RL8oth}, we present three main formulations: using only the systolic and diastolic \(\Delta\) terms, using the mean systolic and diastolic (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or the FRS value (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}) terms as well as the systolic and diastolic \(\Delta\) terms (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL8oth}) and, finally, using the systolic mean (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or FRS value only (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}). Figures \ref{fig:ROC_RL1}, \ref{fig:ROC_RL2} and \ref{fig:ROC_RL2oth} apply to the full-population with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. Figures \ref{fig:ROC_RL7}, \ref{fig:ROC_RL8} and \ref{fig:ROC_RL8oth} apply to the population with an FRS value, with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. The first thing to note as a commonality between all these different figures is that the use of the long-term variability, \(\Delta\), in the model has comparable performance with that of using the systolic mean or FRS values only. Additionally, where the number of deaths permits for prediction, the use of both the \(\Delta\) and mean/FRS values results in higher AUC values than using models that use one or the other. Finally, the use of the FRS value consistently under-performs the mean diastolic and systolic blood pressure-based model.
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png}
-\caption{Youden index plots (modified ROC curves) for the mean systolic and diastolic model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible.}\label{fig:ROC_RL1}
-\end{figure}
+To finalise the section on the performance of the models using ROC and AUC values, we present a series of figures that provide Youden index plots and AUC values for different linear predictor (Cox's proportional hazards model) covariate configurations. By setting the covariate-specific $\beta$ parameter values to zero, we can measure the additional prediction performance that adding different covariates provides to the model. In figures \ref{fig:ROC_RL1} to \ref{fig:ROC_RL8oth}, we present three main formulations: using only the systolic and diastolic $\Delta$ terms, using the mean systolic and diastolic (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or the FRS value (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}) terms as well as the systolic and diastolic $\Delta$ terms (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL8oth}) and, finally, using the systolic mean (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or FRS value only (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}). Figures \ref{fig:ROC_RL1}, \ref{fig:ROC_RL2} and \ref{fig:ROC_RL2oth} apply to the full-population with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. Figures \ref{fig:ROC_RL7}, \ref{fig:ROC_RL8} and \ref{fig:ROC_RL8oth} apply to the population with an FRS value, with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. The first thing to note as a commonality between all these different figures is that the use of the long-term variability, $\Delta$, in the model has comparable performance with that of using the systolic mean or FRS values only. Additionally, where the number of deaths permits for prediction, the use of both the $\Delta$ and mean/FRS values results in higher AUC values than using models that use one or the other. Finally, the use of the FRS value consistently under-performs the mean diastolic and systolic blood pressure-based model.
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png}
-\caption{Youden index plots (modified ROC curves) for the mean systolic and diastolic model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible.}\label{fig:ROC_RL2}
-\end{figure}
+![Youden index plots (modified ROC curves) for the mean systolic and diastolic model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png){#fig:ROC_RL1}
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png}
-\caption{Youden index plots (modified ROC curves) for the mean systolic and diastolic model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible.}\label{fig:ROC_RL2oth}
-\end{figure}
+![Youden index plots (modified ROC curves) for the mean systolic and diastolic model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png){#fig:ROC_RL2}
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png}
-\caption{Youden index plots (modified ROC curves) for for the FRS-based model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible.}\label{fig:ROC_RL7}
-\end{figure}
+![Youden index plots (modified ROC curves) for the mean systolic and diastolic model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png){#fig:ROC_RL2oth}
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png}
-\caption{Youden index plots (modified ROC curves) for for the FRS-based model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible.}\label{fig:ROC_RL8}
-\end{figure}
+![Youden index plots (modified ROC curves) for for the FRS-based model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png){#fig:ROC_RL7}
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png}
-\caption{Youden index plots (modified ROC curves) for for the FRS-based model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible.}\label{fig:ROC_RL8oth}
-\end{figure}
+![Youden index plots (modified ROC curves) for for the FRS-based model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png){#fig:ROC_RL8}
 
-\subsection{Results - Excluded Population}\label{results---excluded-population}
+![Youden index plots (modified ROC curves) for for the FRS-based model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8oth}
 
-As there were 3,916 individuals that were excluded from the research, it is important to verify that there is no bias in the survival outcomes linked to each of the demographic groups for the included and excluded populations. This section demonstrates this by considering differences in the Kaplan-Meier curves, shown in figure \ref{fig:excpop}. No significant difference in survival outcomes is observed between the different demographic groups for the excluded and included populations. However, it is important to note that bias has been introduced by the fact that the 751 individuals that were included in the `other' ethnicity will therefore not be represented in this research.
+## Results - Excluded Population
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/Excluded_SurvProbKM.png}
-\caption{Kaplan-Meier plots of the full-population for all-cause mortality, split by demographic group and whether the individual was included in this research.}\label{fig:excpop}
-\end{figure}
+As there were 3,916 individuals that were excluded from the research, it is important to verify that there is no bias in the survival outcomes linked to each of the demographic groups for the included and excluded populations. This section demonstrates this by considering differences in the Kaplan-Meier curves, shown in figure \ref{fig:excpop}. No significant difference in survival outcomes is observed between the different demographic groups for the excluded and included populations. However, it is important to note that bias has been introduced by the fact that the 751 individuals that were included in the 'other' ethnicity will therefore not be represented in this research.
 
-\subsection{Results - Frequentist Comparison}\label{results---frequentist-comparison}
+
+![Kaplan-Meier plots of the full-population for all-cause mortality, split by demographic group and whether the individual was included in this research. ](./Rmarkdown_Plots/Excluded_SurvProbKM.png){#fig:excpop}
+
+## Results - Frequentist Comparison
 
 A comparison with the frequentist Cox proportional hazards model is presented in this section, to allow the reader to percieve the differences between the Bayesian hierarchical model and the standard frequentist approach. Tables \ref{tab:freqCVDF} to \ref{tab:freqALLNF} show the model results from using only the blood pressure covariates to predict survival outcomes.
 The baseline mortality is stratified by sex and ethnicity.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{cox\_NHANES }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{( }\FunctionTok{Surv}\NormalTok{(age, Time}\SpecialCharTok{+}\NormalTok{age, eventCVDHrt) }\SpecialCharTok{\textasciitilde{}}\NormalTok{ FRS}\FloatTok{.1998} \SpecialCharTok{+}
-\NormalTok{                     D\_i\_S }\SpecialCharTok{+}\NormalTok{ D\_i\_D }\SpecialCharTok{+}\NormalTok{ sigma\_C\_S }\SpecialCharTok{+}\NormalTok{ sigma\_H\_S }\SpecialCharTok{+}
-\NormalTok{                     sigma\_C\_D }\SpecialCharTok{+}\NormalTok{ sigma\_H\_D }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(race) }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(female), }\AttributeTok{data =}\NormalTok{ DF\_nhanesFRS)}
-\end{Highlighting}
-\end{Shaded}
+
+
+
+
+
+``` r
+cox_NHANES <- coxph( Surv(age, Time+age, eventCVDHrt) ~ FRS.1998 +
+                     D_i_S + D_i_D + sigma_C_S + sigma_H_S +
+                     sigma_C_D + sigma_H_D + strata(race) + strata(female), data = DF_nhanesFRS)
+```
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:freqCVDNF}Cox-PH parameter estimates for cardiovascular mortality, NHANES III, full population.}
+\caption{(\#tab:freqCVDNF)Cox-PH parameter estimates for cardiovascular mortality, NHANES III, full population.}
 \centering
 \begin{tabular}[t]{lrll}
 \toprule
@@ -1399,7 +1468,7 @@ Diastolic Home Stand Dev & 0.025 & 0.34 & (-0.027,0.08)\\
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:freqALLNF}Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.}
+\caption{(\#tab:freqALLNF)Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.}
 \centering
 \begin{tabular}[t]{lrll}
 \toprule
@@ -1419,7 +1488,7 @@ Diastolic Home Stand Dev & 0.013 & 0.38 & (-0.017,0.044)\\
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:freqCVDF}Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.}
+\caption{(\#tab:freqCVDF)Cox-PH parameter estimates for cardiovascular mortality, NHANES III, FRS population.}
 \centering
 \begin{tabular}[t]{lrll}
 \toprule
@@ -1436,9 +1505,10 @@ Diastolic Clinic Stand Dev & 0.025 & 0.49 & (-0.046,0.096)\\
 \end{tabular}
 \end{table}
 
+
 \begin{table}[!h]
 \centering
-\caption{\label{tab:freqALLF}Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.}
+\caption{(\#tab:freqALLF)Cox-PH parameter estimates for all-cause mortality, NHANES III, FRS population.}
 \centering
 \begin{tabular}[t]{lrll}
 \toprule
@@ -1455,62 +1525,46 @@ Diastolic Clinic Stand Dev & 0.023 & 0.19 & (-0.012,0.06)\\
 \end{tabular}
 \end{table}
 
-\subsection{\texorpdfstring{Results - Exploring \(\Delta\) Directionality}{Results - Exploring \textbackslash Delta Directionality}}\label{results---exploring-delta-directionality}
 
-This section of the appendix is to explore whether the directionality of the difference in clinic-home blood pressure (represented through the non-absolute value of the \(\Delta\) covariate) may have an influence on the survival outcome in the population. In the work presented in this article, \(\Delta\) is the absolute value of the differences in the means of the blood pressure measurements at the clinic and at home, respectively, for both diastolic and systolic blood pressure. By `directionality', we refer to whether the difference between the clinic and home mean measurements are positive or negative. Figure \ref{fig:DeltaDensities} shows the clinic-home directionalities, split by demographic group, indicating no significant difference between the different demographic groups. There is a general trend that the directionality for systolic and diastolic blood pressure is more likely to be the same than opposite.
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/Delta_plusminus_Demography.png}
-\caption{The range of the non-absolute \(\Delta\) values in the systolic and diastolic blood pressure measurements, split by demographic group. This reflects the differences between the average measurements at the clinic and at home.}\label{fig:DeltaDensities}
-\end{figure}
+
+
+## Results - Exploring $\Delta$ Directionality
+
+This section of the appendix is to explore whether the directionality of the difference in clinic-home blood pressure (represented through the non-absolute value of the $\Delta$ covariate) may have an influence on the survival outcome in the population. In the work presented in this article, $\Delta$ is the absolute value of the differences in the means of the blood pressure measurements at the clinic and at home, respectively, for both diastolic and systolic blood pressure. By 'directionality', we refer to whether the difference between the clinic and home mean measurements are positive or negative. Figure \ref{fig:DeltaDensities} shows the clinic-home directionalities, split by demographic group, indicating no significant difference between the different demographic groups. There is a general trend that the directionality for systolic and diastolic blood pressure is more likely to be the same than opposite.
+
+![The range of the non-absolute $\Delta$ values in the systolic and diastolic blood pressure measurements, split by demographic group. This reflects the differences between the average measurements at the clinic and at home. ](./Rmarkdown_Plots/Delta_plusminus_Demography.png){#fig:DeltaDensities}
 
 In order to explore whether the directionality of the clinic-home measurements influences survival outcome, we will use a combination of Kaplan-Meier curves and Cox's proportional hazards regression. The latter will implement a simple Maximum Likelihood Estimation (MLE) method based on summary statistics of the Bayesian posterior blood pressure values, not the Bayesian-HMC method applied elsewhere in this article. The Kaplan-Meier curve is a plot of the change in survival probability of a population in time since the start of a survey/census. The survival distribution is calculated using
 \begin{equation}\label{survKM}
 \hat{S}(t)=\prod_{t_j \le t}\left(1-\frac{d_j}{r_j} \right),
 \end{equation}
-for \(d_j\) the number of individuals who die within the time interval \(t_j\) and \(r_j\) the population that are alive (at risk of death) and not censored. Greenwood's formula is used to calculate the variance of the Kaplan-Meier estimation
+for $d_j$ the number of individuals who die within the time interval $t_j$ and $r_j$ the population that are alive (at risk of death) and not censored. Greenwood's formula is used to calculate the variance of the Kaplan-Meier estimation
 \begin{equation}\label{sigKM}
 \hat{\sigma}(t)^2=\hat{S}(t)^2\sum_{t_j \le t}\left(\frac{d_j}{r_j(r_j-d_j)} \right).
 \end{equation}
-The 100(1-\(\alpha\))\% confidence intervals of the Kaplan-Meier estimate are assumed to be normally distributed
+The 100(1-$\alpha$)\% confidence intervals of the Kaplan-Meier estimate are assumed to be normally distributed
 \begin{equation}\label{CIKM}
 \hat{S}(t) \pm z_{1-\alpha/2}\hat{\sigma}(t).
 \end{equation}
 
 Figures \ref{fig:KM45tot} and \ref{fig:KM65tot} show the Kaplan-Meier estimates for the full NHANES population for CVD mortality, split by demographic group, for the age range 45-64 and 65-84, respectively. The survival probability of the older population decreases faster in time than the middle-aged (45-64) population.
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/SurvProbKM_45-64.png}
-\caption{Kaplan-Meier plots of the full-population for CVD mortality, for ages between 45-64, split by demographic group.}\label{fig:KM45tot}
-\end{figure}
+![Kaplan-Meier plots of the full-population for CVD mortality, for ages between 45-64, split by demographic group. ](./Rmarkdown_Plots/SurvProbKM_45-64.png){#fig:KM45tot}
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/SurvProbKM_65-84.png}
-\caption{Kaplan-Meier plots of the full-population for CVD mortality, for ages between 65-84, split by demographic group.}\label{fig:KM65tot}
-\end{figure}
+![Kaplan-Meier plots of the full-population for CVD mortality, for ages between 65-84, split by demographic group. ](./Rmarkdown_Plots/SurvProbKM_65-84.png){#fig:KM65tot}
 
-By splitting the populations into the respective regions of the \(\Delta\) directionality, we can use the different Kaplan-Meier plots to try to identify differences in the survival outcomes. Figures \ref{fig:KM45_deltaregion} and \ref{fig:KM65_deltaregion} show the Kaplan-Meier estimates for the full NHANES population for CVD mortality, split by \(\Delta\) directionality and demographic group, for the age range 45-64 and 65-84, respectively. With the broad confidence intervals, all of the different \(\Delta\) directionality regions overlap, for all demographic groups and both age range groups (where \(\hat{S}(t)\neq 1\)).
+By splitting the populations into the respective regions of the $\Delta$ directionality, we can use the different Kaplan-Meier plots to try to identify differences in the survival outcomes. Figures \ref{fig:KM45_deltaregion} and \ref{fig:KM65_deltaregion} show the Kaplan-Meier estimates for the full NHANES population for CVD mortality, split by $\Delta$ directionality and demographic group, for the age range 45-64 and 65-84, respectively. With the broad confidence intervals, all of the different $\Delta$ directionality regions overlap, for all demographic groups and both age range groups (where $\hat{S}(t)\neq 1$).
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png}
-\caption{Kaplan-Meier plots of the full-population for CVD mortality, for ages between 45-64, split by demographic group and region in systolic-diastolic \(\Delta\) space.}\label{fig:KM45_deltaregion}
-\end{figure}
+![Kaplan-Meier plots of the full-population for CVD mortality, for ages between 45-64, split by demographic group and region in systolic-diastolic $\Delta$ space. ](./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png){#fig:KM45_deltaregion}
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png}
-\caption{Kaplan-Meier plots of the full-population for CVD mortality, for ages between 65-84, split by demographic group and region in systolic-diastolic \(\Delta\) space.}\label{fig:KM65_deltaregion}
-\end{figure}
+![Kaplan-Meier plots of the full-population for CVD mortality, for ages between 65-84, split by demographic group and region in systolic-diastolic $\Delta$ space. ](./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png){#fig:KM65_deltaregion}
 
-We further quantify this insignificant relationship between \(\Delta\) directionality and survival outcome via the use of a Cox's Proportional Hazards (CPH) model. Via the use of the `coxph' function in the `survival' R package, we fit (using MLE) a CPH model. The covariates used in the model are \(\Delta\) directionality region, gender, ethnicity and age. Table \ref{tab:DeltaDir} shows the summary of the model fit, which reflects that being in different \(\Delta\) directionality regions has a non-statistically significant influence on survival outcomes. As shown in the remainder of this article, ethnicity, gender and age are shown to have statistically significant effects on survival outcome.
+We further quantify this insignificant relationship between $\Delta$ directionality and survival outcome via the use of a Cox's Proportional Hazards (CPH) model. Via the use of the 'coxph' function in the 'survival' R package, we fit (using MLE) a CPH model. The covariates used in the model are $\Delta$ directionality region, gender, ethnicity and age. Table \ref{tab:DeltaDir} shows the summary of the model fit, which reflects that being in different $\Delta$ directionality regions has a non-statistically significant influence on survival outcomes. As shown in the remainder of this article, ethnicity, gender and age are shown to have statistically significant effects on survival outcome.
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:DeltaDir}Parameters for distribution of blood pressure, for the full population}
+\caption{(\#tab:DeltaDir)Parameters for distribution of blood pressure, for the full population}
 \centering
 \begin{tabular}[t]{lrrrrr}
 \toprule
@@ -1527,28 +1581,8 @@ EthnicityMexican & -0.170 & 0.844 & 0.075 & -2.272 & 0.023\\
 \end{tabular}
 \end{table}
 
-Finally, we wish to confirm that the perfomance of the model does not depend on the directionality of \(\Delta\). Figure \ref{fig:DeltaAUCs} plots the AUC values of 10-year CVD mortality for the all-covariate mean blood pressure-based model trained on the full NHANES population, split by the two age-ranges (45-64 and 65-84) and demographic groups. There is no clear trend between mode performance for the different regions of \(\Delta\) directionality.
+Finally, we wish to confirm that the perfomance of the model does not depend on the directionality of $\Delta$. Figure \ref{fig:DeltaAUCs} plots the AUC values of 10-year CVD mortality for the all-covariate mean blood pressure-based model trained on the full NHANES population, split by the two age-ranges (45-64 and 65-84) and demographic groups. There is no clear trend between mode performance for the different regions of $\Delta$ directionality.
 
-\begin{figure}
-\centering
-\includegraphics{./Rmarkdown_Plots/DeltaDirection_AUCs.png}
-\caption{AUC values of the full-population, all covariate model with the mean blood pressure model, based on CVD 10-year mortality.}\label{fig:DeltaAUCs}
-\end{figure}
+![AUC values of the full-population, all covariate model with the mean blood pressure model, based on CVD 10-year mortality. ](./Rmarkdown_Plots/DeltaDirection_AUCs.png){#fig:DeltaAUCs}
 
-\section*{References}\label{references}
-\addcontentsline{toc}{section}{References}
-
-\phantomsection\label{refs}
-\begin{CSLReferences}{1}{0}
-\bibitem[\citeproctext]{ref-NUTS}
-Hoffman, Matthew D, Andrew Gelman, et al. 2014. {``The No-u-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.''} \emph{J. Mach. Learn. Res.} 15 (1): 1593--623.
-
-\bibitem[\citeproctext]{ref-CDCBP}
-Littman, Alyson J., Edward J. Boyko, Mary B. McDonell, and Stephan D. Fihn. 2012. {``Evaluation of a Weight Management Program for Veterans.''} \emph{Preventing Chronic Disease} 9. \url{https://doi.org/10.5888/pcd9.110267}.
-
-\bibitem[\citeproctext]{ref-ostchega2003national}
-Ostchega, Yechiam, Ronald J Prineas, Ryne Paulose-Ram, Carlene M Grim, Grace Willard, and Doreen Collins. 2003. {``National Health and Nutrition Examination Survey 1999-2000: Effect of Observer Training and Protocol Standardization on Reducing Blood Pressure Measurement Error.''} \emph{Journal of Clinical Epidemiology} 56 (8): 768--74.
-
-\end{CSLReferences}
-
-\end{document}
+# References
