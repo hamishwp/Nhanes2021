@@ -1328,69 +1328,82 @@ output_tables <- vector("list",2) %>% setNames(BP_type_names)
 
 norm_dimnames2 <- c('$m_M$','$m_\\Delta$','$\\sigma^2_M$','$\\sigma^2_\\Delta$')
 gamma_dimnames2 <- c('$\\alpha_H$','$\\theta_H$','$\\alpha_C$','$\\theta_C$')
-for(which_bp in BP_type_names){
-  estimates <- array(0,dim = c(num_reps,8),dimnames = list( NULL , c(norm_dimnames2,gamma_dimnames2)))
-  std_errors <- array(0,dim = c(num_reps,8),dimnames = list( NULL , c(norm_dimnames2,gamma_dimnames2)))
 
-  bp <- BP_simulation(params$Normal[[which_bp]],params$Gamma[[which_bp]], num_indiv=N, num_reps)
-simulation_params <- mclapply(bp, function(bp_sim) all_BP_parameters(bp_sim)) # simulated parameter estimates
-
-for(i in seq_len(num_reps)){
-  spe <- simulation_params[[i]]
-  estimates[i,'$m_M$'] <- spe$Normal$M$m
-  estimates[i,'$m_\\Delta$'] <- spe$Normal$Delta$m
-  estimates[i,'$\\sigma^2_M$'] <- spe$Normal$M$sigma2
-  estimates[i,'$\\sigma^2_\\Delta$'] <- spe$Normal$Delta$sigma2
-  std_errors[i,'$m_M$'] <- spe$Normal$M$m.std.error
-  std_errors[i,'$m_\\Delta$'] <- spe$Normal$Delta$m.std.error
-  std_errors[i,'$\\sigma^2_M$'] <- spe$Normal$M$sigma2.std.error
-  std_errors[i,'$\\sigma^2_\\Delta$'] <- spe$Normal$Delta$sigma2.std.error
-  estimates[i, '$\\alpha_C$'] <- spe$Gamma$Clinic$alpha
-  estimates[i, '$\\theta_C$'] <- spe$Gamma$Clinic$theta
-  estimates[i, '$\\alpha_H$'] <- spe$Gamma$Home$alpha
-  estimates[i, '$\\theta_H$'] <- spe$Gamma$Home$theta
-  std_errors[i, c('$\\alpha_C$','$\\theta_C$')] <- sqrt(diag(spe$Gamma$Clinic$variance))
-  std_errors[i, c('$\\alpha_H$','$\\theta_H$')] <- sqrt(diag(spe$Gamma$Home$variance))
+# Helper function to format numbers with sf significant figures, and scientific notation when less than 10^-sn
+format_numbers <- function(x,sf=3, sn=3) {
+  sapply(x, function(xx)
+  if (is.numeric(xx)) {
+    if (abs(xx) < 10^(-sn)) {
+      return(formatC(xx, format = "e", digits = sf-1)) # Scientific notation for numbers < 0.001
+    } else {
+      return(signif(xx, sf)) # sf significant figures for other numbers
+    }
+  }
+  )
 }
 
-simulation_mean_estimate <- apply(estimates,2,mean)
-simulation_mean_SE <- apply(std_errors,2, mean )
-simulation_SE <- apply(estimates,2,sd)
-true_params <- simulation_SE  # Just a dummy with the right names
-true_params[norm_dimnames2] <- params$Normal[[which_bp]][norm_dimnames]
-true_params[gamma_dimnames2]<-params$Gamma[[which_bp]][c('alpha','theta'),c('Home','Clinic')]
-#Make a matrix for comparing true parameters to average simulation estimates
+for (which_bp in BP_type_names) {
+  estimates <- array(0, dim = c(num_reps, 8), dimnames = list(NULL, c(norm_dimnames2, gamma_dimnames2)))
+  std_errors <- array(0, dim = c(num_reps, 8), dimnames = list(NULL, c(norm_dimnames2, gamma_dimnames2)))
 
-mean_mat <- rbind(matrix(sub("\\.?0*$","",signif(c(simulation_mean_estimate,true_params,
-                    simulation_mean_estimate/true_params-1),4) ), 
-                  nrow= 8,ncol = 3,
-                  dimnames=list(names(simulation_SE),
-                                c("SimAverage",'True','RelError'))),
-                  matrix(sub("\\.?0*$","",signif(c(simulation_mean_SE, simulation_SE,
-         simulation_mean_SE / simulation_SE -1) ,4) ), nrow= 8,ncol = 3,
-           dimnames=list(names(simulation_SE),
-                     c("SimAverage",'True SE', 'RelError'))) )
+  # Simulate blood pressure and calculate parameters
+  bp <- BP_simulation(params$Normal[[which_bp]], params$Gamma[[which_bp]], num_indiv = N, num_sim = num_reps)
+  simulation_params <- mclapply(bp, function(bp_sim) all_BP_parameters(bp_sim)) # Simulated parameter estimates
 
-output_tables[[which_bp]] <- mean_mat
+  # Fill estimates and std_errors arrays
+  for (i in seq_len(num_reps)) {
+    spe <- simulation_params[[i]]
+    estimates[i, '$m_M$'] <- spe$Normal$M$m
+    estimates[i, '$m_\\Delta$'] <- spe$Normal$Delta$m
+    estimates[i, '$\\sigma^2_M$'] <- spe$Normal$M$sigma2
+    estimates[i, '$\\sigma^2_\\Delta$'] <- spe$Normal$Delta$sigma2
+    std_errors[i, '$m_M$'] <- spe$Normal$M$m.std.error
+    std_errors[i, '$m_\\Delta$'] <- spe$Normal$Delta$m.std.error
+    std_errors[i, '$\\sigma^2_M$'] <- spe$Normal$M$sigma2.std.error
+    std_errors[i, '$\\sigma^2_\\Delta$'] <- spe$Normal$Delta$sigma2.std.error
+    estimates[i, '$\\alpha_C$'] <- spe$Gamma$Clinic$alpha
+    estimates[i, '$\\theta_C$'] <- spe$Gamma$Clinic$theta
+    estimates[i, '$\\alpha_H$'] <- spe$Gamma$Home$alpha
+    estimates[i, '$\\theta_H$'] <- spe$Gamma$Home$theta
+    std_errors[i, c('$\\alpha_C$', '$\\theta_C$')] <- sqrt(diag(spe$Gamma$Clinic$variance))
+    std_errors[i, c('$\\alpha_H$', '$\\theta_H$')] <- sqrt(diag(spe$Gamma$Home$variance))
+  }
+
+  # Mean estimates and standard errors
+  simulation_mean_estimate <- apply(estimates, 2, mean)
+  simulation_mean_SE <- apply(std_errors, 2, mean)
+  simulation_SE <- apply(estimates, 2, sd)
+  
+  # True parameters (dummy in this example)
+  true_params <- simulation_SE
+  true_params[norm_dimnames2] <- params$Normal[[which_bp]][norm_dimnames]
+  true_params[gamma_dimnames2] <- params$Gamma[[which_bp]][c('alpha', 'theta'), c('Home', 'Clinic')]
+
+  # Compare simulation estimates to true parameters
+  mean_mat <- rbind(
+    matrix(sub("\\.?0*$", "", format_numbers(c(simulation_mean_estimate, true_params, simulation_mean_estimate / true_params - 1))),
+           nrow = 8, ncol = 3, dimnames = list(names(simulation_SE), c("SimAverage", 'True', 'RelError'))),
+    matrix(sub("\\.?0*$", "", format_numbers(c(simulation_mean_SE, simulation_SE, simulation_mean_SE / simulation_SE - 1))),
+           nrow = 8, ncol = 3, dimnames = list(names(simulation_SE), c("SimAverage", 'True SE', 'RelError')))
+  )
+
+  # Apply the formatting function to mean_mat
+  output_tables[[which_bp]] <- mean_mat
 }
 
+# Combine and display the table
 combined_data <- cbind(output_tables[[1]], output_tables[[2]])
-# Create a single kable for the combined data
-kable_combined <- kable(combined_data, format = "latex", escape = FALSE, 
-                        booktabs = TRUE, linesep = rep(c(rep("",4),"\\addlinespace"),4), 
-                        caption = "Results of estimating parameters from simulated data from the whole population. 
+final_table <- kable(combined_data, format = "latex", escape = FALSE, 
+                     booktabs = TRUE, linesep = rep(c(rep("", 4), "\\addlinespace"), 4),
+                     caption = "Results of estimating parameters from simulated data from the whole population. 
     First column on top is the average parameter estimate from the simulations, second is the true parameter from which the simulations were made, third is the relative error.
-    On bottom are the standard errors for the parameters: True is the theoretically computed standard error, SimAverage is the SD of the simulated parameter estimates, and RelError is the relative error.")
-
-# Use pack_rows to add headers
-final_table <- kable_combined %>%
+    On bottom are the standard errors for the parameters: True is the theoretically computed standard error, SimAverage is the SD of the simulated parameter estimates, and RelError is the relative error.") %>%
   pack_rows("Parameter estimates", 1, 8, bold = TRUE) %>%
-  pack_rows("Parameter SE estimates", 9,16, bold = TRUE) %>%
+  pack_rows("Parameter SE estimates", 9, 16, bold = TRUE) %>%
   kable_styling(latex_options = c("striped", "hold_position")) %>%
   add_header_above(c(" " = 1, "Systolic" = 3, "Diastolic" = 3))
 
-
-# Print the table
+# Print the final table
 cat(final_table)
 cat('\n')
 
@@ -1922,15 +1935,15 @@ Where T is the index at which the sum of the autocorrelation estimates $\hat{\rh
 
 We remind the reader of the list of numbers of the different models explored in this research, provided in the list found in section 'Proposed Models'. The authors will use the numbers in the list, referred to as the run number, in the following plots. One of the most important set of parameters of the model is the vector $\beta$ of covariates in the Cox' proportional hazards model. When the $\beta$ vector is normalised, the larger (in absolute terms) the value of $\beta$, the larger the correlation between that specific covariate and the risk of mortality. Positive values of $\beta$ imply a higher risk of mortality, and the inverse for negative values of $\beta$. As we can see from the violin plots of the MCMC posterior samples of the $\beta$ parameters in figure \ref{fig:betas}, the parameter that correlated the highest with both the mortality risk of HA-CVD-CeVD and for all mortalities, in absolute terms, was the 1998 version of the FRS score, shown in the top-right plot under run numbers 7 and 8. The FRS-1998 score correlated, on average over all the MCMC iterations, approximately $25\%$ more with mortality risk of HA-CVD-CeVD than the (more recently developed) FRS ATP III score. A similar, but slightly weaker, correlation was found between the two FRS scores for all mortality-based risk. The middle-left plot in figure \ref{fig:betas} shows that the mean diastolic blood pressure acts to decrease mortality risk. Finally, the influence of the longer-term difference in the mean blood pressure, displayed in the top-left and top-middle plots of figure \ref{fig:betas}, is also shown to increase mortality risk across all run numbers. The influence of the blood-pressure variability on mortality is illustrated to not be consistent across simulations, whereby the statistical significance of the effect is lower than for the other parameters in the linear predictor term. 
 
-```{r iqrnormbeta_RL1, echo=F,results='asis'}
+```{r IQRtables,echo=F,results='asis'}
 convnames <- data.frame(
   variable = c("M i S", "M i D", "D i S", "D i D", "FRS.1998",
                "sigma C S", "sigma H S", "sigma C D", "sigma H D"),
   Covariate = c(
     "Systolic Mean", 
     "Diastolic Mean",
-    "Systolic",
-    "Diastolic",
+    "Systolic $|\\Delta|$", 
+    "Diastolic $|\\Delta|$", 
     "FRS (1998)",
     "Systolic Clinic Stand Dev", 
     "Systolic Home Stand Dev",
@@ -1939,69 +1952,74 @@ convnames <- data.frame(
   )
 )
 
-cat(kable(read_csv(file="Results/beta_all_IQRnorm.csv", show_col_types = FALSE) %>%
+range_format <- function(r1,r2){
+  paste0("(", format_numbers(r1,sf=2),"," , format_numbers(r2,sf=2), ")")
+}
+```
+
+```{r iqrnormbetaRL1, include=TRUE, echo=FALSE,results='asis',message=FALSE,warning=FALSE}
+# Printing the table using kable
+    cat(kable(read_csv(file="Results/beta_all_IQRnorm.csv", show_col_types = FALSE) %>%
         filter(runnum == 1) %>%
         slice(c(3, 4, 1, 2, 5:8)) %>%
-        left_join(convnames, by = "variable") %>%
-        dplyr::select(Covariate, beta, Range) %>%
-        setNames(c("Covariate", "Beta Normalised (IQR)", "Range")),
-        format = "latex", 
-        escape = FALSE,  # Ensure LaTeX commands in Covariate are not escaped
-        booktabs = TRUE, 
-        label = "iqrnormbeta_RL1",
-        linesep = "",
-        digits = 3,
-        caption = "Beta parameters for all-cause mortality, full NHANES III population, normalized by the interquartile range instead of the standard deviation.") %>%
-  kable_styling(latex_options = c("striped", "hold_position")))
-cat('\n')
+        left_join(convnames, by = "variable")  %>% 
+          mutate(Range = range_format(Range1,Range2)) %>% select(Covariate, beta, Range),
+        format="latex", escape = F,booktabs = T, digits=3,
+              linesep = "",
+                  col.names=c("Covariate","Beta Normalised (IQR)","Range"),
+        caption = "Beta parameters for all-cause mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.", align="lcc") %>%  
+          kable_styling(latex_options = c("hold_position","striped")) )
+    cat('\n')
 ```
 
-```{r iqrnormbeta_RL2, echo=F,results='asis'}
+
+```{r iqrnormbetaRL2, echo=F,results='asis'}
 cat(kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%
-        filter(runnum==2)%>%slice(c(3,4,1,2,5:8))%>%
-        left_join(convnames,by="variable")%>%dplyr::select(Covariate,beta,Range)%>%
-        setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+        filter(runnum==2)%>%
+          slice(c(3,4,1,2,5:8))%>%
+        left_join(convnames,by="variable")%>% 
+          mutate(Range = range_format(Range1,Range2)) %>% select(Covariate, beta, Range),
         format="latex", 
         escape = F,
         booktabs = T, 
-        label = "iqrnormbeta_RL2",
         linesep = "",
         digits=3,
-        caption = "Beta parameters for cardiovascular mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.")%>%
-  kable_styling(latex_options = c("striped", "hold_position")))
+        col.names=c("Covariate","Beta Normalised (IQR)","Range"),
+        caption = "Beta parameters for cardiovascular mortality, full NHANES III population, normalised by the interquartile range instead of the standard deviation.", align="lcc") %>%
+  kable_styling(latex_options = c("striped", "hold_position")) )
 cat('\n')
 
 ```
 
-```{r iqrnormbeta_RL3, echo=F,results='asis'}
+```{r iqrnormbetaRL3, echo=F,results='asis'}
 cat(kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%
         filter(runnum==3)%>%slice(c(3,4,1,2,5:8))%>%
-        left_join(convnames,by="variable")%>%dplyr::select(Covariate,beta,Range)%>%
-        setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+        left_join(convnames,by="variable")%>% 
+          mutate(Range = range_format(Range1,Range2)) %>% select(Covariate, beta, Range),
         format="latex", 
         escape = F,
         booktabs = T, 
-        label = "iqrnormbeta_RL3",
         linesep = "",
         digits=3,
-        caption = "Beta parameters for all-cause mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.")%>%
+        col.names=c("Covariate","Beta Normalised (IQR)","Range"),
+        caption = "Beta parameters for all-cause mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.", align="lcc")%>%
   kable_styling(latex_options = c("striped", "hold_position")))
 cat('\n')
 
 ```
 
-```{r iqrnormbeta_RL4, echo=F,results='asis'}
+```{r iqrnormbetaRL4, echo=F,results='asis'}
 cat(kable(read_csv(file="Results/beta_all_IQRnorm.csv",show_col_types = FALSE)%>%
         filter(runnum==4)%>%slice(c(3,4,1,2,5:8))%>%
-        left_join(convnames,by="variable")%>%dplyr::select(Covariate,beta,Range)%>%
-        setNames(c("Covariate","Beta Normalised (IQR)","Range")),
+        left_join(convnames,by="variable")%>% 
+          mutate(Range = range_format(Range1,Range2)) %>% select(Covariate, beta, Range),
         format="latex", 
         escape = F,
-        booktabs = T, 
-        label = "iqrnormbeta_RL4",
+        booktabs = T,
         linesep = "",
         digits=3,
-        caption = "Beta parameters for cardiovascular mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.")%>%
+        col.names=c("Covariate","Beta Normalised (IQR)","Range"),
+        caption = "Beta parameters for cardiovascular mortality, FRS NHANES III population, normalised by the interquartile range instead of the standard deviation.", align="lcc")%>%
   kable_styling(latex_options = c("striped", "hold_position")))
 cat('\n')
 
@@ -2139,28 +2157,36 @@ Note that TPR is also referred to as the recall or sensitivity. Conversely, the 
 \begin{equation}
   FPR(\epsilon)=\frac{\sum_i\big(\mathbb{I}(H(T_i)>\epsilon \ \ \& \ \ \delta_i=0)\big)}{\sum_i\big(\mathbb{I}(\delta_i=0)\big)}.
 \end{equation}
-Note that the FPR is also referred to as $1-\mathrm{specificity}$. The ROC curve is produced by varying the threshold value that is then used to calculate both the TPR and FPR, and plotting them against one another. The area under this curve is a metric that indicates performance of the model to predict survival outcomes. AUROC=1 implies perfect predictions and AUROC=0.5 implies the contrary. However, our model is formulated such that the variables age and time since starting the survey both form part of Cox's proportional hazard. Furthermore, the Gompertz model is stratified by demographic group. Therefore, in this work, we present a modified ROC curve, which calculates the individuals cumulative hazard at a given time since the start of the survey, $T_{surv} \in {5, 10, 15}$ years, and calculates whether the model correctly predicted an event to occur before or after this time. Note that to do this, we split the ROC population by ages: 45-64 and 65-84. The modified TPR is then calculated via:
+Note that the FPR is also referred to as $1-\mathrm{specificity}$. An ROC curve is produced by varying the threshold value that is then used to calculate both the TPR and FPR, and plotting them against one another.
+The area under this curve is a metric that indicates performance of the model to predict survival outcomes. AUROC=1 implies perfect predictions and AUROC=0.5 implies the contrary. However, our model is formulated such that the variables age and time since starting the survey both form part of Cox's proportional hazard. Furthermore, the Gompertz model is stratified by demographic group. Therefore, in this work, we present a modified ROC curve, which calculates the individuals cumulative hazard at a given time since the start of the survey, $T_{surv} \in {5, 10, 15}$ years, and calculates whether the model correctly predicted an event to occur before or after this time. 
+Note that to do this, we split the ROC population by ages: 45-64 and 65-84. The modified TPR is then calculated via:
 \begin{equation}
-  TPR(\epsilon)=\frac{\sum_i\big(\mathbb{I}(\delta_i=1 \ \ \& \ \ \ H(T_i)\geq \epsilon \ \ \& \ \ T_i<T_{surv})\big)}{\sum_i\big(\mathbb{I}(\delta_i=1 \ \ \& \ \ \ T_i<T_{surv})\big)},
+  \operatorname{TPR}(\epsilon)=\frac{\sum_i\big(\mathbb{I}(\delta_i=1 \ \ \& \ \ \ H(T_i)\geq \epsilon \ \ \& \ \ T_i<T_{surv})\big)}{\sum_i\big(\mathbb{I}(\delta_i=1 \ \ \& \ \ \ T_i<T_{surv})\big)},
 \end{equation}
 and the modified FPR:
 \begin{equation}
-  FPR(\epsilon)=\frac{\sum_i\big(\mathbb{I}(H(T_i)\geq \epsilon \ \ \& \ \ T_i\geq T_{surv})\big)}{\sum_i\big(\mathbb{I}(T_i\geq T_{surv})\big)}.
+  \operatorname{FPR}(\epsilon)=\frac{\sum_i\big(\mathbb{I}(H(T_i)\geq \epsilon \ \ \& \ \ T_i\geq T_{surv})\big)}{\sum_i\big(\mathbb{I}(T_i\geq T_{surv})\big)}.
 \end{equation}
-Before presenting any ROC or AUC values, we first present the density distributions of the median posterior systolic $\Delta$ values for all individuals, split by demographic. 
+
+One problem with standard ROC curves is that they are stretched out along the diagonal of the plot, making it impossible to scale the actual differences to make the significant deviations from the diagonal more legible.
+For that reason it is often better to plot a variant ROC curve, where the ordinate (the vertical coordinate) is the difference TPR--FPR, rather than TPR itself.
+This modified plot --- also known as the Youden index plot --- rotates what was formerly the diagonal onto the abscissa, allowing the deviations to be plotted on the appropriate scale.
+The information content is, of course, the same, and the standard AUC is now simply $0.5+$the area under this modified plot.
+
+Before presenting any plots or AUC values, we first present the density distributions of the median posterior systolic $\Delta$ values for all individuals, split by demographic. 
 
 ![Density of the (median posterior) systolic $\Delta$ values, per demographic. ](./Rmarkdown_Plots/SysDelta_Densities_Demography.png){#fig:DeltaDens}
 
-Using Welch's ANOVA test, we calculated that $p<1\times 10^{-9}$ for all demographics, including when split between the male and female populations. Figures \ref{fig:ROC_MeanBP} and \ref{fig:ROC_FRS} show the ROC curves (including the AUC values) of the model, the former using the mean systolic and diastolic blood pressure as covariates in the linear predictor term (in the Cox's proportional hazards component) and the latter using the FRS value instead. By making predictions of the 5, 10 and 15 year survival between the middle aged and old aged sub-groups, for the three different mortality causes, we start to build a picture of the performance of the model. For figure \ref{fig:ROC_MeanBP}, we notice that the AUC value of the predictions for the middle aged compared to the older aged population is higher, independent of the survival year prediction or the different mortality causes. The highest AUC is for the 45-64 year old population with a focus on CVD and heart attack-related mortality, for all three survival year periods. We also note that the TPR seems to start increasing at a faster rate for the population aged 45-64 than the 65-84 group, implying that it is possible to choose a threshold level, $\epsilon$, for the survival predictions that could correctly identify people at risk without incorrectly predicting as many people to be at risk of mortality as for the group aged 65-84. The results also reflect that the influence of choosing a 5, 10 or 15 year prediction period does not seem to significantly influence the results. Figure \ref{fig:ROC_FRS} displays similar results to the mean systolic and diastolic model when using the FRS value instead, with the main difference that the predictions of the middle aged group for CVD and heart attack-related mortality for 5 year survival seems to be lower than the equivalent in the older group or as compared to the mean blood pressure model. This is caused by a reduced mortality before 5 years for the middle aged population that had their FRS value calculated, where 36, 83 and 213 CVD and heart attack-related deaths occurred before 5, 10 and 15 years in this sub-group, respectively. This can be compared to 141, 356 and 952 all-cause deaths in this same sub-group (red-curve in figure \ref{fig:ROC_FRS} and \ref{fig:ROC_MeanBP}). Alternatively, when compared to the full-population (not just those who had the FRS value), the CVD and heart attack-related deaths for the middle aged population are 55, 115 and 282 over the 5, 10 and 15 year range, respectively.
+Using Welch's ANOVA test, we calculated that $p<1\times 10^{-9}$ for all demographics, including when split between the male and female populations. Figures \ref{fig:ROC_MeanBP} and \ref{fig:ROC_FRS} show the Youden index plots (modified ROC curves) --- including the AUC values --- of the model, the former using the mean systolic and diastolic blood pressure as covariates in the linear predictor term (in the Cox's proportional hazards component) and the latter using the FRS value instead. By making predictions of the 5, 10 and 15 year survival between the middle aged and old aged sub-groups, for the three different mortality causes, we start to build a picture of the performance of the model. For figure \ref{fig:ROC_MeanBP}, we notice that the AUC value of the predictions for the middle aged compared to the older aged population is higher, independent of the survival year prediction or the different mortality causes. The highest AUC is for the 45-64 year old population with a focus on CVD and heart attack-related mortality, for all three survival year periods. We also note that the TPR seems to start increasing at a faster rate for the population aged 45-64 than the 65-84 group, implying that it is possible to choose a threshold level, $\epsilon$, for the survival predictions that could correctly identify people at risk without incorrectly predicting as many people to be at risk of mortality as for the group aged 65-84. The results also reflect that the influence of choosing a 5, 10 or 15 year prediction period does not seem to significantly influence the results. Figure \ref{fig:ROC_FRS} displays similar results to the mean systolic and diastolic model when using the FRS value instead, with the main difference that the predictions of the middle aged group for CVD and heart attack-related mortality for 5 year survival seems to be lower than the equivalent in the older group or as compared to the mean blood pressure model. This is caused by a reduced mortality before 5 years for the middle aged population that had their FRS value calculated, where 36, 83 and 213 CVD and heart attack-related deaths occurred before 5, 10 and 15 years in this sub-group, respectively. This can be compared to 141, 356 and 952 all-cause deaths in this same sub-group (red-curve in figure \ref{fig:ROC_FRS} and \ref{fig:ROC_MeanBP}). Alternatively, when compared to the full-population (not just those who had the FRS value), the CVD and heart attack-related deaths for the middle aged population are 55, 115 and 282 over the 5, 10 and 15 year range, respectively.
 
-![ROC curves for the model that used mean systolic and diastolic blood pressure as covariates in the linear predictor, stratified by the event type (cause of mortality). The columns split two groups in the population: those who start the survey aged between 45 to 64 and 65-84 years old. The rows split the model predictions between 5, 10 and 15 year survival. ](./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png){#fig:ROC_MeanBP}
+![Youden index plots (modified ROC curves) for the model that used mean systolic and diastolic blood pressure as covariates in the linear predictor, stratified by the event type (cause of mortality). The columns split two groups in the population: those who start the survey aged between 45 to 64 and 65-84 years old. The rows split the model predictions between 5, 10 and 15 year survival. ](./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png){#fig:ROC_MeanBP}
 
-![ROC curves for the model that used the FRS value as covariates in the linear predictor, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. ](./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png){#fig:ROC_FRS}
+![Youden index plots (modified ROC curves) for the model that used the FRS value as covariates in the linear predictor, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. ](./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png){#fig:ROC_FRS}
 
-Comparison of the ROC curves and AUC values is also presented for the different demographic groups, see figure \ref{fig:ROC_Demog}. This figure shows the differences in the prediction performance (w.r.t. the ROC and AUC values)  of the full-population model for the 45-64 age population for their 10 year survival outcome, using the mean systolic and diastolic blood pressure model. This plot illustrates that potentially only the all-cause mortality has enough outcomes in each demographic group to separate the ROC curves. The model seems to most accurately predict the 10 year survival outcome of the black and other ethnic groups, as well as the white female demographic as compared to the black female, other female and white male population. To provide insight into this, we also provide the frequency table of deaths for each demographic group, mortality cause and survival year, see table \ref{tab:DeathFreq1} and \ref{tab:DeathFreq2}.
+Comparison of the Youden index plots (modified ROC curves) and AUC values is also presented for the different demographic groups, see figure \ref{fig:ROC_Demog}. This figure shows the differences in the prediction performance (w.r.t. the ROC and AUC values)  of the full-population model for the 45-64 age population for their 10 year survival outcome, using the mean systolic and diastolic blood pressure model. This plot illustrates that potentially only the all-cause mortality has enough outcomes in each demographic group to separate the curves. The model seems to most accurately predict the 10 year survival outcome of the black and other ethnic groups, as well as the white female demographic as compared to the black female, other female and white male population. To provide insight into this, we also provide the frequency table of deaths for each demographic group, mortality cause and survival year, see table \ref{tab:DeathFreq1} and \ref{tab:DeathFreq2}.
 
 
-![ROC curves stratified by the different demographic groups used in this research. The point and line colours represent the different event types that were used to predict on. ](./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png){#fig:ROC_Demog}
+![Youden index plots (modified ROC curves) stratified by the different demographic groups used in this research. The point and line colours represent the different event types that were used to predict on. ](./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png){#fig:ROC_Demog}
 
 ```{r DeathFreq1,echo=F,message=FALSE,warning=FALSE,results='asis'}
 deaths<-read_csv("Results/Deaths_FreqTable.csv",show_col_types = FALSE)
@@ -2184,19 +2210,19 @@ cat('\n')
 ```
 
 
-To finalise the section on the performance of the models using ROC and AUC values, we present a series of figures that provide ROC curves and AUC values for different linear predictor (Cox's proportional hazards model) covariate configurations. By setting the covariate-specific $\beta$ parameter values to zero, we can measure the additional prediction performance that adding different covariates provides to the model. In figures \ref{fig:ROC_RL1} to \ref{fig:ROC_RL8oth}, we present three main formulations: using only the systolic and diastolic $\Delta$ terms, using the mean systolic and diastolic (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or the FRS value (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}) terms as well as the systolic and diastolic $\Delta$ terms (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL8oth}) and, finally, using the systolic mean (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or FRS value only (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}). Figures \ref{fig:ROC_RL1}, \ref{fig:ROC_RL2} and \ref{fig:ROC_RL2oth} apply to the full-population with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. Figures \ref{fig:ROC_RL7}, \ref{fig:ROC_RL8} and \ref{fig:ROC_RL8oth} apply to the population with an FRS value, with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. The first thing to note as a commonality between all these different figures is that the use of the long-term variability, $\Delta$, in the model has comparable performance with that of using the systolic mean or FRS values only. Additionally, where the number of deaths permits for prediction, the use of both the $\Delta$ and mean/FRS values results in higher AUC values than using models that use one or the other. Finally, the use of the FRS value consistently under-performs the mean diastolic and systolic blood pressure-based model.
+To finalise the section on the performance of the models using ROC and AUC values, we present a series of figures that provide Youden index plots and AUC values for different linear predictor (Cox's proportional hazards model) covariate configurations. By setting the covariate-specific $\beta$ parameter values to zero, we can measure the additional prediction performance that adding different covariates provides to the model. In figures \ref{fig:ROC_RL1} to \ref{fig:ROC_RL8oth}, we present three main formulations: using only the systolic and diastolic $\Delta$ terms, using the mean systolic and diastolic (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or the FRS value (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}) terms as well as the systolic and diastolic $\Delta$ terms (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL8oth}) and, finally, using the systolic mean (figures \ref{fig:ROC_RL1}-\ref{fig:ROC_RL2oth}) or FRS value only (figures \ref{fig:ROC_RL7}-\ref{fig:ROC_RL8oth}). Figures \ref{fig:ROC_RL1}, \ref{fig:ROC_RL2} and \ref{fig:ROC_RL2oth} apply to the full-population with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. Figures \ref{fig:ROC_RL7}, \ref{fig:ROC_RL8} and \ref{fig:ROC_RL8oth} apply to the population with an FRS value, with the models trained on CVD and heart-attack related mortality, all-cause, and other mortality, respectively. The first thing to note as a commonality between all these different figures is that the use of the long-term variability, $\Delta$, in the model has comparable performance with that of using the systolic mean or FRS values only. Additionally, where the number of deaths permits for prediction, the use of both the $\Delta$ and mean/FRS values results in higher AUC values than using models that use one or the other. Finally, the use of the FRS value consistently under-performs the mean diastolic and systolic blood pressure-based model.
 
-![ROC curves for the mean systolic and diastolic model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png){#fig:ROC_RL1}
+![Youden index plots (modified ROC curves) for the mean systolic and diastolic model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png){#fig:ROC_RL1}
 
-![ROC curves for the mean systolic and diastolic model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png){#fig:ROC_RL2}
+![Youden index plots (modified ROC curves) for the mean systolic and diastolic model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png){#fig:ROC_RL2}
 
-![ROC curves for the mean systolic and diastolic model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png){#fig:ROC_RL2oth}
+![Youden index plots (modified ROC curves) for the mean systolic and diastolic model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png){#fig:ROC_RL2oth}
 
-![ROC curves for for the FRS-based model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png){#fig:ROC_RL7}
+![Youden index plots (modified ROC curves) for for the FRS-based model, looking specifically at CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png){#fig:ROC_RL7}
 
-![ROC curves for for the FRS-based model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png){#fig:ROC_RL8}
+![Youden index plots (modified ROC curves) for for the FRS-based model, looking at all-cause deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png){#fig:ROC_RL8}
 
-![ROC curves for for the FRS-based model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8oth}
+![Youden index plots (modified ROC curves) for for the FRS-based model, looking non-CVD and heart attack-related deaths, stratified by age group and the number of years the survival outcome was predicted since participant starting the survey. The colour of the points and lines represents the different linear predictor covariate models possible. ](./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png){#fig:ROC_RL8oth}
 
 ## Results - Excluded Population
 

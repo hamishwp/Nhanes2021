@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.5.27)  4 SEP 2024 10:09
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.5.27)  4 SEP 2024 12:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -931,7 +931,24 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 173
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) (/usr/local/texlive/2023/texmf-dist/tex/latex/microtype/mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
-) (./NHANES-BP-Appendix.toc)
+) (./NHANES-BP-Appendix.toc
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
+(Font)              scaled to size 7.0pt on input line 2.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
+(Font)              scaled to size 5.0pt on input line 2.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
+(Font)              scaled to size 10.00092pt on input line 2.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
+(Font)              scaled to size 7.00064pt on input line 2.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
+(Font)              scaled to size 5.00046pt on input line 2.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
+(Font)              scaled to size 9.99893pt on input line 2.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
+(Font)              scaled to size 6.99925pt on input line 2.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
+(Font)              scaled to size 4.99947pt on input line 2.
+)
 \tf@toc=\write4
 \openout4 = `NHANES-BP-Appendix.toc'.
 
@@ -941,40 +958,26 @@ File: NHANES-BP-Appendix_files/figure-latex/Venn1-1.pdf Graphic file (type pdf)
 [1
 
 ]
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 7.0pt on input line 214.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 5.0pt on input line 214.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 10.00092pt on input line 214.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 7.00064pt on input line 214.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 5.00046pt on input line 214.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 9.99893pt on input line 214.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 6.99925pt on input line 214.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 4.99947pt on input line 214.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
 File: NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf Graphic file (type pd
 f)
 <use NHANES-BP-Appendix_files/figure-latex/SD-mean-1.pdf>
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[2] [3]
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[4]
+[2] [3] [4] [5]
 File: NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.pdf Graphic file (ty
 pe pdf)
 <use NHANES-BP-Appendix_files/figure-latex/examinerPlot-1.pdf>
 File: NHANES-BP-Appendix_files/figure-latex/examinerPlot3-1.pdf Graphic file (t
 ype pdf)
 <use NHANES-BP-Appendix_files/figure-latex/examinerPlot3-1.pdf>
-[5] [6] [7]
+[6] [7]
 File: NHANES-BP-Appendix_files/figure-latex/proportionChisq3-1.pdf Graphic file
  (type pdf)
 <use NHANES-BP-Appendix_files/figure-latex/proportionChisq3-1.pdf>
@@ -1004,9 +1007,6 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/b/n' will be
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [12] [13] [14]
-
-LaTeX Warning: Reference `tab:Mean-SD' on page 15 undefined on input line 621.
-
 File: ./DAG_Mean2.png Graphic file (type bmp)
 <./DAG_Mean2.png>
 File: ./DAG_FRS2.png Graphic file (type bmp)
@@ -1031,26 +1031,111 @@ File: ./Rmarkdown_Plots/RMSE-Linpred_Convergence.png Graphic file (type bmp)
 <./Rmarkdown_Plots/RMSE-Linpred_Convergence.png>
 [24] [25]
 
-LaTeX Warning: Reference `fig:betas' on page 26 undefined on input line 943.
+LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-LaTeX Warning: Reference `fig:betas' on page 26 undefined on input line 943.
+LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-LaTeX Warning: Reference `fig:betas' on page 26 undefined on input line 943.
+LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-! Missing $ inserted.
-<inserted text> 
-                $
-l.947 ...range instead of the standard deviation.}
-                                                   
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ./Plots/beta/Beta_parameter_normalised.png Graphic file (type bmp)
+<./Plots/beta/Beta_parameter_normalised.png>
+File: ./Plots/gompertz/B_parameter.png Graphic file (type bmp)
+<./Plots/gompertz/B_parameter.png>
+[26] [27]
+File: ./Plots/gompertz/theta_parameter.png Graphic file (type bmp)
+<./Plots/gompertz/theta_parameter.png>
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ./Plots/Survival/redlinpred_Cumulative_haz-death_age.png Graphic file (ty
+pe bmp)
+<./Plots/Survival/redlinpred_Cumulative_haz-death_age.png>
+[28] [29] [30] [31] [32]
+File: ./Rmarkdown_Plots/SysDelta_Densities_Demography.png Graphic file (type bm
+p)
+<./Rmarkdown_Plots/SysDelta_Densities_Demography.png>
+File: ./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png Graphic file (type bm
+p)
+<./Rmarkdown_Plots/ROC_MeanBPModel_CAx-EventType.png>
+File: ./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png Graphic file (type bmp)
+<./Rmarkdown_Plots/ROC_FRSModel_CAx-EventType.png>
+File: ./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png Graphic file (ty
+pe bmp)
+<./Rmarkdown_Plots/ROC_CAx-EventType_Demog_10Yr_45-64.png>
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[33] [34] [35] [36] [37] [38]
+File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png Graphic file (type
+ bmp)
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL1.png>
+File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png Graphic file (type
+ bmp)
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2.png>
+File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png Graphic file (t
+ype bmp)
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL2oth.png>
+File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png Graphic file (type
+ bmp)
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL7.png>
+File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png Graphic file (type
+ bmp)
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8.png>
+File: ./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png Graphic file (t
+ype bmp)
+<./Rmarkdown_Plots/ROC_CAx-Covariates_EventType_RL8oth.png>
+[39] [40] [41] [42] [43] [44] [45]
+File: ./Rmarkdown_Plots/Excluded_SurvProbKM.png Graphic file (type bmp)
+<./Rmarkdown_Plots/Excluded_SurvProbKM.png>
+[46]
+LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <10> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 1373.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ./Rmarkdown_Plots/Delta_plusminus_Demography.png Graphic file (type bmp)
+<./Rmarkdown_Plots/Delta_plusminus_Demography.png>
+[47] [48]
+File: ./Rmarkdown_Plots/SurvProbKM_45-64.png Graphic file (type bmp)
+<./Rmarkdown_Plots/SurvProbKM_45-64.png>
+File: ./Rmarkdown_Plots/SurvProbKM_65-84.png Graphic file (type bmp)
+<./Rmarkdown_Plots/SurvProbKM_65-84.png>
+File: ./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png Graphic file (type bmp)
+<./Rmarkdown_Plots/SurvProbKM_Delta_45-65.png>
+File: ./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png Graphic file (type bmp)
+<./Rmarkdown_Plots/SurvProbKM_Delta_65-85.png>
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ./Rmarkdown_Plots/DeltaDirection_AUCs.png Graphic file (type bmp)
+<./Rmarkdown_Plots/DeltaDirection_AUCs.png>
+[49] [50] [51] [52] [53] [54] (./NHANES-BP-Appendix.aux)
+ ***********
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-05-08>
+ ***********
+ ) 
 Here is how much of TeX's memory you used:
- 21058 strings out of 474649
- 385006 string characters out of 5755059
- 1965556 words of memory out of 5000000
- 43000 multiletter control sequences out of 15000+600000
- 566047 words of font info for 95 fonts, out of 8000000 for 9000
+ 21345 strings out of 474649
+ 396438 string characters out of 5755059
+ 1979556 words of memory out of 5000000
+ 43248 multiletter control sequences out of 15000+600000
+ 566087 words of font info for 100 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 90i,20n,123p,1962b,431s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,20n,123p,2627b,459s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on NHANES-BP-Appendix.pdf (25 pages).
+Output written on NHANES-BP-Appendix.pdf (54 pages).
